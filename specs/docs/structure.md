@@ -8,6 +8,7 @@ A quick-reference snapshot that answers: where do things live, how does the proj
 
 ## What to include
 
+- **Project summary** — one sentence describing what the project is, followed by 3–5 bullets covering what it does. Keep it tight; this is orientation, not documentation.
 - **Directory layout** — annotated tree showing significant directories and their role
 - **Key modules or packages** — what each does and how they relate
 - **Tech stack** — languages, frameworks, major libraries, and any non-obvious tooling choices
