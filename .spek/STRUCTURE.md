@@ -7,6 +7,7 @@ CLI tool for managing AI-assisted development conventions across projects.
 - Syncs spec files into committed local copies (`spek sync`) and generates AI tool output (rules, slash commands)
 - Provides a 4-step dev workflow: `/spek-define` → `/spek-plan` → `/spek-implement` → `/spek-retro`
 - Supports on-demand behavioral stances via `/spek-stance`
+- `/spek-think` enters a non-actionary brainstorming mode for the remainder of the conversation
 
 ## Tech stack
 

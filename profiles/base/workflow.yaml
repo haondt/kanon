@@ -8,3 +8,4 @@ modules:
   - workflow/spek-review
   - workflow/spek-retro
   - workflow/spek-stance
+  - workflow/spek-think

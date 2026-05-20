@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-05-20 (session 8)
+
+- Added `specs/workflow/spek-think.md` — new `/spek-think` command; enters a non-actionary brainstorming mode for the remainder of the conversation; exits on any other spek command or natural conversation ender
+- `profiles/base/workflow.yaml` — added `workflow/spek-think`
+- `specs/workflow/spek-plan.md` — added instruction to write the full plan detail into SESSION.md at approval time, not just a summary table
+- Aside: `specs/workflow/spek-review.md` updated to record review findings in SESSION.md (carried over from prior session, committed with session 7)
+
 ## 2026-05-20 (session 7)
 
 - `specs/workflow/spek-review.md` — added rule to **Code problems** section: only report findings that require action; silence means clean. Prevents noise from investigated-and-acceptable items appearing in review output.

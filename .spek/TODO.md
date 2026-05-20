@@ -53,6 +53,7 @@ Stances implemented (`stances/`, `/spek-stance` skill, `spek local stance`). Pos
 
 - `specs/workflow/spek-amend.md` — skill for modifying the current session's goal or plan mid-session: update `.spek/SESSION.md` in place, note what changed and why, without starting a full new define/plan cycle
 - `specs/workflow/spek-todo.md` — skill for adding items to `.spek/TODO.md`; takes a description from the user, finds and surfaces any related inline `TODO:` comments from code, and writes a consolidated backlog entry under the appropriate category
+- `specs/workflow/spek-detour.md` — skill for quick out-of-scope edits that bypass the full define/plan/implement flow; does the edit immediately, records what changed and why in `SESSION.md` under `## Detours` (skips SESSION.md if no session is active); name TBD, "detour" is the current front-runner
 
 ## Build tooling
 
