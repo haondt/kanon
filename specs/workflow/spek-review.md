@@ -18,7 +18,7 @@ You are reviewing a completed implementation before the session is closed. Your 
    Read the relevant active modules from `.spek/modules/` — focus on the ones that apply to what changed (e.g. if Python files changed, check python/ modules; if commits were made, check git/ modules). Flag violations. Ignore modules that don't apply to this session's scope.
 
    **Code problems**
-   Review for correctness, edge cases, security issues, dead code, and anything that would surprise a future reader. Keep it signal — don't flag style nits already covered by a spec.
+   Review for correctness, edge cases, security issues, dead code, and anything that would surprise a future reader. Keep it signal — don't flag style nits already covered by a spec. Only include a finding if it requires action or a decision. If you investigated something and found no problem, do not mention it — silence means clean.
 
 4. Write up the findings concisely. Use a verdict at the end:
    - **Clear to proceed** — no significant issues; run `/spek-retro`

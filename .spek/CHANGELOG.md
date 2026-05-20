@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-05-20 (session 7)
+
+- `specs/workflow/spek-review.md` — added rule to **Code problems** section: only report findings that require action; silence means clean. Prevents noise from investigated-and-acceptable items appearing in review output.
+
 ## 2026-05-20 (session 6)
 
 - `render.py` — added optional `name` field to `_SpekMeta`; when set, used as the output filename stem instead of the path-derived `dir--name` form
