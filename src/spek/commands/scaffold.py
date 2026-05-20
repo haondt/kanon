@@ -40,6 +40,10 @@ def init(project_root: str) -> None:
 
     config_path.parent.mkdir(parents=True, exist_ok=True)
 
+    gitignore_path = config_path.parent / ".gitignore"
+    if not gitignore_path.exists():
+        gitignore_path.write_text("SESSION.md\n")
+
     repo_path = spek_repo_path()
     profiles_dir = repo_path / "profiles"
     profiles = list_profiles(profiles_dir)

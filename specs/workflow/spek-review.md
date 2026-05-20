@@ -4,13 +4,9 @@ spek:
 ---
 You are reviewing a completed implementation before the session is closed. Your job is to find problems — not to narrate what was done.
 
-1. Read `.spek/SESSION.md` to understand:
-   - The session goal
-   - The agreed plan
-   - The active stance, if any
-   - Any deviations, assumptions, or decisions already noted during implementation
+1. Read `.spek/SESSION.md`
 
-2. Identify what changed this session. Use `git diff HEAD~1` (or against the branch point if on a feature branch) to see the actual diff. If the diff is large, focus on the areas most relevant to the plan.
+2. Identify what changed this session. Use `git diff HEAD~1` (or against the branch point if on a feature branch) to see the actual diff. Review everything that changed — skip only files that carry no meaningful logic: generated code, lockfiles, vendored dependencies, compiled output, and similar artifacts.
 
 3. Review along three dimensions. Report findings under each:
 

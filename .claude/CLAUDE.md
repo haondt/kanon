@@ -41,6 +41,7 @@ src/spek/
   commands/      # init, sync, profile, local subcommands
   core/          # config.py, repo.py, render.py, profiles.py, yaml_utils.py
 .spek/
+  .gitignore     # written by spek init — gitignores SESSION.md
   spek.yaml      # project config: modules, stances, local paths
   CHANGELOG.md   # committed — log of completed work
   TODO.md        # committed — project backlog
@@ -151,6 +152,7 @@ local_stances:             # omitted if empty; paths relative to project root
 ```
 myproject/
   .spek/
+    .gitignore             # written by spek init — gitignores SESSION.md
     spek.yaml              # config: modules, stances, local paths
     SESSION.md             # gitignored — current session notes
     CHANGELOG.md           # committed — log of completed work

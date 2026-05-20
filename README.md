@@ -90,6 +90,7 @@ local_stances:             # omitted if empty; paths relative to project root
 ```
 myproject/
   .spek/
+    .gitignore             # written by spek init — gitignores SESSION.md
     spek.yaml              # config: modules, stances, local paths
     SESSION.md             # gitignored — current session notes
     CHANGELOG.md           # committed — log of completed work

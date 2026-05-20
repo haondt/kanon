@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-05-20 (session 5)
+
+- Added `/spek-review` workflow skill — optional step between implement and retro; reviews plan faithfulness, spec compliance, and code problems; ends with a three-way verdict; read-only by default
+- `git/commit-base` — added rule: never create a commit unless explicitly asked
+- `spek-review` scope clarified: review everything changed, skip only files with no meaningful logic (generated code, lockfiles, vendored deps)
+- `spek init` now writes `.spek/.gitignore` containing `SESSION.md`, so SESSION.md is gitignored at the project level rather than relying on the root `.gitignore`
+
 ## 2026-05-20 (session 4)
 
 Major expansion of the spec module library. All changes are to `specs/`, `stances/`, and `profiles/` — no CLI changes.
