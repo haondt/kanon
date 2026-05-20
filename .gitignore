@@ -6,8 +6,7 @@ __pycache__/
 *.egg-info/
 .eggs/
 dist/
-build/
-!specs/build/
+/build/
 .venv/
 .pytest_cache/
 .coverage

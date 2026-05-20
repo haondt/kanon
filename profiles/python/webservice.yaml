@@ -8,3 +8,4 @@ modules:
   - python/dependencies/uv
   - python/frameworks/fastapi
   - python/models/sqlmodel
+  - build/just

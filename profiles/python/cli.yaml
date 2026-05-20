@@ -5,3 +5,4 @@ modules:
   - python/dependencies/uv
   - python/testing/pytest
   - python/models/pydantic
+  - build/just

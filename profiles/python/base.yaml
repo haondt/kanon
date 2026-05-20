@@ -7,3 +7,4 @@ modules:
   - python/dependencies/base
   - python/testing/base
   - python/testing/pytest
+  - python/build
