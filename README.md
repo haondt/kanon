@@ -15,31 +15,30 @@ just install
 
 ```bash
 # In a new project directory
-spek scaffold    # Q&A: pick an AI tool, profile, modules, and stances
-spek sync        # pull specs into .spek/modules/, generate AI tool output
+spek init    # Q&A: pick integrations, profile, modules, and stances
+spek sync    # pull specs into .spek/modules/, generate AI tool output
 ```
 
 `spek.yaml` is written to your project as the resolved module and stance list. Commit it along with `.spek/modules/` and `.spek/stances/`.
 
 ## Commands
 
-### `spek scaffold`
+### `spek init`
 
-Interactive Q&A that writes `spek.yaml`. Prompts for AI tool, then a profile (which sets modules and stances) or individual module/stance selection.
+Interactive Q&A that writes `spek.yaml`. Prompts for integrations, then a profile (which sets modules and stances) or individual module selection.
 
 ### `spek sync`
 
 Reads modules and stances from `.spek/modules/` and `.spek/stances/` (committed local copies) and writes AI tool output. Missing files are automatically pulled from the upstream spek repo. Extras are pruned.
 
 ```bash
-spek sync                # reconcile local copies and generate output
-spek sync --upstream     # force-refresh all files from upstream first
-spek sync --record-sha   # also update the SHA breadcrumb in spek.yaml
+spek sync        # reconcile local copies and generate output
+spek sync --pull # force-refresh all files from upstream and record SHA
 ```
 
 Only modules listed in `spek.yaml.modules` are written as always-active rules/commands. Modules referenced only by stances are stored in `.spek/modules/` and stay inert until activated via `/spek-stance`.
 
-| AI tool | Rules | Commands |
+| Integration | Rules | Commands |
 |---|---|---|
 | `claude` | `.claude/rules/` | `.claude/commands/` |
 | `windsurf` | `.windsurf/rules/` | `.windsurf/rules/` |
@@ -62,13 +61,14 @@ Create a new project-local stance at `.spek/local/stances/<name>.yaml` and regis
 
 ## spek.yaml
 
-Written by `spek scaffold`. Records the AI tool, profile, modules, and stances:
+Written by `spek init`. Records the integrations, profile, modules, and stances:
 
 ```yaml
 meta:
   spek_version: "1.0.0"
   spek_sha: "abc1234"      # SHA at last sync — informational only
-  ai_tool: "claude"
+  integrations:
+    - claude
   profile: "python/cli"    # omitted if no profile was used
 modules:                   # always-active rules/commands
   - git/commit-style

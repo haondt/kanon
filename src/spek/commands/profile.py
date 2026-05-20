@@ -42,7 +42,7 @@ def profile_apply(name: str | None, project_root: str, run_sync: bool) -> None:
     lock_path = root / CONFIG_FILE
 
     if not lock_path.exists():
-        click.echo("No spek.yaml found. Run 'spek scaffold' first.")
+        click.echo("No spek.yaml found. Run 'spek init' first.")
         raise SystemExit(1)
 
     lock = SpekConfig.load(lock_path)

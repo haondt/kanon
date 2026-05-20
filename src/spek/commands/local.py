@@ -32,7 +32,7 @@ def local_module(name: str, project_root: str, run_sync: bool) -> None:
     config_path = root / CONFIG_FILE
 
     if not config_path.exists():
-        click.echo("No spek.yaml found. Run 'spek scaffold' first.")
+        click.echo("No spek.yaml found. Run 'spek init' first.")
         raise SystemExit(1)
 
     local_dir = root / LOCAL_MODULES_DIR
@@ -82,7 +82,7 @@ def local_stance(name: str, project_root: str) -> None:
 
     config_path = root / CONFIG_FILE
     if not config_path.exists():
-        click.echo("No spek.yaml found. Run 'spek scaffold' first.")
+        click.echo("No spek.yaml found. Run 'spek init' first.")
         raise SystemExit(1)
 
     stance_path.write_text(STANCE_STUB.format(name=name))

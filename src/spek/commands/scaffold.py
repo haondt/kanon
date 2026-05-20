@@ -7,14 +7,15 @@ from spek import __version__
 from spek.core.config import SpekConfig, SpekMeta, CONFIG_FILE
 from spek.core.repo import spek_repo_path, spek_sha
 from spek.core.profiles import resolve_profile, list_profiles
+from spek.core.render import AI_TOOL_OUTPUT_DIRS
 
-AI_TOOLS = ["claude", "windsurf"]
+INTEGRATIONS = list(AI_TOOL_OUTPUT_DIRS)
 
 
 def _available_modules(repo_path: Path) -> list[str]:
     specs_dir = repo_path / "specs"
     seen: set[str] = set()
-    modules = []
+    modules: list[str] = []
     for src in sorted(specs_dir.rglob("*.md")) + sorted(specs_dir.rglob("*.yaml")):
         rel = str(src.relative_to(specs_dir).with_suffix(""))
         if rel not in seen:
@@ -28,33 +29,33 @@ def _available_modules(repo_path: Path) -> list[str]:
 @click.command()
 @click.option("--project-root", default=".", type=click.Path(exists=True, file_okay=False),
               help="Root of the target project (default: current directory).")
-def scaffold(project_root: str) -> None:
-    """Interactively scaffold a new project with spek conventions."""
+def init(project_root: str) -> None:
+    """Interactively initialize a new project with spek conventions."""
     root = Path(project_root).resolve()
-    lock_path = root / CONFIG_FILE
+    config_path = root / CONFIG_FILE
 
-    if lock_path.exists():
+    if config_path.exists():
         click.echo(".spek/spek.yaml already exists. Run 'spek sync' to update.")
         raise SystemExit(1)
 
-    lock_path.parent.mkdir(parents=True, exist_ok=True)
+    config_path.parent.mkdir(parents=True, exist_ok=True)
 
     repo_path = spek_repo_path()
     profiles_dir = repo_path / "profiles"
     profiles = list_profiles(profiles_dir)
     modules = _available_modules(repo_path)
 
-    # Choose AI tool
-    ai_tool = click.prompt(
-        "AI tool",
-        type=click.Choice(AI_TOOLS),
-        default="claude",
-    )
+    # Choose integrations
+    click.echo(f"Available integrations: {', '.join(INTEGRATIONS)}")
+    raw = click.prompt("Integrations (comma-separated)", default="claude")
+    integrations = [t.strip() for t in raw.split(",") if t.strip() in INTEGRATIONS]
+    if not integrations:
+        click.echo("No valid integrations selected. Aborting.")
+        raise SystemExit(1)
 
     selected_modules: list[str] = []
     chosen_profile: str | None = None
 
-    # Optionally start from a profile
     selected_stances: list[str] = []
 
     if profiles:
@@ -91,11 +92,11 @@ def scaffold(project_root: str) -> None:
         raise SystemExit(1)
 
     sha = spek_sha(repo_path)
-    lock = SpekConfig(
-        meta=SpekMeta(spek_version=__version__, spek_sha=sha, ai_tool=ai_tool, profile=chosen_profile),
+    config = SpekConfig(
+        meta=SpekMeta(spek_version=__version__, spek_sha=sha, integrations=integrations, profile=chosen_profile),
         modules=selected_modules,
         stances=selected_stances,
     )
-    lock.save(lock_path)
+    config.save(config_path)
     click.echo(f"\nWrote .spek/spek.yaml with {len(selected_modules)} module(s) pinned at {sha[:8]}.")
     click.echo("Run 'spek sync' to copy spec files and emit AI tool rules.")

@@ -1,12 +1,25 @@
 # Changelog
 
+## 2026-05-20 (session 2)
+
+**CLI refactoring**
+- Renamed `spek scaffold` → `spek init`; renamed internal `lock_path`/`lock` variables to `config_path`/`config`
+- Renamed `--upstream` → `--pull` on `spek sync`; removed `--record-sha` (SHA is now always recorded when `--pull` is used)
+- Added `src/spek/core/yaml_utils.py` — centralizes all YAML I/O: `parse_yaml(str)`, `load_yaml(path[, model])`, `dump_yaml(data)`, `save_yaml(data, path)`
+  - `load_yaml` accepts an optional Pydantic model type and calls `model_validate` automatically
+  - `save_yaml`/`dump_yaml` accept either `dict[str, Any]` or a `BaseModel` (calls `model_dump(exclude_none=True)` automatically)
+- Migrated all raw `yaml.safe_load` / `yaml.dump` calls across `config.py`, `profiles.py`, `render.py`, `sync.py` to use `yaml_utils`
+- Added `ProfileSpec(BaseModel)` in `profiles.py` — replaces raw dict access for profile YAML files
+- Added `ModuleFrontmatter` / `_SpekMeta` Pydantic models in `render.py` — replaces chained `.get()` calls for frontmatter parsing; `output_type()` now reads `meta.spek.output`
+- `SpekConfig.save()` now passes `self` directly to `save_yaml`; `SpekConfig.load()` uses `load_yaml(path, cls)`
+
 ## 2026-05-20
 
 Initial implementation of spek.
 
 **CLI commands**
-- `spek scaffold` — interactive Q&A to write `.spek/spek.yaml` (AI tool, profile, modules, stances)
-- `spek sync` — reconcile `.spek/modules/` and `.spek/stances/` from upstream, generate AI tool output; `--upstream` force-refreshes all files, `--record-sha` updates the breadcrumb
+- `spek init` — interactive Q&A to write `.spek/spek.yaml` (integrations, profile, modules, stances)
+- `spek sync` — reconcile `.spek/modules/` and `.spek/stances/` from upstream, generate AI tool output; `--pull` force-refreshes all files and records SHA
 - `spek profile list` / `spek profile apply [name]` — list profiles, re-resolve and apply a profile; `--sync` flag runs sync immediately after
 - `spek local module <name>` — create a project-local spec module and register it in `spek.yaml`; `--sync` flag
 - `spek local stance <name>` — create a project-local stance YAML and register it in `spek.yaml`

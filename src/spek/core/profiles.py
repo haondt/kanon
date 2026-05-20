@@ -1,7 +1,17 @@
 from __future__ import annotations
 
-import yaml
 from pathlib import Path
+
+from pydantic import BaseModel
+
+from spek.core.yaml_utils import load_yaml
+
+
+class ProfileSpec(BaseModel):
+    description: str = ""
+    extends: list[str] = []
+    modules: list[str] = []
+    stances: list[str] = []
 
 
 def resolve_profile(
@@ -21,12 +31,12 @@ def resolve_profile(
     if not profile_file.exists():
         raise FileNotFoundError(f"Profile '{name}' not found at {profile_file}")
 
-    data = yaml.safe_load(profile_file.read_text()) or {}
+    spec = load_yaml(profile_file, ProfileSpec)
     seen = _seen | {name}
     modules: list[str] = []
     stances: list[str] = []
 
-    for parent in data.get("extends", []):
+    for parent in spec.extends:
         parent_modules, parent_stances = resolve_profile(parent, profiles_dir, seen)
         for m in parent_modules:
             if m not in modules:
@@ -35,11 +45,11 @@ def resolve_profile(
             if s not in stances:
                 stances.append(s)
 
-    for m in data.get("modules", []):
+    for m in spec.modules:
         if m not in modules:
             modules.append(m)
 
-    for s in data.get("stances", []):
+    for s in spec.stances:
         if s not in stances:
             stances.append(s)
 
@@ -48,11 +58,9 @@ def resolve_profile(
 
 def list_profiles(profiles_dir: Path) -> dict[str, str]:
     """Return {profile_name: description} for all profiles, sorted."""
-    result: dict[str, str] = {}
     if not profiles_dir.exists():
-        return result
-    for f in sorted(profiles_dir.rglob("*.yaml")):
-        key = str(f.relative_to(profiles_dir).with_suffix(""))
-        data = yaml.safe_load(f.read_text()) or {}
-        result[key] = data.get("description", "")
-    return result
+        return {}
+    return {
+        str(f.relative_to(profiles_dir).with_suffix("")): load_yaml(f, ProfileSpec).description
+        for f in sorted(profiles_dir.rglob("*.yaml"))
+    }

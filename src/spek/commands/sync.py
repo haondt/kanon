@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 import shutil
-import yaml
 import click
 from pathlib import Path
 
 from spek.core.config import SpekConfig, CONFIG_FILE, MODULES_DIR, STANCES_DIR
+from spek.core.yaml_utils import load_yaml
 
 
 def _find(name: str, search_dir: Path, suffixes: tuple[str, ...] = (".md", ".yaml")) -> Path | None:
@@ -34,15 +34,14 @@ def _prune(directory: Path, expected: set[Path]) -> None:
 
 
 def _load_stance_modules(stance_path: Path) -> list[str]:
-    data = yaml.safe_load(stance_path.read_text()) or {}
-    return data.get("modules", [])
+    return load_yaml(stance_path).get("modules", [])
 
 
-def do_sync(root: Path, upstream: bool = False, record_sha: bool = False) -> None:
+def do_sync(root: Path, pull: bool = False) -> None:
     """Core sync logic — callable programmatically from other commands."""
     config_path = root / CONFIG_FILE
     if not config_path.exists():
-        click.echo("No spek.yaml found. Run 'spek scaffold' first.")
+        click.echo("No spek.yaml found. Run 'spek init' first.")
         raise SystemExit(1)
 
     config = SpekConfig.load(config_path)
@@ -62,10 +61,10 @@ def do_sync(root: Path, upstream: bool = False, record_sha: bool = False) -> Non
         upstream_specs = None
         upstream_stances = None
 
-    # ── Phase 0: --upstream — force-refresh all stances and modules ──────────
-    if upstream:
+    # ── Phase 0: --pull — force-refresh all stances and modules ────────────────
+    if pull:
         if upstream_specs is None:
-            click.echo("Cannot locate spek repo — --upstream requires it.")
+            click.echo("Cannot locate spek repo — --pull requires it.")
             raise SystemExit(1)
         click.echo("Pulling from upstream:")
         for stance_name in config.stances:
@@ -113,8 +112,8 @@ def do_sync(root: Path, upstream: bool = False, record_sha: bool = False) -> Non
 
     all_modules_needed = direct_modules | stance_modules
 
-    # ── Phase 3 (--upstream): force-refresh all modules ───────────────────────
-    if upstream and upstream_specs:
+    # ── Phase 3 (--pull): force-refresh all modules ─────────────────────────────
+    if pull and upstream_specs:
         for mod in all_modules_needed:
             src = _find(mod, upstream_specs)
             if src:
@@ -142,10 +141,8 @@ def do_sync(root: Path, upstream: bool = False, record_sha: bool = False) -> Non
 
     _prune(modules_dir, expected_modules)
 
-    if record_sha:
-        if repo_path is None:
-            click.echo("Cannot record SHA: spek repo not found.")
-        else:
+    if pull:
+        if repo_path is not None:
             new_sha = spek_sha(repo_path)
             click.echo(f"Recording SHA {new_sha[:8]}.")
             config.meta.spek_sha = new_sha
@@ -169,20 +166,22 @@ def do_sync(root: Path, upstream: bool = False, record_sha: bool = False) -> Non
             click.echo(f"  WARNING: local module '{local_path}' not found, skipping.")
 
     dirs_to_clear: set[Path] = set()
-    for _, src in to_render:
-        content = src.read_text()
-        ot = output_type(content)
-        if ot in ("rule", "command"):
-            dirs_to_clear.add(output_dir_for(root, config.meta.ai_tool, ot))
+    for integration in config.meta.integrations:
+        for _, src in to_render:
+            content = src.read_text()
+            ot = output_type(content)
+            if ot in ("rule", "command"):
+                dirs_to_clear.add(output_dir_for(root, integration, ot))
     for d in dirs_to_clear:
         if d.exists():
             shutil.rmtree(d)
 
-    click.echo(f"Generating {config.meta.ai_tool} output:")
-    for name, src in to_render:
-        content = src.read_text()
-        out_path = render_module(content, name, config.meta.ai_tool, root)
-        click.echo(f"  {name} → {out_path.relative_to(root)}")
+    for integration in config.meta.integrations:
+        click.echo(f"Generating {integration} output:")
+        for name, src in to_render:
+            content = src.read_text()
+            out_path = render_module(content, name, integration, root)
+            click.echo(f"  {name} → {out_path.relative_to(root)}")
 
     click.echo("Done.")
 
@@ -190,18 +189,16 @@ def do_sync(root: Path, upstream: bool = False, record_sha: bool = False) -> Non
 @click.command()
 @click.option("--project-root", default=".", type=click.Path(exists=True, file_okay=False),
               help="Root of the target project (default: current directory).")
-@click.option("--upstream", is_flag=True,
-              help="Force-refresh all stances and modules from the upstream spek repo.")
-@click.option("--record-sha", is_flag=True,
-              help="Update the recorded SHA in spek.yaml to the current spek HEAD.")
-def sync(project_root: str, upstream: bool, record_sha: bool) -> None:
+@click.option("--pull", is_flag=True,
+              help="Force-refresh all stances and modules from the upstream spek repo and record SHA.")
+def sync(project_root: str, pull: bool) -> None:
     """Sync spec modules and stances, then generate AI tool output.
 
     Reads from .spek/modules/ and .spek/stances/ (local committed copies).
     Missing files are pulled from the upstream spek repo automatically.
-    Use --upstream to force-refresh everything from the spek repo.
+    Use --pull to force-refresh everything from the spek repo and record SHA.
     Only modules listed in spek.yaml.modules become rules/commands.
     Modules referenced only by stances stay in .spek/modules/ and are inert
     until activated via /spek-stance.
     """
-    do_sync(Path(project_root).resolve(), upstream=upstream, record_sha=record_sha)
+    do_sync(Path(project_root).resolve(), pull=pull)

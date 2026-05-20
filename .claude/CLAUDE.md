@@ -5,7 +5,7 @@ A personal CLI tool for managing AI-assisted development conventions across proj
 ## What it does
 
 - Maintains a central git repo of modular spec files (`specs/`) and stance definitions (`stances/`)
-- Scaffolds new projects via Q&A (picks AI tool, profile, modules, stances)
+- Initializes new projects via Q&A (picks integrations, profile, modules, stances)
 - Keeps a committed local copy of all needed spec files in `.spek/modules/` and stance configs in `.spek/stances/`; generates AI tool output (rules, commands) from that copy
 - Provides a 4-step dev workflow via slash commands: `/spek-define` → `/spek-plan` → `/spek-implement` → `/spek-retro`
 - Supports on-demand behavioral stances via `/spek-stance`
@@ -24,14 +24,14 @@ specs/           # Spec module library, organized by concern
   refactoring/
   workflow/      # spek-define/plan/implement/retro/stance skill specs
 stances/         # Stance definitions (YAML files listing module paths)
-profiles/        # Named bundles of modules + stances (scaffold presets)
+profiles/        # Named bundles of modules + stances (init presets)
   base/
   python/
 src/spek/
   _metadata.py   # __version__ = "0.0.0" — overwritten by CI from git tag
   cli.py         # Click entrypoint
-  commands/      # scaffold, sync, profile, local subcommands
-  core/          # config.py, repo.py, render.py, profiles.py
+  commands/      # init, sync, profile, local subcommands
+  core/          # config.py, repo.py, render.py, profiles.py, yaml_utils.py
 .spek/
   spek.yaml      # project config: modules, stances, local paths
   CHANGELOG.md   # committed — log of completed work
@@ -120,7 +120,8 @@ Frontmatter is stripped before writing output files.
 meta:
   spek_version: "0.1.0"   # spek CLI version that wrote this file
   spek_sha: "abc1234"      # SHA of spek HEAD at last sync (informational only)
-  ai_tool: "claude"        # target: claude | windsurf
+  integrations:            # one or more: claude, windsurf
+    - claude
   profile: "python/cli"    # omitted if no profile was used
 modules:                   # always-active rules/commands
   - git/commit-style
