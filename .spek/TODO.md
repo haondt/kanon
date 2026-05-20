@@ -56,7 +56,8 @@ Stances implemented (`stances/`, `/spek-stance` skill, `spek local stance`). Pos
 
 ## Build tooling
 
-- `specs/build/justfile.md` — justfile conventions: recipe naming, default recipe, grouping by concern, when to wrap uv/make/shell commands, keeping recipes thin
+- ~~`specs/build/just.md`~~ — done
+- ~~`specs/build/make.md`~~ — done
 
 ## Cleanup
 
