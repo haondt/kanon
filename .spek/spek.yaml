@@ -1,0 +1,39 @@
+meta:
+  spek_version: 0.0.0
+  spek_sha: 2b500786f42f7e7ed0bf4ac0edf4f0b4e3224bf8
+  integrations:
+  - claude
+  profile: python/cli
+modules:
+- ai/communication/prefer-brevity
+- ai/coding/verify-before-use
+- ai/coding/prefer-reuse
+- ai/style/stay-in-scope
+- ai/style/confirm-before-acting
+- git/commit-base
+- git/commit-long
+- git/branch-base
+- docs/readme
+- docs/structure
+- workflow/base
+- docs/todo
+- workflow/spek-define
+- workflow/spek-plan
+- workflow/spek-implement
+- workflow/spek-review
+- workflow/spek-retro
+- workflow/spek-stance
+- code/hygiene
+- python/style
+- python/venv
+- python/dependencies/base
+- python/testing/base
+- python/testing/pytest
+- python/build
+- python/dependencies/uv
+- python/models/pydantic
+- build/just
+stances:
+- autonomous
+- collaborative
+- critic

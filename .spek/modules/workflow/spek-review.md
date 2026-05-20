@@ -25,6 +25,4 @@ You are reviewing a completed implementation before the session is closed. Your 
    - **Issues to address** — list what should be fixed before retro; re-run `/spek-review` after fixes if needed
    - **Your call** — minor issues that don't warrant a fix cycle; note them for the CHANGELOG
 
-5. Append the review findings and verdict to `.spek/SESSION.md` under a `## Review` heading.
-
-6. Do not make changes yourself. This is a review pass only. If the user asks you to fix something, do so — then re-review the affected area.
+5. Do not make changes yourself. This is a review pass only. If the user asks you to fix something, do so — then re-review the affected area.

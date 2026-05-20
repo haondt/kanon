@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-05-20 (session 6)
+
+- `render.py` — added optional `name` field to `_SpekMeta`; when set, used as the output filename stem instead of the path-derived `dir--name` form
+- All six workflow command specs (`spek-define`, `spek-plan`, `spek-implement`, `spek-review`, `spek-retro`, `spek-stance`) now set `name: spek-*` in frontmatter — they appear as `/spek-define` etc. in Claude Code instead of `/workflow--spek-define`
+- Added `test_sync_command_name_override` to `tests/test_sync_cli.py`
+- Minor: `render_module` now uses `meta.spek.output` directly instead of calling `output_type()` (which re-parsed frontmatter); no behavior change
+- Moved venv from `.venv/` to `venv/` to match `python/venv` rule; updated `.gitignore`
+- Rewrote `justfile` to use `UV_PROJECT_ENVIRONMENT=venv` in `install`/`install-dev`, add idempotent `venv` recipe, route `test`/`test-cov` through `venv/bin/pytest`
+- `specs/workflow/spek-review.md` — added step 5: append review findings and verdict to `.spek/SESSION.md` under a `## Review` heading
+
 ## 2026-05-20 (session 5)
 
 - Added `/spek-review` workflow skill — optional step between implement and retro; reviews plan faithfulness, spec compliance, and code problems; ends with a three-way verdict; read-only by default

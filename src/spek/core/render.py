@@ -24,6 +24,7 @@ _FRONTMATTER_RE = re.compile(r"^---\n(.*?)\n---\n?", re.DOTALL)
 
 class _SpekMeta(BaseModel):
     output: str = "rule"
+    name: str | None = None
 
 
 class ModuleFrontmatter(BaseModel):
@@ -52,10 +53,11 @@ def output_dir_for(project_root: Path, ai_tool: str, out_type: str) -> Path:
 
 
 def render_module(content: str, module: str, ai_tool: str, project_root: Path) -> Path:
-    _, body = parse_frontmatter(content)
-    out_type = output_type(content)
+    meta, body = parse_frontmatter(content)
+    out_type = meta.spek.output
     out_dir = output_dir_for(project_root, ai_tool, out_type)
     out_dir.mkdir(parents=True, exist_ok=True)
-    out_path = out_dir / (module.replace("/", "--") + ".md")
+    stem = meta.spek.name if meta.spek.name else module.replace("/", "--")
+    out_path = out_dir / (stem + ".md")
     out_path.write_text(body)
     return out_path

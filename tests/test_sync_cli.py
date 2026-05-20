@@ -89,3 +89,16 @@ def test_sync_routes_command_output(tmp_path):
     cmd = tmp_path / ".claude" / "commands" / "workflow--spek-define.md"
     assert cmd.exists()
     assert cmd.read_text() == "Define the session goal.\n"
+
+
+def test_sync_command_name_override(tmp_path):
+    make_project(tmp_path, ["workflow/spek-define"], {
+        "workflow/spek-define": "---\nspek:\n  output: command\n  name: spek-define\n---\nDefine the session goal.\n",
+    })
+
+    CliRunner().invoke(cli, ["sync", "--project-root", str(tmp_path)])
+
+    assert not (tmp_path / ".claude" / "commands" / "workflow--spek-define.md").exists()
+    cmd = tmp_path / ".claude" / "commands" / "spek-define.md"
+    assert cmd.exists()
+    assert cmd.read_text() == "Define the session goal.\n"

@@ -1,14 +1,21 @@
+venv := "venv"
+
 default:
     @just --list
 
-install:
-    uv pip install -e .
+[script]
+venv force="false":
+    if [ -d "{{venv}}" ] && [ "{{force}}" != "true" ]; then exit 0; fi
+    uv venv --clear {{venv}}
 
-install-dev:
-    uv pip install -e ".[dev]"
+install: venv
+    UV_PROJECT_ENVIRONMENT={{venv}} uv sync
 
-test:
-    uv run pytest
+install-dev: venv
+    UV_PROJECT_ENVIRONMENT={{venv}} uv sync --extra dev
 
-test-cov:
-    uv run pytest --cov=spek --cov-report=term-missing
+test: venv
+    {{venv}}/bin/pytest
+
+test-cov: venv
+    {{venv}}/bin/pytest --cov=spek --cov-report=term-missing
