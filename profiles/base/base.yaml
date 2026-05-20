@@ -1,0 +1,6 @@
+description: "Core conventions for all projects"
+extends:
+  - base/ai
+  - base/git
+  - base/docs
+  - base/workflow

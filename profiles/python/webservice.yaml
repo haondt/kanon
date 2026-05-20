@@ -1,0 +1,11 @@
+description: "Python web service or API"
+extends:
+  - base/base
+modules:
+  - python/style
+  - python/async
+  - python/config
+  - python/dependencies/base
+  - python/dependencies/uv
+  - python/testing/base
+  - python/testing/pytest

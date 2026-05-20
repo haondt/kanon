@@ -1,0 +1,4 @@
+description: "Challenge approaches and surface hidden risks"
+modules:
+  - ai/challenge-premise
+  - ai/surface-risks

@@ -1,0 +1,6 @@
+description: "Think in systems: interfaces, extensibility, and long-term consequences"
+modules:
+  - ai/propose-before-implement
+  - ai/seek-prior-art
+  - ai/surface-risks
+  - ai/systems-thinking

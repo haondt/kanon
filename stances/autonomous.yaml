@@ -1,0 +1,4 @@
+description: "Work autonomously with minimal check-ins"
+modules:
+  - ai/assume-and-proceed
+  - ai/prefer-momentum

@@ -1,0 +1,4 @@
+description: "Documentation conventions"
+modules:
+  - docs/readme
+  - docs/structure

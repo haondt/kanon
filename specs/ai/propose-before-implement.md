@@ -1,0 +1,3 @@
+- Propose before implementing; wait for explicit sign-off on structural changes
+- Surface trade-offs before deciding — don't just pick one
+- Do not write or edit code for a significant change until the approach is agreed

@@ -1,0 +1,5 @@
+description: "Check in before major decisions and explain reasoning"
+modules:
+  - ai/propose-before-implement
+  - ai/explain-reasoning
+  - ai/seek-prior-art

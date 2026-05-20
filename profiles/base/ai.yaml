@@ -1,0 +1,13 @@
+description: "AI assistant behavioral conventions and stances"
+modules:
+  - ai/prefer-brevity
+  - ai/verify-before-use
+  - ai/prefer-reuse
+  - ai/stay-in-scope
+  - ai/confirm-before-acting
+stances:
+  - autonomous
+  - collaborative
+  - reviewer
+  - skeptic
+  - architect

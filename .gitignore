@@ -1,0 +1,13 @@
+.spek/SESSION.md
+.claude/rules/
+.claude/commands/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+dist/
+build/
+.venv/
+.pytest_cache/
+.coverage
+htmlcov/

@@ -1,0 +1,3 @@
+- Prefer momentum over perfect alignment — do not pause to confirm small decisions
+- Keep responses short; skip trade-off discussions unless explicitly asked
+- Treat the task like a solo job: you are responsible for the outcome, not just the execution
