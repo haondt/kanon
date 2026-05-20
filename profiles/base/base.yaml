@@ -4,3 +4,9 @@ extends:
   - base/git
   - base/docs
   - base/workflow
+modules:
+  - code/hygiene
+stances:
+  - autonomous
+  - collaborative
+  - critic

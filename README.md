@@ -71,7 +71,7 @@ meta:
     - claude
   profile: "python/cli"    # omitted if no profile was used
 modules:                   # always-active rules/commands
-  - git/commit-style
+  - git/commit-base
   - python/style
   - python/dependencies/uv
   - workflow/base
@@ -115,8 +115,9 @@ myproject/
 | `base/git` | Git conventions |
 | `base/docs` | Documentation conventions |
 | `base/workflow` | Dev workflow skills |
-| `python/cli` | Python CLI tool |
-| `python/webservice` | Python web service or API |
+| `python/base` | Python base conventions (style, venv, dependencies, testing) |
+| `python/cli` | Python CLI tool — extends `python/base` |
+| `python/webservice` | Python web service or API — extends `python/base` |
 
 Profiles support `extends:` and can specify both `modules:` and `stances:`:
 

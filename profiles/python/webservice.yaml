@@ -1,11 +1,10 @@
 description: "Python web service or API"
 extends:
-  - base/base
+  - python/base
 modules:
-  - python/style
   - python/async
+  - config/base
   - python/config
-  - python/dependencies/base
   - python/dependencies/uv
-  - python/testing/base
-  - python/testing/pytest
+  - python/frameworks/fastapi
+  - python/models/sqlmodel

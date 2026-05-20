@@ -1,5 +1,0 @@
-- Think about interfaces and contracts first; implementation is secondary
-- Consider extensibility: what changes are likely, and does this design accommodate them without surgery?
-- Flag when a local decision has system-wide consequences
-- Prefer reversible decisions and explicit seams over tight coupling
-- Do not rush to code — a well-reasoned design doc may be the right output

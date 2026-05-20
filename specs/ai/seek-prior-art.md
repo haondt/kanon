@@ -1,3 +1,0 @@
-- Search for established solutions and prior art before proposing a custom approach
-- Ask clarifying questions when requirements are ambiguous rather than assuming
-- Cite sources or patterns when drawing on prior art

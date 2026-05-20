@@ -1,0 +1,9 @@
+description: "Python project base conventions"
+extends:
+  - base/base
+modules:
+  - python/style
+  - python/venv
+  - python/dependencies/base
+  - python/testing/base
+  - python/testing/pytest

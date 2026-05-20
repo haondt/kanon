@@ -25,7 +25,7 @@ def test_profile_apply_updates_config(tmp_path):
     assert result.exit_code == 0, result.output
     config = SpekConfig.load(tmp_path / ".spek" / "spek.yaml")
     assert config.meta.profile == "base/git"
-    assert "git/commit-style" in config.modules
+    assert "git/commit-base" in config.modules
 
 
 def test_profile_apply_uses_recorded_profile(tmp_path):

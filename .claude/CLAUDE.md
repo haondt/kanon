@@ -15,13 +15,21 @@ A personal CLI tool for managing AI-assisted development conventions across proj
 
 ```
 specs/           # Spec module library, organized by concern
-  ai/            # AI behavioral conventions (always-active) and stance modules (inert until activated)
-  docs/
-  git/
+  ai/            # AI behavioral conventions, split into subdirs:
+    style/       #   assume-and-proceed, confirm-before-acting, stay-in-scope
+    communication/ # prefer-brevity, explain-reasoning
+    analysis/    #   find-problems, surface-risks, challenge-premise
+    coding/      #   prefer-reuse, verify-before-use
+  code/          # language-agnostic coding conventions (hygiene)
+  config/        # configuration conventions (base; dotnet/python planned)
+  docs/          # readme, structure, session, changelog, todo conventions
+  git/           # commit-base/long/short, branch-base/trunk/feature
+  persistence/   # sqlite, postgres, redis
   python/
     dependencies/
+    frameworks/  # fastapi, flask
+    models/      # dataclasses, pydantic, dicts, sqlmodel
     testing/
-  refactoring/
   workflow/      # spek-define/plan/implement/retro/stance skill specs
 stances/         # Stance definitions (YAML files listing module paths)
 profiles/        # Named bundles of modules + stances (init presets)
@@ -124,7 +132,7 @@ meta:
     - claude
   profile: "python/cli"    # omitted if no profile was used
 modules:                   # always-active rules/commands
-  - git/commit-style
+  - git/commit-base
   - python/style
   - python/dependencies/uv
   - workflow/spek-define

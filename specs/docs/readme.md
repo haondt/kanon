@@ -1,20 +1,19 @@
 # README conventions
 
-A README is the first thing a reader sees. It should answer four questions in order: what is this, how do I install it, how do I use it, and what do I need to know to contribute or go deeper.
+A README is the first thing a reader sees. It should answer four questions in order: what is this, how do I get started, how do I use it, and what do I need to know to go deeper.
 
-## Required sections
+## Sections
 
 1. **Title and one-line description** — what the project does, in a single sentence
-2. **Installation** — the exact command to install; nothing assumed
-3. **Quick start** — the shortest path from zero to working; one concrete example
-4. **Usage** — key commands or API surface; enough to be useful without reading the source
-5. **Contributing or Development** (if open to contributors) — how to set up a dev environment and run tests
+2. **Quick start** — combine installation and the shortest path to working; exact commands, nothing assumed, runnable copy-paste
+3. **Features** *(optional)* — a brief list of what the project does well; include when the value proposition needs more than one sentence to convey
+4. **Usage** *(optional)* — key commands or API surface; include when quick start alone is not enough to be useful; do not document every option, link to `--help` or extended docs instead
+5. **Configuration** *(optional)* — available options, environment variables, or config file format; include only when configuration is non-trivial. Use collapsible sections (summary/details) for large blocks of config.
+6. **Development** *(optional)* — how to set up a dev environment and run tests; include when the project is open to contributors or the dev setup is non-obvious
 
 ## Guidelines
 
 - Write for someone who has never seen the project — no assumed context
 - Prefer concrete examples over prose descriptions; show the command or the output
-- Keep the quick start runnable copy-paste — do not omit steps or gloss over prerequisites
-- Do not document every option in the README; link to extended docs or `--help` output instead
 - Avoid filler phrases ("This project is a...", "Welcome to...", "Feel free to...")
 - Keep it up to date — a wrong README is worse than a short one

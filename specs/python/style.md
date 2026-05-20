@@ -1,9 +1,6 @@
-# Python style conventions
+# Python style
 
-- Follow PEP 8; enforce with ruff
-- Use `from __future__ import annotations` for deferred evaluation of type hints
-- Prefer dataclasses over plain dicts for structured data
-- Use `pathlib.Path` over `os.path`
+- Follow PEP 8
+- Use `pathlib.Path` over `os.path` or plain strings
 - Raise specific exceptions; avoid bare `except:`
-- No commented-out code; no `print()` debug statements in committed code
-- Type-annotate all public function signatures
+- Use `from __future__ import annotations` for deferred type hint evaluation

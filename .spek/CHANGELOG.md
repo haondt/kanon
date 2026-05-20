@@ -1,5 +1,47 @@
 # Changelog
 
+## 2026-05-20 (session 4)
+
+Major expansion of the spec module library. All changes are to `specs/`, `stances/`, and `profiles/` — no CLI changes.
+
+**AI specs reorganized**
+- Split `specs/ai/` into four subdirectories: `style/`, `communication/`, `analysis/`, `coding/`
+- Removed `architect` stance; merged `reviewer` + `skeptic` into `critic`
+- Stances list collapsed to three: `autonomous`, `collaborative`, `critic` — moved from `base/ai` profile to `base/base`
+- Several modules merged to reduce overlap: `propose-before-implement` + `confirm-before-acting`, `prefer-reuse` + `seek-prior-art`, `prefer-momentum` + `assume-and-proceed`
+- Deleted: `systems-thinking`, `propose-before-implement`, `prefer-momentum`, `seek-prior-art`
+
+**Git specs broken up**
+- Replaced single `git/commit-style` with: `commit-base` (subject line rules), `commit-long` (body conventions), `commit-short` (no-body short commits), `branch-base` (never touch branches without instruction), `branch-trunk` (all work to main), `branch-feature` (verify on feature branch, short names)
+
+**Python specs expanded**
+- Added `python/venv.md` — always use `./venv`, all invocations via `./venv/bin/`
+- Added `python/models/` — `dataclasses`, `pydantic`, `dicts`, `sqlmodel`
+- Added `python/frameworks/` — `fastapi`, `flask` (each with sample app layout)
+- Simplified `python/style.md` (removed prescriptive model/config guidance now covered by dedicated specs)
+- Updated `python/config.md` — Config class pattern with module-level singleton
+- Updated `python/dependencies/uv.md` — `uv venv venv` for venv creation, `uv sync`
+
+**New general-purpose specs**
+- `specs/config/base.md` — env vars, fail fast, `.env.example`, namespaced prefixes
+- `specs/code/hygiene.md` — no commented-out code, no debug artifacts
+- `specs/persistence/sqlite.md`, `postgres.md`, `redis.md` — per-medium conventions (parameterized queries, WAL mode, TTLs, etc.)
+
+**Docs specs added**
+- `specs/docs/session.md` — SESSION.md structure and conventions
+- `specs/docs/changelog.md` — CHANGELOG.md format and writing guidelines
+- `specs/docs/todo.md` — TODO.md structure, what belongs, inline TODO promotion (moved from `specs/workflow/todos.md`)
+
+**Workflow specs simplified**
+- `spek-define`, `spek-plan`, `spek-retro` — stripped inline format guidance for SESSION.md, CHANGELOG.md, TODO.md, STRUCTURE.md now that each has its own spec
+- `spek-implement` — SESSION.md is now a living record: mark steps done, log assumptions/decisions/deviations as they happen; ends with a 2-3 sentence session summary and prompt to run `/spek-retro`
+- `workflow/base.md` — removed trailing format notes now covered by doc specs
+
+**Profiles updated**
+- Added `python/base` — new intermediate profile (style, venv, dependencies, testing); `python/cli` and `python/webservice` now extend it
+- `base/git` — updated to use new split git specs (`commit-base`, `commit-long`, `branch-base`)
+- `base/base` — stances now included here instead of `base/ai`
+
 ## 2026-05-20 (session 3)
 
 **Tests**

@@ -1,7 +1,5 @@
 # pytest conventions
 
-Extends `python/testing/base` with pytest-specific conventions.
-
 - Use `pytest.raises` for exception assertions; never catch exceptions manually in tests
 - Use fixtures for shared setup; prefer function-scoped fixtures unless shared state is intentional
 - Parametrize with `@pytest.mark.parametrize` rather than loops inside a test body

@@ -1,9 +1,7 @@
 description: "Python CLI tool"
 extends:
-  - base/base
+  - python/base
 modules:
-  - python/style
-  - python/dependencies/base
   - python/dependencies/uv
-  - python/testing/base
   - python/testing/pytest
+  - python/models/pydantic

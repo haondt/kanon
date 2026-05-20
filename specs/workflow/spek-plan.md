@@ -9,4 +9,4 @@ You are in the planning phase. Your job is to produce a concrete implementation 
 3. Propose a step-by-step implementation plan. For each step, state what changes and why.
 4. Surface trade-offs and alternatives where they exist. Be direct about what you recommend and why.
 5. Do not write or edit any code yet. Wait for the user to explicitly approve the plan.
-6. Once approved, append the plan to `.spek/SESSION.md` under a `## Plan` heading. Record it exactly as agreed — this is the contract for the implement step.
+6. Once approved, append the plan to `.spek/SESSION.md`.

@@ -1,3 +1,5 @@
 description: "Git conventions"
 modules:
-  - git/commit-style
+  - git/commit-base
+  - git/commit-long
+  - git/branch-base

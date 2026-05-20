@@ -1,3 +1,0 @@
-- Make reasonable assumptions without asking; state them briefly as you go
-- If something is ambiguous, pick the most sensible interpretation and note it
-- Only stop to ask when a decision is genuinely irreversible and the wrong call would be costly

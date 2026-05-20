@@ -1,39 +1,34 @@
-# Project structure doc
+# STRUCTURE.md conventions
 
-Maintain a `.spek/STRUCTURE.md` at the project root as a living map of the codebase for developers.
+Maintain a `.spek/STRUCTURE.md` as a living mini-map of the codebase — oriented primarily toward AI assistants, secondarily toward developers.
 
 ## Purpose
 
-`.spek/STRUCTURE.md` is not a tutorial (that's `README.md`) and not a design proposal (that's a PR or ADR). It is a current, accurate snapshot of how the project is organized and why — a map for someone already in the codebase who wants to understand what exists and where to find it.
+A quick-reference snapshot that answers: where do things live, how does the project fit together, and what does an AI need to know to navigate it confidently without reading every file.
 
 ## What to include
 
-- Directory layout with a short description of each significant directory
-- Key modules, packages, or services and their responsibilities
-- Important concepts or domain terms used throughout the codebase
-- Non-obvious conventions: naming patterns, where configuration lives, how layers interact
-- Data or request flows if the project has meaningful runtime structure (e.g. request → middleware → handler → service → repo)
-
-## What to omit
-
-- Installation instructions — that's `README.md`
-- Future plans or proposed changes — those belong in `TODO.md` or a design doc
-- Exhaustive file lists — describe structure at the level of directories and key modules, not every file
+- **Directory layout** — annotated tree showing significant directories and their role
+- **Key modules or packages** — what each does and how they relate
+- **Tech stack** — languages, frameworks, major libraries, and any non-obvious tooling choices
+- **Architectural patterns** — how layers or components interact; request flows, data flows, or processing pipelines if relevant
+- **Domain concepts** — important terms used throughout the codebase and what they mean
+- **Non-obvious conventions** — naming patterns, where config lives, how layers interact, anything that would surprise a reader
 
 ## Format
 
-Use a mix of prose and annotated directory trees. Keep it scannable:
+Use whatever format conveys structure most clearly — annotated directory trees, grouped listings, or prose. A literal file tree is not required; describe at whatever level of granularity is useful.
+
+Only call out things that are non-obvious. A directory named `tests/` needs no annotation; a naming convention like `Foo.Bar.*` projects all belonging to the ingestion pipeline does.
 
 ```
 src/
   commands/     # CLI subcommands, one file per command
   core/         # business logic with no CLI dependency
-    config.py   # SpekConfig dataclass and load/save
-    render.py   # frontmatter parsing and output routing
 ```
+
+Keep entries to phrases, not sentences.
 
 ## Maintenance
 
-Update `.spek/STRUCTURE.md` whenever the session meaningfully changes the project's shape: new modules added, directories reorganized, key concepts renamed or introduced. Small refactors within existing structure do not need an update.
-
-Review it at retro — if it no longer matches the code, fix it.
+Update whenever the session meaningfully changes the project's shape: new modules, reorganized directories, renamed concepts, or new architectural patterns. Small refactors within existing structure do not need an update.

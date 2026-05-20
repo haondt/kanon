@@ -18,5 +18,3 @@ Use a 4-step convention each session, driven by the slash commands below:
 | `.spek/TODO.md` | Yes | Project backlog |
 | `.spek/STRUCTURE.md` | Yes | Living map of the codebase |
 
-`.spek/SESSION.md` is a scratchpad — keep it honest about what's done vs. in-flight.
-`.spek/CHANGELOG.md` entries are written for a future reader: what changed and why, not a session narration.

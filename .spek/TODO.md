@@ -11,22 +11,21 @@ Planned modules — not started yet.
 
 ## Persistence
 
-- `specs/persistence/redis.md` — key naming, TTLs, connection handling, when not to use Redis
-- `specs/persistence/sqlite.md` — schema conventions, migration approach, when SQLite is appropriate
-- `specs/persistence/postgres.md` — schema conventions, indexing, migrations, connection pooling
+- ~~`specs/persistence/redis.md`~~ — done
+- ~~`specs/persistence/sqlite.md`~~ — done
+- ~~`specs/persistence/postgres.md`~~ — done
 - `specs/persistence/base.md` — tool-agnostic persistence conventions (migrations, connection lifecycle, no raw queries in business logic)
 - Profile: `persistence/sql`, `persistence/redis`
 
 ## Configuration
 
-- `specs/config/base.md` — tool-agnostic configuration conventions (env vars, fail-fast validation, no hardcoded secrets, `.env.example`)
-- `specs/config/python.md` — Python-specific: config module pattern (`config.py` or `settings.py`), Pydantic settings, single instantiation point
+- ~~`specs/config/base.md`~~ — done
+- `specs/config/python.md` — Python-specific: Pydantic settings, single instantiation point (note: `specs/python/config.md` covers the Config class pattern — decide whether to fold or keep separate)
 - `specs/config/dotnet.md` — `appsettings.json` / `appsettings.{Environment}.json` structure, secrets management, `IOptions<T>` pattern
-- Note: `specs/python/config.md` already exists as a stub — fold it in or replace it
 
 ## TODOs and technical debt tracking
 
-- ~~`specs/workflow/todos.md`~~ — done
+- ~~`specs/docs/todo.md`~~ — done (moved from `specs/workflow/todos.md`)
 
 ## AI stances — follow-on work
 
@@ -45,6 +44,19 @@ Stances implemented (`stances/`, `/spek-stance` skill, `spek local stance`). Pos
 
 - `specs/refactoring/base.md` — when to refactor vs. when to leave it, refactor as a separate commit, test coverage before refactoring
 - `specs/refactoring/python.md` — Python-specific: extraction patterns, naming, avoiding over-abstraction
+
+## CLI
+
+- `spek destroy` — remove all spek-managed files and directories from a project: `.spek/`, generated AI tool output (`.claude/rules/`, `.claude/commands/`, `.windsurf/rules/`); leave hand-written files like `.claude/CLAUDE.md` untouched; prompt for confirmation before deleting
+
+## Workflow skills
+
+- `specs/workflow/spek-amend.md` — skill for modifying the current session's goal or plan mid-session: update `.spek/SESSION.md` in place, note what changed and why, without starting a full new define/plan cycle
+- `specs/workflow/spek-todo.md` — skill for adding items to `.spek/TODO.md`; takes a description from the user, finds and surfaces any related inline `TODO:` comments from code, and writes a consolidated backlog entry under the appropriate category
+
+## Build tooling
+
+- `specs/build/justfile.md` — justfile conventions: recipe naming, default recipe, grouping by concern, when to wrap uv/make/shell commands, keeping recipes thin
 
 ## Cleanup
 
