@@ -92,7 +92,8 @@ spek dogfoods its own 4-step convention:
 | 1. Define | `/spek-define` | Articulate and record the session goal in `.spek/SESSION.md` |
 | 2. Plan | `/spek-plan` | Design the approach; get approval before writing code |
 | 3. Implement | `/spek-implement` | Execute the agreed plan |
-| 4. Retrospective | `/spek-retro` | Log completed work to `.spek/CHANGELOG.md`; clear `.spek/SESSION.md` |
+| 4. Review *(optional)* | `/spek-review` | Evaluate the implementation for problems and plan/spec faithfulness |
+| 5. Retrospective | `/spek-retro` | Log completed work to `.spek/CHANGELOG.md`; clear `.spek/SESSION.md` |
 
 ## Session files
 
