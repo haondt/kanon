@@ -27,7 +27,7 @@ def load_yaml(path: Path, model: type[T] | None = None) -> T | dict[str, Any]:
 
 def dump_yaml(data: dict[str, Any] | BaseModel) -> str:
     if isinstance(data, BaseModel):
-        data = data.model_dump(exclude_none=True)
+        data = data.model_dump(exclude_defaults=True)
     return yaml.dump(data, default_flow_style=False, sort_keys=False)
 
 

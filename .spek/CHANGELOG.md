@@ -1,5 +1,18 @@
 # Changelog
 
+## 2026-05-20 (session 3)
+
+**Tests**
+- Added `tests/` directory with 27 unit and CLI integration tests across 5 files:
+  - `test_yaml_utils.py` — `load_yaml` with model type, `save_yaml` with `BaseModel`, roundtrip
+  - `test_config.py` — `SpekConfig` load/save roundtrip; verifies empty lists and `None` are omitted from YAML
+  - `test_profiles.py` — `resolve_profile` inheritance ordering, deduplication, circular dependency detection, missing profile error
+  - `test_sync_cli.py` — rule output, frontmatter stripping, command routing, missing config error, stance-only modules not rendered
+  - `test_local_cli.py` — `local module` and `local stance` create files and register in config; duplicate and missing-config error paths
+  - `test_profile_cli.py` — `profile apply` with explicit name and recorded profile; error paths; `profile list` against real profiles
+- Fixed `save_yaml` to use `exclude_defaults=True` instead of `exclude_none=True` — empty lists (`stances: []`, `local_modules: []`) were previously written to `spek.yaml` when they should be omitted (caught by test)
+- Updated `justfile` to use `uv run pytest` instead of bare `pytest`
+
 ## 2026-05-20 (session 2)
 
 **CLI refactoring**

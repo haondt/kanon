@@ -8,7 +8,7 @@ install-dev:
     uv pip install -e ".[dev]"
 
 test:
-    pytest
+    uv run pytest
 
 test-cov:
-    pytest --cov=spek --cov-report=term-missing
+    uv run pytest --cov=spek --cov-report=term-missing
