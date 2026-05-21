@@ -9,3 +9,9 @@ modules:
   - python/frameworks/fastapi
   - python/models/sqlmodel
   - build/just
+  - frontend/hyperscript
+  - frontend/hyperscript-strict
+  - frontend/htmx
+  - frontend/htmx-strict
+  - frontend/bulma
+  - frontend/bulma-strict

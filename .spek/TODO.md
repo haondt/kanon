@@ -60,6 +60,14 @@ Stances implemented (`stances/`, `/spek-stance` skill, `spek local stance`). Pos
 - ~~`specs/build/just.md`~~ — done
 - ~~`specs/build/make.md`~~ — done
 
+## External spec sources
+
+Currently spek only syncs modules from its own repo, which limits it to a single opinionated library. The goal is to allow modules, stances, and profiles in `spek.yaml` to reference external sources directly — so personal/work configs can be kept separate and so other people can use spek with their own spec libraries.
+
+- Replace the flat module path string (e.g. `git/commit-base`) with a richer format that can optionally carry a source (e.g. a repo URL + ref) alongside the path
+- `spek sync --pull` fetches each module from its declared source; modules with no source continue to resolve against the built-in repo as today
+- Consider how `spek init` / `spek profile apply` should work when profiles live in an external source
+
 ## Cleanup
 
 - `specs/workflow/cleanup.md` — standalone spec for identifying and removing dead code: unused functions, stale TODOs, commented-out blocks, unreferenced files, speculative code that was never used. Complements the retro step but can be invoked independently.

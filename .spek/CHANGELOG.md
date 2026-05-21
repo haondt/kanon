@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-05-21 (session 19)
+
+Added `specs/frontend/` with six new modules: `hyperscript`, `hyperscript-strict`, `htmx`, `htmx-strict`, `bulma`, `bulma-strict`. The informative modules (`hyperscript`, `htmx`, `bulma`) cover syntax, common patterns, and guidelines. The `-strict` variants are thin behavioral overlays — policy rules only, no reference content — so projects that want enforcement include both, and projects that only want reference include just the informative one. All six were added to `profiles/python/webservice.yaml`. Also added a clarifying section to `STRUCTURE.md` explaining the `specs/` vs `.spek/modules/` distinction, since this repo dogfoods spek and the two directories can be easily confused.
+
 ## 2026-05-21 (session 18)
 
 Renamed `/spek-define` to `/spek-start` across the entire codebase. The old name was a weak fit — "define" is abstract and doesn't signal that this command starts a session. Updated: spec file (`specs/workflow/spek-start.md`), workflow table in `specs/workflow/base.md`, fallback message in `specs/workflow/spek-plan.md`, `profiles/base/workflow.yaml`, `.spek/spek.yaml`, README, STRUCTURE.md, and tests. `spek sync --pull` regenerated all module copies and AI output; old `spek-define.md` files were pruned automatically. Also added a `just sync` recipe to the justfile (`{{venv}}/bin/spek sync --pull`).
