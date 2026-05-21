@@ -28,12 +28,14 @@ specs/           # the spec module library — content, not code
   persistence/   # sqlite, postgres, redis
   python/        # style, venv, config, build, models/, frameworks/, dependencies/, testing/
   systems/       # architectural context modules — how pieces fit together (e.g. systems/frontend/no-build)
+  tools/         # CLI tool usage guides for AI (e.g. tools/ref-search instructs AI to use spek ref)
   workflow/      # spek-start/plan/implement/review/retro/stance slash commands
+references/      # on-demand reference entries (library docs, code patterns, examples); searched via spek ref
 stances/         # YAML files — each lists module paths; activated via /spek-stance
 profiles/        # YAML files — named module+stance bundles; base/ and python/
 src/spek/
   cli.py         # Click entrypoint; registers all command groups
-  commands/      # one file per subcommand: init, sync, profile, local, module, destroy
+  commands/      # one file per subcommand: init, sync, profile, local, module, destroy, ref
   core/          # pure logic, no CLI dependency
 .spek/           # spek's own session/project files (dogfooding)
 ```
@@ -41,10 +43,11 @@ src/spek/
 ## Core modules (`src/spek/core/`)
 
 - `config.py` — `SpekConfig` Pydantic model; `load()`/`save()` against `.spek/spek.yaml`
-- `yaml_utils.py` — all YAML I/O: `load_yaml(path, model?)`, `save_yaml(data, path)`; strips frontmatter
+- `yaml_utils.py` — all YAML I/O: `load_yaml(path, model?)`, `save_yaml(data, path)`; also exports `FRONTMATTER_RE` (shared frontmatter regex)
 - `render.py` — reads local module copies, strips frontmatter, writes AI tool output files; `ModuleFrontmatter` parses `spek.description/output/name`
 - `modules.py` — `list_modules(repo_path)` enumerates all spec files
 - `profiles.py` — `resolve_profile()` recursive resolution with deduplication; `ProfileSpec` model
+- `references.py` — `search_references(repo_path, query)` keyword search; `read_reference(repo_path, name)` retrieves content; `ReferenceResult` model
 - `repo.py` — locates the upstream spek repo; reads its SHA
 
 ## Data flow

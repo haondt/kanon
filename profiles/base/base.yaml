@@ -4,6 +4,7 @@ extends:
   - base/git
   - base/docs
   - base/workflow
+  - base/tools
 modules:
   - code/hygiene
 stances:

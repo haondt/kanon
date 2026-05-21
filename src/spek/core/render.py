@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-import re
 from pathlib import Path
 from typing import Any
 
 from pydantic import BaseModel
 
-from spek.core.yaml_utils import parse_yaml
+from spek.core.yaml_utils import FRONTMATTER_RE, parse_yaml
 
 AI_TOOL_OUTPUT_DIRS: dict[str, dict[str, str]] = {
     "claude": {
@@ -18,8 +17,6 @@ AI_TOOL_OUTPUT_DIRS: dict[str, dict[str, str]] = {
         "command": ".windsurf/rules",
     },
 }
-
-_FRONTMATTER_RE = re.compile(r"^---\n(.*?)\n---\n?", re.DOTALL)
 
 
 class _SpekMeta(BaseModel):
@@ -33,7 +30,7 @@ class ModuleFrontmatter(BaseModel):
 
 
 def parse_frontmatter(content: str) -> tuple[ModuleFrontmatter, str]:
-    match = _FRONTMATTER_RE.match(content)
+    match = FRONTMATTER_RE.match(content)
     if not match:
         return ModuleFrontmatter(), content
     data: dict[str, Any] = parse_yaml(match.group(1))

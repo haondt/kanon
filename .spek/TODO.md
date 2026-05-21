@@ -68,6 +68,19 @@ Currently spek only syncs modules from its own repo, which limits it to a single
 - `spek sync --pull` fetches each module from its declared source; modules with no source continue to resolve against the built-in repo as today
 - Consider how `spek init` / `spek profile apply` should work when profiles live in an external source
 
+## Brownfield / onboarding
+
+Support for adopting spek in an existing project via a `spek-onboard` skill:
+
+- Workflow: run `spek init` with the base profile, then `/spek-onboard`
+- `/spek-onboard` crawls the project to understand tech stack, workflows, and structure, then:
+  - Fills in `.spek/STRUCTURE.md`
+  - Calls `spek module list` (new subcommand, see below) to enumerate available modules
+  - Selects appropriate modules and reconfigures `spec.yaml` via `spek module` (or a new subcommand)
+  - Extracts any inline `TODO:` comments into `.spek/TODO.md`
+- `spek module` refactor: move current behavior to a subcommand (e.g. `spek module edit`); add `spek module list` to list all available modules; add `--json` flag for AI consumption; add `spek module list` to the tools spec so AI agents can call it
+- Update README to document the brownfield onboarding flow
+
 ## Cleanup
 
 - `specs/workflow/cleanup.md` — standalone spec for identifying and removing dead code: unused functions, stale TODOs, commented-out blocks, unreferenced files, speculative code that was never used. Complements the retro step but can be invoked independently.

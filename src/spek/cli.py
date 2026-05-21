@@ -6,6 +6,7 @@ from spek.commands.profile import profile
 from spek.commands.local import local
 from spek.commands.module import module
 from spek.commands.destroy import destroy
+from spek.commands.ref import ref
 
 
 @click.group()
@@ -20,3 +21,4 @@ cli.add_command(profile)
 cli.add_command(local)
 cli.add_command(module)
 cli.add_command(destroy)
+cli.add_command(ref)

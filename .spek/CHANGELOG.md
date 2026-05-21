@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-05-21 (session 21)
+
+Added `spek ref` command group with `search` and `read` subcommands backed by a new `references/` top-level directory. Reference entries are markdown files with `spek.description`/`spek.keywords` frontmatter — docs, examples, patterns, or any reusable material. `spek ref search --json <query>` does case-insensitive keyword substring matching; `spek ref read --json <name>` returns stripped content. Added a `specs/tools/ref-search.md` module that instructs the AI to search the reference library before implementing anything from scratch, and wired it into `profiles/base/tools.yaml` (a new profile extending `base/base`). Sample entry: `references/frontend/bulma/navbar-simple.md`. The concept started as "templates" but was renamed to "ref/references" — the entries are general-purpose reference material, not fill-in-the-blank scaffolding. `FRONTMATTER_RE` was consolidated into `yaml_utils.py` (previously duplicated across `render.py` and `references.py`); JSON serialization uses Pydantic's `exclude_none` so absent fields are omitted rather than emitted as `null`.
+
 ## 2026-05-21 (session 19)
 
 Added `specs/frontend/` with six new modules: `hyperscript`, `hyperscript-strict`, `htmx`, `htmx-strict`, `bulma`, `bulma-strict`. The informative modules (`hyperscript`, `htmx`, `bulma`) cover syntax, common patterns, and guidelines. The `-strict` variants are thin behavioral overlays — policy rules only, no reference content — so projects that want enforcement include both, and projects that only want reference include just the informative one. All six were added to `profiles/python/webservice.yaml`. Also added a clarifying section to `STRUCTURE.md` explaining the `specs/` vs `.spek/modules/` distinction, since this repo dogfoods spek and the two directories can be easily confused.

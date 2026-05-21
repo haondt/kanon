@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import re
 import yaml
 from pathlib import Path
 from typing import Any, TypeVar, overload
+
+FRONTMATTER_RE = re.compile(r"^---\n(.*?)\n---\n?", re.DOTALL)
 
 from pydantic import BaseModel
 
