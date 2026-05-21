@@ -14,12 +14,15 @@ def ref():
 
 
 @ref.command("search")
-@click.argument("query")
+@click.argument("terms", nargs=-1, required=True)
 @click.option("--json", "as_json", is_flag=True, help="Output results as JSON.")
-def ref_search(query: str, as_json: bool) -> None:
+@click.option("--match-any", "match_any", is_flag=True, help="Match entries containing any term (default: all terms must match).")
+@click.option("-n", "limit", type=int, default=10, help="Maximum results to return. 0 for unlimited.")
+def ref_search(terms: tuple[str, ...], as_json: bool, match_any: bool, limit: int) -> None:
     """Search reference entries by keyword."""
     repo_path = spek_repo_path()
-    results = search_references(repo_path, query)
+    results = search_references(repo_path, list(terms), match_all=not match_any)
+    results = results[:limit] if limit > 0 else results
 
     if as_json:
         click.echo(json_mod.dumps([r.model_dump(exclude_none=True) for r in results]))

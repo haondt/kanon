@@ -101,3 +101,67 @@ def test_read_json_output(tmp_path):
     assert "navbar" in data["keywords"]
     assert '<nav class="navbar">' in data["content"]
     assert "spek:" not in data["content"]
+
+
+def test_search_multi_term_and(tmp_path):
+    make_references(tmp_path, {"frontend/bulma/navbar": NAVBAR_CONTENT})
+    with patch("spek.commands.ref.spek_repo_path", return_value=tmp_path):
+        result = CliRunner().invoke(cli, ["ref", "search", "bulma", "navbar"])
+    assert result.exit_code == 0
+    assert "frontend/bulma/navbar" in result.output
+
+
+def test_search_multi_term_and_no_match(tmp_path):
+    make_references(tmp_path, {"frontend/bulma/navbar": NAVBAR_CONTENT})
+    with patch("spek.commands.ref.spek_repo_path", return_value=tmp_path):
+        result = CliRunner().invoke(cli, ["ref", "search", "bulma", "form"])
+    assert result.exit_code == 0
+    assert "No references found" in result.output
+
+
+def test_search_multi_term_match_any(tmp_path):
+    make_references(tmp_path, {"frontend/bulma/navbar": NAVBAR_CONTENT})
+    with patch("spek.commands.ref.spek_repo_path", return_value=tmp_path):
+        result = CliRunner().invoke(cli, ["ref", "search", "navbar", "form", "--match-any"])
+    assert result.exit_code == 0
+    assert "frontend/bulma/navbar" in result.output
+
+
+def test_search_ranking(tmp_path):
+    make_references(tmp_path, {
+        "frontend/bulma/navbar": NAVBAR_CONTENT,
+        "frontend/bulma/form": FORM_CONTENT,
+    })
+    with patch("spek.commands.ref.spek_repo_path", return_value=tmp_path):
+        result = CliRunner().invoke(cli, ["ref", "search", "--json", "bulma", "navbar", "--match-any"])
+    assert result.exit_code == 0
+    data = json.loads(result.output)
+    names = [r["name"] for r in data]
+    assert names[0] == "frontend/bulma/navbar"  # matches both terms; form matches only bulma
+
+
+def test_search_default_limit(tmp_path):
+    entries = {f"entry/item{i:02d}": f"---\nspek:\n  description: \"Item {i}\"\n  keywords:\n    - shared\n---\ncontent\n" for i in range(12)}
+    make_references(tmp_path, entries)
+    with patch("spek.commands.ref.spek_repo_path", return_value=tmp_path):
+        result = CliRunner().invoke(cli, ["ref", "search", "--json", "shared"])
+    assert result.exit_code == 0
+    assert len(json.loads(result.output)) == 10
+
+
+def test_search_limit_override(tmp_path):
+    entries = {f"entry/item{i:02d}": f"---\nspek:\n  description: \"Item {i}\"\n  keywords:\n    - shared\n---\ncontent\n" for i in range(12)}
+    make_references(tmp_path, entries)
+    with patch("spek.commands.ref.spek_repo_path", return_value=tmp_path):
+        result = CliRunner().invoke(cli, ["ref", "search", "--json", "-n", "3", "shared"])
+    assert result.exit_code == 0
+    assert len(json.loads(result.output)) == 3
+
+
+def test_search_limit_unlimited(tmp_path):
+    entries = {f"entry/item{i:02d}": f"---\nspek:\n  description: \"Item {i}\"\n  keywords:\n    - shared\n---\ncontent\n" for i in range(12)}
+    make_references(tmp_path, entries)
+    with patch("spek.commands.ref.spek_repo_path", return_value=tmp_path):
+        result = CliRunner().invoke(cli, ["ref", "search", "--json", "-n", "0", "shared"])
+    assert result.exit_code == 0
+    assert len(json.loads(result.output)) == 12

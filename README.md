@@ -74,8 +74,8 @@ spek module list                # list all available modules with descriptions
 spek local module <name>        # create a project-local spec module
 spek local stance <name>        # create a project-local stance
 spek destroy                    # remove all spek-managed files from a project
-spek ref search [--json] <q>    # search the reference library by keyword
-spek ref read [--json] <name>   # read a reference entry
+spek ref search [--json] [-n N] [--match-any] <term>...  # search the reference library
+spek ref read [--json] <name>                            # read a reference entry
 ```
 
 See `spek --help` or `spek <command> --help` for full options.

@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-05-21 (session 22)
+
+Enhanced `spek ref search` to accept multiple positional terms. Default mode requires all terms to match (AND); `--match-any` switches to OR. Results are ranked by match count (descending) and capped at 10 by default; `-n N` overrides the limit and `-n 0` removes it. Matching is substring-based so a single-word term matches multi-word keywords. The `search_references` core function was updated to take `terms: list[str]` and `match_all: bool`; truncation was kept in the command layer. Updated `specs/tools/ref-search.md` to reflect the new multi-term syntax.
+
 ## 2026-05-21 (session 21)
 
 Added `spek ref` command group with `search` and `read` subcommands backed by a new `references/` top-level directory. Reference entries are markdown files with `spek.description`/`spek.keywords` frontmatter — docs, examples, patterns, or any reusable material. `spek ref search --json <query>` does case-insensitive keyword substring matching; `spek ref read --json <name>` returns stripped content. Added a `specs/tools/ref-search.md` module that instructs the AI to search the reference library before implementing anything from scratch, and wired it into `profiles/base/tools.yaml` (a new profile extending `base/base`). Sample entry: `references/frontend/bulma/navbar-simple.md`. The concept started as "templates" but was renamed to "ref/references" — the entries are general-purpose reference material, not fill-in-the-blank scaffolding. `FRONTMATTER_RE` was consolidated into `yaml_utils.py` (previously duplicated across `render.py` and `references.py`); JSON serialization uses Pydantic's `exclude_none` so absent fields are omitted rather than emitted as `null`.

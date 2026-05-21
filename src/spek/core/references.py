@@ -42,20 +42,29 @@ def list_references(repo_path: Path) -> list[str]:
     return results
 
 
-def search_references(repo_path: Path, query: str) -> list[ReferenceResult]:
+def search_references(repo_path: Path, terms: list[str], match_all: bool = True) -> list[ReferenceResult]:
     references_dir = repo_path / "references"
-    q = query.lower()
-    results: list[ReferenceResult] = []
+    lowered_terms = [t.lower() for t in terms]
+    scored: list[tuple[int, ReferenceResult]] = []
     for name in list_references(repo_path):
         path = references_dir.joinpath(*name.split("/")).with_suffix(".md")
         meta, _ = parse_reference_frontmatter(path.read_text())
-        if any(q in kw.lower() for kw in meta.spek.keywords):
-            results.append(ReferenceResult(
+        kws = [kw.lower() for kw in meta.spek.keywords]
+        match_count = sum(1 for t in lowered_terms if any(t in kw for kw in kws))
+        if match_all and match_count == len(lowered_terms):
+            scored.append((match_count, ReferenceResult(
                 name=name,
                 description=meta.spek.description,
                 keywords=meta.spek.keywords,
-            ))
-    return results
+            )))
+        elif not match_all and match_count > 0:
+            scored.append((match_count, ReferenceResult(
+                name=name,
+                description=meta.spek.description,
+                keywords=meta.spek.keywords,
+            )))
+    scored.sort(key=lambda x: x[0], reverse=True)
+    return [r for _, r in scored]
 
 
 def read_reference(repo_path: Path, name: str) -> ReferenceResult:
