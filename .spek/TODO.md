@@ -49,6 +49,10 @@ Stances implemented (`stances/`, `/spek-stance` skill, `spek local stance`). Pos
 
 - ~~`spek destroy`~~ — done
 
+## Workflow steps
+
+- Rename `/spek-start` to `/spek-sketch` and make it optional — its purpose is to flesh out an abstract idea before `/spek-plan` can take over. When the goal is already concrete, skip straight to `/spek-plan`. Sequence: sketch → plan → implement → review → retro.
+
 ## Workflow skills
 
 - ~~`specs/workflow/spek-amend.md`~~ — done
@@ -84,3 +88,4 @@ Support for adopting spek in an existing project via a `spek-onboard` skill:
 ## Cleanup
 
 - `specs/workflow/cleanup.md` — standalone spec for identifying and removing dead code: unused functions, stale TODOs, commented-out blocks, unreferenced files, speculative code that was never used. Complements the retro step but can be invoked independently.
+- `core/references.py`: `list_references` is no longer called internally (session 25 refactored `search_references` to use `_score_dir` directly). Either expose it as a proper public API or fold it into the internal helpers.

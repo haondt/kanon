@@ -47,8 +47,8 @@ src/spek/
 - `render.py` — reads local module copies, strips frontmatter, writes AI tool output files; `ModuleFrontmatter` parses `spek.description/output/name`
 - `modules.py` — `list_modules(repo_path)` enumerates all spec files
 - `profiles.py` — `resolve_profile()` recursive resolution with deduplication; `ProfileSpec` model
-- `references.py` — `search_references(repo_path, query)` keyword search; `read_reference(repo_path, name)` retrieves content; `ReferenceResult` model
-- `repo.py` — locates the upstream spek repo; reads its SHA
+- `references.py` — `search_references(repo_path, terms, project_root?)` keyword search; `read_reference(repo_path, name, project_root?)` retrieves content; local refs in `.spek/local/references/` shadow upstream on name collision; `ReferenceResult` model
+- `repo.py` — locates the upstream spek repo (`spek_repo_path`); auto-discovers the local project root (`local_project_path`); reads HEAD SHA
 
 ## Data flow
 

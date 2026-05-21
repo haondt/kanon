@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-05-21 (session 25)
+
+Added local reference support to `spek ref search` and `spek ref read`. References in `.spek/local/references/` of the target project are now searched alongside upstream refs, with local taking precedence on name collision. Project root is auto-discovered by walking up from CWD looking for `.spek/spek.yaml` — no flag required. New `local_project_path()` in `core/repo.py`; `search_references`, `read_reference`, and `list_references` in `core/references.py` all accept an optional `project_root` parameter.
+
 ## 2026-05-21 (session 24)
 
 Added `references/bulma/list-page.md` — reference entry for the Bulma list page pattern: a `field is-grouped` toolbar with an expanding live-search input (htmx form + hyperscript debounce) and action buttons on the right, above a list content area (table, grid, etc.). Distilled from two real Razor/htmx app examples.

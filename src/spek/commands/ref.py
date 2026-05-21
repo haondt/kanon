@@ -4,7 +4,7 @@ import json as json_mod
 
 import click
 
-from spek.core.repo import spek_repo_path
+from spek.core.repo import local_project_path, spek_repo_path
 from spek.core.references import read_reference, search_references
 
 
@@ -21,7 +21,7 @@ def ref():
 def ref_search(terms: tuple[str, ...], as_json: bool, match_any: bool, limit: int) -> None:
     """Search reference entries by keyword."""
     repo_path = spek_repo_path()
-    results = search_references(repo_path, list(terms), match_all=not match_any)
+    results = search_references(repo_path, list(terms), match_all=not match_any, project_root=local_project_path())
     results = results[:limit] if limit > 0 else results
 
     if as_json:
@@ -45,7 +45,7 @@ def ref_read(name: str, as_json: bool) -> None:
     """Read a reference entry by name."""
     repo_path = spek_repo_path()
     try:
-        result = read_reference(repo_path, name)
+        result = read_reference(repo_path, name, project_root=local_project_path())
     except FileNotFoundError as e:
         click.echo(str(e), err=True)
         raise SystemExit(1)
