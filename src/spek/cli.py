@@ -4,6 +4,7 @@ from spek.commands.scaffold import init
 from spek.commands.sync import sync
 from spek.commands.profile import profile
 from spek.commands.local import local
+from spek.commands.destroy import destroy
 
 
 @click.group()
@@ -16,3 +17,4 @@ cli.add_command(init)
 cli.add_command(sync)
 cli.add_command(profile)
 cli.add_command(local)
+cli.add_command(destroy)

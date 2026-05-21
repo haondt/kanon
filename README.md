@@ -55,6 +55,7 @@ spek profile list               # list available profiles
 spek profile apply [name]       # re-resolve and apply a profile
 spek local module <name>        # create a project-local spec module
 spek local stance <name>        # create a project-local stance
+spek destroy                    # remove all spek-managed files from a project
 ```
 
 See `spek --help` or `spek <command> --help` for full options.

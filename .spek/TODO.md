@@ -47,7 +47,7 @@ Stances implemented (`stances/`, `/spek-stance` skill, `spek local stance`). Pos
 
 ## CLI
 
-- `spek destroy` — remove all spek-managed files and directories from a project: `.spek/`, generated AI tool output (`.claude/rules/`, `.claude/commands/`, `.windsurf/rules/`); leave hand-written files like `.claude/CLAUDE.md` untouched; prompt for confirmation before deleting
+- ~~`spek destroy`~~ — done
 
 ## Workflow skills
 

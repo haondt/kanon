@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-05-20 (session 12)
+
+- `src/spek/commands/destroy.py` — new `spek destroy` command; removes `.spek/` and all configured integration output dirs; prompts for confirmation (default no); `--yes`/`-y` skips prompt
+- `src/spek/cli.py` — registered `destroy` command
+- `tests/test_destroy_cli.py` — 6 tests covering removal, preservation of hand-written files, no-config exit, confirmation prompt, and abort on "no"
+- Note: planned "Nothing to remove" branch was unreachable (`.spek/` always exists when `spek.yaml` does); removed the dead branch and dropped the corresponding test
+
 ## 2026-05-20 (session 11)
 
 - `specs/workflow/spek-retro.md` — step 1 now handles missing SESSION.md by falling back to `git diff HEAD` to derive what was done
