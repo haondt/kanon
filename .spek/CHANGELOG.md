@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-05-20 (session 11)
+
+- `specs/workflow/spek-retro.md` — step 1 now handles missing SESSION.md by falling back to `git diff HEAD` to derive what was done
+
 ## 2026-05-20 (session 10)
 
 - Rewrote `README.md` to follow the `docs/readme` spec: combined quick start, overview with lexicon, collapsible spek.yaml and AI commands sections, dependencies section, lean development section
