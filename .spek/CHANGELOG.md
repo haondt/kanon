@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-05-21 (session 32)
+
+Fixed workflow alignment gaps surfaced by a cross-spec analysis. Added `/spek-fix` as an optional step in the `workflow/base` table (it was registered and documented in the README but absent from the canonical always-active rule). Updated `docs/session` to document the `## Review`, `## Amendments`, and `## Detours` sections that skills write to SESSION.md but that were missing from the spec. Fixed `spek-build`'s closing prompt to mention `/spek-review` as an optional step before retro.
+
 ## 2026-05-21 (session 31)
 
 Added `/spek-todo` — a utility skill that writes an actionable backlog entry to `.spek/TODO.md`. It infers the item from the invocation message or conversation context, checks for duplicates (exact → skip; near-match → add with note), picks or creates a category, and writes 1–2 sentences of detail (capped at 5). Registered in `profiles/base/workflow.yaml`, `.spek/spek.yaml`, README, and STRUCTURE.md.

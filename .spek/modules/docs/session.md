@@ -21,6 +21,15 @@ Active stance name and its module list (written by /spek-stance).
 
 ## Notes
 Assumptions made, technical decisions taken, deviations from the plan, anything worth carrying into the retro or CHANGELOG.
+
+## Review
+Findings from /spek-review. Each finding has an open checkbox; /spek-fix closes them. Includes a verdict at the end.
+
+## Amendments
+One-line record of each change to the goal or plan made via /spek-amend.
+
+## Detours
+One-line record of each out-of-scope edit made via /spek-detour.
 ```
 
 Only include sections that are relevant — don't create empty headings.

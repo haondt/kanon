@@ -15,6 +15,7 @@ Use the session workflow below, driven by slash commands. Each step is invoked e
 | Plan | `/spek-plan` | Design the approach; get approval before writing code |
 | Build | `/spek-build` | Execute the agreed plan |
 | Review *(optional)* | `/spek-review` | Evaluate the implementation for problems and plan/spec faithfulness |
+| Fix *(optional)* | `/spek-fix` | Address findings from `/spek-review` |
 | Retrospective | `/spek-retro` | Log completed work to `.spek/CHANGELOG.md`; clear `.spek/SESSION.md` |
 
 ## Session files
