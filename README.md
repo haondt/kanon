@@ -1,6 +1,8 @@
 # spek
 
-CLI for managing AI-assisted development conventions across projects.
+A package manager for AI coding conventions — define them once in a central library, subscribe from every project.
+
+Most AI coding tools let you drop a rules file into each project. That works until you have a dozen projects and the rules drift apart. spek manages a central library of spec modules; projects subscribe to a subset via `spek.yaml`, and `spek sync` pulls them into committed local copies and generates AI tool integrations for each configured tool.
 
 ## Dependencies
 
@@ -23,47 +25,22 @@ spek sync
 
 Commit `.spek/spek.yaml`, `.spek/modules/`, and `.spek/stances/` — your project's spec config is now self-contained.
 
-Your AI agent now has the dev workflow commands available:
-
-```
-/spek-define   start a session — articulate and record the goal
-/spek-plan     design the approach and get approval before coding
-/spek-implement execute the agreed plan
-/spek-retro    log completed work and close the session
-```
-
 ## Overview
 
-spek maintains a central library of markdown spec files covering coding conventions, tool usage, and model behavior. Projects define a `.spek/spek.yaml` file, which details which spec files to include. `spec sync` copies those files into the project and generates AI tool integrations (rules and slash commands).
+spek maintains a library of spec modules — markdown files covering coding conventions, git behavior, AI behavioral rules, and more. Projects declare which modules they want in `.spek/spek.yaml`; `spek sync` copies them into committed local files and generates AI tool integrations. The same source modules produce `.claude/rules/` for Claude Code, `.windsurf/rules/` for Windsurf, and so on — one config, multiple tools.
 
 ### Lexicon
 
 | Term | Meaning |
 |---|---|
 | **module** | A single markdown spec file; path relative to `specs/` (e.g. `git/commit-base`) |
-| **profile** | A named bundle of modules and stances. `spek.yaml` can be (re)generated using a profile |
-| **stance** | A named set of modules that can be temporarily activated with `/spek-stance` |
-| **integration** | The collection of files that spek generates to import specs into AI tools (`claude`, `windsurf`, etc.) |
+| **profile** | A named bundle of modules and stances — useful for consistent bootstrapping across projects of the same type (e.g. `python/cli`) |
+| **stance** | A named set of modules activatable on demand via `/spek-stance`; use when you need the AI to behave differently for a specific task without permanently changing your config |
+| **integration** | The AI tool output files that spek generates from your modules (`claude`, `windsurf`, etc.) |
 
-## Usage
+## Slash commands
 
-```bash
-spek init                       # set up a project
-spek sync                       # reconcile local copies and regenerate integrations
-spek sync --pull                # force-refresh all modules from upstream
-spek profile list               # list available profiles
-spek profile apply [name]       # re-resolve and apply a profile
-spek module                     # re-select modules interactively
-spek module list                # list all available modules with descriptions
-spek local module <name>        # create a project-local spec module
-spek local stance <name>        # create a project-local stance
-spek destroy                    # remove all spek-managed files from a project
-```
-
-See `spek --help` or `spek <command> --help` for full options.
-
-<details>
-<summary>AI slash commands</summary>
+The workflow commands enforce a structured session lifecycle. Each step is a checkpoint where you can review and adjust before the AI proceeds — goal before planning, plan before coding, implementation before closing.
 
 **Workflow**
 
@@ -84,7 +61,22 @@ See `spek --help` or `spek <command> --help` for full options.
 | `/spek-detour` | Make a quick out-of-scope edit without going through the full workflow |
 | `/spek-amend` | Amend the current session goal or plan in place |
 
-</details>
+## Usage
+
+```bash
+spek init                       # set up a project
+spek sync                       # reconcile local copies and regenerate integrations
+spek sync --pull                # force-refresh all modules from upstream
+spek profile list               # list available profiles
+spek profile apply [name]       # re-resolve and apply a profile
+spek module                     # re-select modules interactively
+spek module list                # list all available modules with descriptions
+spek local module <name>        # create a project-local spec module
+spek local stance <name>        # create a project-local stance
+spek destroy                    # remove all spek-managed files from a project
+```
+
+See `spek --help` or `spek <command> --help` for full options.
 
 <details>
 <summary>spek.yaml format</summary>

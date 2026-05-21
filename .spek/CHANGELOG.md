@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-05-20 (session 17)
+
+Rewrote `README.md` to position spek for a first-time reader coming from Cursor/Windsurf rules. The one-liner now leads with the distribution model ("package manager for AI coding conventions"). A new positioning paragraph before Quick start names the per-project rules problem and states spek's approach. The Overview section was rewritten to make the library → subscription → sync → multi-tool output flow explicit. The workflow slash commands were moved out of a collapsible into a top-level section with framing that explains the structured-session-lifecycle goal. Lexicon entries for `stance` and `profile` were expanded with motivation, not just definitions.
+
 ## 2026-05-20 (session 16)
 
 - `specs/build/just.md` — added "Using the justfile" section: when a justfile is present, prefer `just <recipe>` over the raw underlying command for any task a recipe covers
