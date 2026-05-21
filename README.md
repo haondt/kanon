@@ -2,66 +2,88 @@
 
 CLI for managing AI-assisted development conventions across projects.
 
-spek maintains a central git repo of modular spec files and stamps them into target projects. Each project keeps a committed local copy of its spec files in `.spek/` — independent of the upstream repo once synced.
+## Dependencies
 
-## Installation
-
-```bash
-git clone <this repo>
-just install
-```
+- [uv](https://docs.astral.sh/uv/)
+- [just](https://just.systems/)
 
 ## Quick start
 
 ```bash
-# In a new project directory
-spek init    # Q&A: pick integrations, profile, modules, and stances
-spek sync    # pull specs into .spek/modules/, generate AI tool output
+git clone https://github.com/haondt/spek
+cd spek
+just install
 ```
-
-`spek.yaml` is written to your project as the resolved module and stance list. Commit it along with `.spek/modules/` and `.spek/stances/`.
-
-## Commands
-
-### `spek init`
-
-Interactive Q&A that writes `spek.yaml`. Prompts for integrations, then a profile (which sets modules and stances) or individual module selection.
-
-### `spek sync`
-
-Reads modules and stances from `.spek/modules/` and `.spek/stances/` (committed local copies) and writes AI tool output. Missing files are automatically pulled from the upstream spek repo. Extras are pruned.
 
 ```bash
-spek sync        # reconcile local copies and generate output
-spek sync --pull # force-refresh all files from upstream and record SHA
+# In a new project directory
+spek init
+spek sync
 ```
 
-Only modules listed in `spek.yaml.modules` are written as always-active rules/commands. Modules referenced only by stances are stored in `.spek/modules/` and stay inert until activated via `/spek-stance`.
+Commit `.spek/spek.yaml`, `.spek/modules/`, and `.spek/stances/` — your project's spec config is now self-contained.
 
-| Integration | Rules | Commands |
-|---|---|---|
-| `claude` | `.claude/rules/` | `.claude/commands/` |
-| `windsurf` | `.windsurf/rules/` | `.windsurf/rules/` |
+Your AI agent now has the dev workflow commands available:
 
-### `spek profile list`
+```
+/spek-define   start a session — articulate and record the goal
+/spek-plan     design the approach and get approval before coding
+/spek-implement execute the agreed plan
+/spek-retro    log completed work and close the session
+```
 
-List all available profiles.
+## Overview
 
-### `spek profile apply [name]`
+spek maintains a central library of markdown spec files covering coding conventions, tool usage, and model behavior. Projects define a `.spek/spek.yaml` file, which details which spec files to include. `spec sync` copies those files into the project and generates AI tool integrations (rules and slash commands).
 
-Re-resolve a profile and update `modules:` and `stances:` in `spek.yaml`. Uses the profile recorded in `spek.yaml` if no name is given. `local_modules` and `local_stances` are preserved. Pass `--sync` to also run `spek sync` immediately.
+### Lexicon
 
-### `spek local module <name>`
+| Term | Meaning |
+|---|---|
+| **module** | A single markdown spec file; path relative to `specs/` (e.g. `git/commit-base`) |
+| **profile** | A named bundle of modules and stances. `spek.yaml` can be (re)generated using a profile |
+| **stance** | A named set of modules that can be temporarily activated with `/spek-stance` |
+| **integration** | The collection of files that spek generates to import specs into AI tools (`claude`, `windsurf`, etc.) |
 
-Create a new project-local spec module at `.spek/local/modules/<name>.md` and register it in `spek.yaml`. Pass `--sync` to also run `spek sync` immediately.
+## Usage
 
-### `spek local stance <name>`
+```bash
+spek init                       # set up a project
+spek sync                       # reconcile local copies and regenerate integrations
+spek sync --pull                # force-refresh all modules from upstream
+spek profile list               # list available profiles
+spek profile apply [name]       # re-resolve and apply a profile
+spek local module <name>        # create a project-local spec module
+spek local stance <name>        # create a project-local stance
+```
 
-Create a new project-local stance at `.spek/local/stances/<name>.yaml` and register it in `spek.yaml`. Run `spek sync` afterwards so its module dependencies are pulled into `.spek/modules/`.
+See `spek --help` or `spek <command> --help` for full options.
 
-## spek.yaml
+<details>
+<summary>AI slash commands</summary>
 
-Written by `spek init`. Records the integrations, profile, modules, and stances:
+**Workflow**
+
+| Command | Description |
+|---|---|
+| `/spek-define` | Start a session — articulate and record the goal in `SESSION.md` |
+| `/spek-plan` | Design the approach; get approval before writing code |
+| `/spek-implement` | Execute the agreed plan |
+| `/spek-review` | (Optional) review the implementation for problems before closing the session |
+| `/spek-retro` | Log completed work to `CHANGELOG.md`; clear `SESSION.md` |
+
+**Extras**
+
+| Command | Description |
+|---|---|
+| `/spek-stance` | Activate a behavioral stance for the session |
+| `/spek-think` | Enter brainstorm mode — AI discusses ideas without taking action |
+| `/spek-detour` | Make a quick out-of-scope edit without going through the full workflow |
+
+</details>
+
+<details>
+<summary>spek.yaml format</summary>
 
 ```yaml
 meta:
@@ -73,69 +95,20 @@ meta:
 modules:                   # always-active rules/commands
   - git/commit-base
   - python/style
-  - python/dependencies/uv
-  - workflow/base
   - workflow/spek-define
 stances:                   # omitted if empty
   - autonomous
   - collaborative
 local_modules:             # omitted if empty; paths relative to project root
   - .spek/local/modules/my-conventions.md
-local_stances:             # omitted if empty; paths relative to project root
+local_stances:             # omitted if empty
   - .spek/local/stances/my-stance.yaml
 ```
 
-## Project layout after sync
+</details>
 
-```
-myproject/
-  .spek/
-    .gitignore             # written by spek init — gitignores SESSION.md
-    spek.yaml              # config: modules, stances, local paths
-    SESSION.md             # gitignored — current session notes
-    CHANGELOG.md           # committed — log of completed work
-    TODO.md                # committed — project backlog
-    STRUCTURE.md           # committed — living map of the codebase
-    modules/               # committed — all synced spec files (direct + stance deps)
-    stances/               # committed — synced stance YAML configs
-    local/
-      modules/             # project-local spec modules (committed)
-      stances/             # project-local stances (committed)
-  .claude/
-    CLAUDE.md              # project conventions (hand-written)
-    rules/                 # generated rule files (gitignored)
-    commands/              # generated skill files (gitignored)
-```
-
-## Profiles
-
-| Profile | Description |
-|---|---|
-| `base/base` | Core conventions for all projects (ai + git + docs + workflow) |
-| `base/ai` | AI assistant behavioral conventions and stances |
-| `base/git` | Git conventions |
-| `base/docs` | Documentation conventions |
-| `base/workflow` | Dev workflow skills |
-| `python/base` | Python base conventions (style, venv, dependencies, testing) |
-| `python/cli` | Python CLI tool — extends `python/base` |
-| `python/webservice` | Python web service or API — extends `python/base` |
-
-Profiles support `extends:` and can specify both `modules:` and `stances:`:
-
-```yaml
-description: "My custom profile"
-extends:
-  - python/cli
-modules:
-  - some/extra-module
-stances:
-  - security
-```
-
-## Dev setup
+## Development
 
 ```bash
-git clone <this repo>
-just install-dev
 just test
 ```

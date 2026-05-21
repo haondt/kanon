@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-05-20 (session 10)
+
+- Rewrote `README.md` to follow the `docs/readme` spec: combined quick start, overview with lexicon, collapsible spek.yaml and AI commands sections, dependencies section, lean development section
+- `justfile` — replaced runtime-only `install` (uv sync) with `uv tool install --editable .`; `install-dev` and `test` unchanged
+
 ## 2026-05-20 (session 9)
 
 - Added `specs/workflow/spek-detour.md` — new `/spek-detour` command; makes a quick out-of-scope edit immediately, logs a one-liner to `## Detours` in SESSION.md if a session is active, skips logging otherwise
