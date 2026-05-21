@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-05-21 (session 26)
+
+Post-session cleanup: deleted `list_references` from `core/references.py` (became unreachable after session 25 refactored `search_references` to use `_score_dir` directly). Added 7 tests to `tests/test_ref_cli.py` covering local reference search, merge with upstream, local-shadows-upstream for both `search` and `read`, upstream fallback when name not in local, and graceful degradation when no local project is found.
+
 ## 2026-05-21 (session 25)
 
 Added local reference support to `spek ref search` and `spek ref read`. References in `.spek/local/references/` of the target project are now searched alongside upstream refs, with local taking precedence on name collision. Project root is auto-discovered by walking up from CWD looking for `.spek/spek.yaml` — no flag required. New `local_project_path()` in `core/repo.py`; `search_references`, `read_reference`, and `list_references` in `core/references.py` all accept an optional `project_root` parameter.

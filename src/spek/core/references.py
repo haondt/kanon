@@ -39,23 +39,6 @@ def _local_references_dir(project_root: Path | None) -> Path | None:
     return d if d.exists() else None
 
 
-def list_references(repo_path: Path, project_root: Path | None = None) -> list[str]:
-    seen: set[str] = set()
-    results: list[str] = []
-    local_dir = _local_references_dir(project_root)
-    if local_dir:
-        for src in sorted(local_dir.rglob("*.md")):
-            name = str(src.relative_to(local_dir).with_suffix(""))
-            seen.add(name)
-            results.append(name)
-    upstream_dir = repo_path / "references"
-    if upstream_dir.exists():
-        for src in sorted(upstream_dir.rglob("*.md")):
-            name = str(src.relative_to(upstream_dir).with_suffix(""))
-            if name not in seen:
-                results.append(name)
-    return results
-
 
 def _score_dir(ref_dir: Path, terms: list[str], match_all: bool) -> list[tuple[int, ReferenceResult]]:
     scored: list[tuple[int, ReferenceResult]] = []
