@@ -11,21 +11,13 @@ Planned modules — not started yet.
 
 ## Persistence
 
-- ~~`specs/persistence/redis.md`~~ — done
-- ~~`specs/persistence/sqlite.md`~~ — done
-- ~~`specs/persistence/postgres.md`~~ — done
 - `specs/persistence/base.md` — tool-agnostic persistence conventions (migrations, connection lifecycle, no raw queries in business logic)
 - Profile: `persistence/sql`, `persistence/redis`
 
 ## Configuration
 
-- ~~`specs/config/base.md`~~ — done
 - `specs/config/python.md` — Python-specific: Pydantic settings, single instantiation point (note: `specs/python/config.md` covers the Config class pattern — decide whether to fold or keep separate)
 - `specs/config/dotnet.md` — `appsettings.json` / `appsettings.{Environment}.json` structure, secrets management, `IOptions<T>` pattern
-
-## TODOs and technical debt tracking
-
-- ~~`specs/docs/todo.md`~~ — done (moved from `specs/workflow/todos.md`)
 
 ## AI stances — follow-on work
 
@@ -45,24 +37,9 @@ Stances implemented (`stances/`, `/spek-stance` skill, `spek local stance`). Pos
 - `specs/refactoring/base.md` — when to refactor vs. when to leave it, refactor as a separate commit, test coverage before refactoring
 - `specs/refactoring/python.md` — Python-specific: extraction patterns, naming, avoiding over-abstraction
 
-## CLI
-
-- ~~`spek destroy`~~ — done
-
-## Workflow steps
-
-- Rename `/spek-start` to `/spek-sketch` and make it optional — its purpose is to flesh out an abstract idea before `/spek-plan` can take over. When the goal is already concrete, skip straight to `/spek-plan`. Sequence: sketch → plan → implement → review → retro.
-
 ## Workflow skills
 
-- ~~`specs/workflow/spek-amend.md`~~ — done
 - `specs/workflow/spek-todo.md` — skill for adding items to `.spek/TODO.md`; takes a description from the user, finds and surfaces any related inline `TODO:` comments from code, and writes a consolidated backlog entry under the appropriate category
-- ~~`specs/workflow/spek-detour.md`~~ — done
-
-## Build tooling
-
-- ~~`specs/build/just.md`~~ — done
-- ~~`specs/build/make.md`~~ — done
 
 ## External spec sources
 

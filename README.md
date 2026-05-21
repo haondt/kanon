@@ -46,7 +46,7 @@ The workflow commands enforce a structured session lifecycle. Each step is a che
 
 | Command | Description |
 |---|---|
-| `/spek-start` | Start a session — articulate and record the goal in `SESSION.md` |
+| `/spek-sketch` | (Optional) Clarify a fuzzy goal — skip if the goal is already concrete |
 | `/spek-plan` | Design the approach; get approval before writing code |
 | `/spek-implement` | Execute the agreed plan |
 | `/spek-review` | (Optional) review the implementation for problems before closing the session |
@@ -93,7 +93,7 @@ meta:
 modules:                   # always-active rules/commands
   - git/commit-base
   - python/style
-  - workflow/spek-start
+  - workflow/spek-sketch
 stances:                   # omitted if empty
   - autonomous
   - collaborative

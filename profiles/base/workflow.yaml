@@ -1,7 +1,7 @@
 description: "Dev workflow conventions and session skills"
 modules:
   - workflow/base
-  - workflow/spek-start
+  - workflow/spek-sketch
   - workflow/spek-plan
   - workflow/spek-implement
   - workflow/spek-review

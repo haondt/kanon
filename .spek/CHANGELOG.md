@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-05-21 (session 28)
+
+Updated `specs/docs/todo.md`: completed items should be deleted from `TODO.md` entirely rather than struck through, with the CHANGELOG as the paper trail. Removed all accumulated struck-through items from `.spek/TODO.md` to apply the new convention immediately.
+
+## 2026-05-21 (session 27)
+
+Renamed `/spek-start` to `/spek-sketch` and made it optional. The skill is now framed as a fuzzy-goal clarification step for when an idea isn't concrete enough to plan against — when the goal is already clear, users skip directly to `/spek-plan`. `/spek-plan` was updated to infer the goal from conversation context when SESSION.md is missing, only asking the user directly if the goal remains unclear. Updated `specs/workflow/base.md` (workflow table, dropped "4-step" language), `profiles/base/workflow.yaml`, `.spek/spek.yaml`, README, STRUCTURE.md, and tests; `just sync` regenerated all derived files.
+
 ## 2026-05-21 (session 26)
 
 Post-session cleanup: deleted `list_references` from `core/references.py` (became unreachable after session 25 refactored `search_references` to use `_score_dir` directly). Added 7 tests to `tests/test_ref_cli.py` covering local reference search, merge with upstream, local-shadows-upstream for both `search` and `read`, upstream fallback when name not in local, and graceful degradation when no local project is found.

@@ -33,7 +33,7 @@ Organize by category, not as a flat list. Each category is an `##` heading. Item
 
 - Vague notes or half-formed ideas — either make it actionable or don't write it down
 - Work that is already tracked in an issue tracker — link to the issue instead, don't duplicate
-- Completed items — remove them at retro, or strike them if you want a paper trail
+- Completed items — remove them entirely
 
 ## Inline TODOs
 
@@ -43,4 +43,4 @@ Do not let inline TODOs accumulate indefinitely — review and either resolve or
 
 ## Maintenance
 
-Review `.spek/TODO.md` during every retro: mark done items as completed, add new items that surfaced, remove anything that is no longer relevant. Keep it honest — a stale .spek/TODO.md is worse than none.
+Review `.spek/TODO.md` during every retro: delete completed items, add new items that surfaced, remove anything that is no longer relevant. Keep it honest — a stale .spek/TODO.md is worse than none.

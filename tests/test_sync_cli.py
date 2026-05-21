@@ -79,26 +79,26 @@ def test_sync_stance_modules_not_rendered(tmp_path):
 
 
 def test_sync_routes_command_output(tmp_path):
-    make_project(tmp_path, ["workflow/spek-start"], {
-        "workflow/spek-start": "---\nspek:\n  output: command\n---\nStart the session.\n",
+    make_project(tmp_path, ["workflow/spek-sketch"], {
+        "workflow/spek-sketch": "---\nspek:\n  output: command\n---\nSketch the goal.\n",
     })
 
     CliRunner().invoke(cli, ["sync", "--project-root", str(tmp_path)])
 
-    assert not (tmp_path / ".claude" / "rules" / "workflow--spek-start.md").exists()
-    cmd = tmp_path / ".claude" / "commands" / "workflow--spek-start.md"
+    assert not (tmp_path / ".claude" / "rules" / "workflow--spek-sketch.md").exists()
+    cmd = tmp_path / ".claude" / "commands" / "workflow--spek-sketch.md"
     assert cmd.exists()
-    assert cmd.read_text() == "Start the session.\n"
+    assert cmd.read_text() == "Sketch the goal.\n"
 
 
 def test_sync_command_name_override(tmp_path):
-    make_project(tmp_path, ["workflow/spek-start"], {
-        "workflow/spek-start": "---\nspek:\n  output: command\n  name: spek-start\n---\nStart the session.\n",
+    make_project(tmp_path, ["workflow/spek-sketch"], {
+        "workflow/spek-sketch": "---\nspek:\n  output: command\n  name: spek-sketch\n---\nSketch the goal.\n",
     })
 
     CliRunner().invoke(cli, ["sync", "--project-root", str(tmp_path)])
 
-    assert not (tmp_path / ".claude" / "commands" / "workflow--spek-start.md").exists()
-    cmd = tmp_path / ".claude" / "commands" / "spek-start.md"
+    assert not (tmp_path / ".claude" / "commands" / "workflow--spek-sketch.md").exists()
+    cmd = tmp_path / ".claude" / "commands" / "spek-sketch.md"
     assert cmd.exists()
-    assert cmd.read_text() == "Start the session.\n"
+    assert cmd.read_text() == "Sketch the goal.\n"

@@ -7,15 +7,15 @@ spek:
 
 At the start of each session, read `.spek/STRUCTURE.md` to orient yourself to the project before doing anything else.
 
-Use a 4-step convention each session, driven by the slash commands below. Each step is invoked explicitly by the user — never advance to the next step automatically, even if the current step concluded confidently. The user may want to review or edit `.spek/SESSION.md` between steps.
+Use the session workflow below, driven by slash commands. Each step is invoked explicitly by the user — never advance to the next step automatically, even if the current step concluded confidently. The user may want to review or edit `.spek/SESSION.md` between steps.
 
 | Step | Command | Action |
 |---|---|---|
-| 1. Start | `/spek-start` | Articulate and record the session goal in `.spek/SESSION.md` |
-| 2. Plan | `/spek-plan` | Design the approach; get approval before writing code |
-| 3. Implement | `/spek-implement` | Execute the agreed plan |
-| 4. Review *(optional)* | `/spek-review` | Evaluate the implementation for problems and plan/spec faithfulness |
-| 5. Retrospective | `/spek-retro` | Log completed work to `.spek/CHANGELOG.md`; clear `.spek/SESSION.md` |
+| Sketch *(optional)* | `/spek-sketch` | Clarify a fuzzy goal — skip if the goal is already concrete |
+| Plan | `/spek-plan` | Design the approach; get approval before writing code |
+| Implement | `/spek-implement` | Execute the agreed plan |
+| Review *(optional)* | `/spek-review` | Evaluate the implementation for problems and plan/spec faithfulness |
+| Retrospective | `/spek-retro` | Log completed work to `.spek/CHANGELOG.md`; clear `.spek/SESSION.md` |
 
 ## Session files
 
