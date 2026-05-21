@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import click
+import questionary
+from questionary import Choice
 from pathlib import Path
 
 from spek import __version__
@@ -22,8 +24,6 @@ def _available_modules(repo_path: Path) -> list[str]:
             seen.add(rel)
             modules.append(rel)
     return sorted(modules)
-
-
 
 
 @click.command()
@@ -49,48 +49,39 @@ def init(project_root: str) -> None:
     profiles = list_profiles(profiles_dir)
     modules = _available_modules(repo_path)
 
-    # Choose integrations
-    click.echo(f"Available integrations: {', '.join(INTEGRATIONS)}")
-    raw = click.prompt("Integrations (comma-separated)", default="claude")
-    integrations = [t.strip() for t in raw.split(",") if t.strip() in INTEGRATIONS]
+    integrations = questionary.checkbox(
+        "Select integrations:",
+        choices=INTEGRATIONS,
+        use_jk_keys=False,
+    ).ask()
     if not integrations:
-        click.echo("No valid integrations selected. Aborting.")
+        click.echo("No integrations selected. Aborting.")
         raise SystemExit(1)
 
     selected_modules: list[str] = []
+    selected_stances: list[str] = []
     chosen_profile: str | None = None
 
-    selected_stances: list[str] = []
-
     if profiles:
-        profile_names = list(profiles.keys())
-        click.echo(f"\nAvailable profiles: {', '.join(profile_names)} (or 'none')")
-        profile_choice = click.prompt("Start from a profile?", default="none")
-        if profile_choice in profiles:
+        profile_choice = questionary.select(
+            "Start from a profile?",
+            choices=["none"] + list(profiles.keys()),
+            use_jk_keys=False,
+        ).ask()
+        if profile_choice is None:
+            raise SystemExit(1)
+        if profile_choice != "none":
             chosen_profile = profile_choice
             selected_modules, selected_stances = resolve_profile(profile_choice, profiles_dir)
-            click.echo(f"Loaded {len(selected_modules)} modules and {len(selected_stances)} stances from profile '{profile_choice}'.")
+            click.echo(f"Loaded {len(selected_modules)} modules and {len(selected_stances)} stances from '{profile_choice}'.")
 
-    # Pick individual modules
-    click.echo("\nAvailable modules:")
-    for i, m in enumerate(modules, 1):
-        marker = "✓" if m in selected_modules else " "
-        click.echo(f"  [{marker}] {i:2}. {m}")
-
-    click.echo("\nEnter module numbers to toggle (comma-separated), or press Enter to continue.")
-    raw = click.prompt("Modules to add", default="", show_default=False)
-    for token in raw.split(","):
-        token = token.strip()
-        if not token:
-            continue
-        try:
-            idx = int(token) - 1
-            mod = modules[idx]
-            if mod not in selected_modules:
-                selected_modules.append(mod)
-        except (ValueError, IndexError):
-            click.echo(f"  Ignored: {token!r}")
-
+    module_choices = [Choice(m, checked=(m in selected_modules)) for m in modules]
+    selected_modules = questionary.checkbox(
+        "Select modules:",
+        choices=module_choices,
+        use_search_filter=True,
+        use_jk_keys=False,
+    ).ask()
     if not selected_modules:
         click.echo("No modules selected. Aborting.")
         raise SystemExit(1)

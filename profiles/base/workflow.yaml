@@ -1,7 +1,6 @@
 description: "Dev workflow conventions and session skills"
 modules:
   - workflow/base
-  - docs/todo
   - workflow/spek-define
   - workflow/spek-plan
   - workflow/spek-implement

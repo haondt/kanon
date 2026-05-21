@@ -2,3 +2,6 @@ description: "Documentation conventions"
 modules:
   - docs/readme
   - docs/structure
+  - docs/changelog
+  - docs/todo
+  - docs/session

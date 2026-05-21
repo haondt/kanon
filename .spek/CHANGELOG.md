@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-05-20 (session 13)
+
+- `src/spek/commands/scaffold.py` — replaced all three `spek init` text prompts with `questionary` pickers: integrations (checkbox), profile (select with "none" option), modules (checkbox with search filter, pre-checked from resolved profile)
+- `pyproject.toml` / `uv.lock` — added `questionary>=2.1.1` as runtime dependency
+- All three pickers use `use_jk_keys=False` for consistency; required on the modules picker anyway since `use_search_filter=True` and j/k conflict
+- Post-review fix: `use_jk_keys=False` added to integrations and profile pickers to match the modules picker
+- Detour: added rule to `specs/ai/style/confirm-before-acting.md` — when a change breaks an established pattern, consider whether to propagate it rather than leave a one-off inconsistency
+
 ## 2026-05-20 (session 12)
 
 - `src/spek/commands/destroy.py` — new `spek destroy` command; removes `.spek/` and all configured integration output dirs; prompts for confirmation (default no); `--yes`/`-y` skips prompt
