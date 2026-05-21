@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-05-21 (session 30)
+
+Renamed `/spek-implement` to `/spek-build` throughout. The new name fits the established verb register (sketch → plan → build → review → retro) and is shorter. Changed: `specs/workflow/spek-implement.md` → `spek-build.md` (frontmatter updated), `specs/workflow/base.md`, `profiles/base/workflow.yaml`, `.spek/spek.yaml`, `README.md`, `.spek/STRUCTURE.md`, and the AI stances follow-on item in `.spek/TODO.md`. Ran `spek sync --pull` to regenerate `.spek/modules/workflow/` and `.claude/commands/` with the new name.
+
 ## 2026-05-21 (session 29)
 
 Added `/spek-fix` — a new workflow skill that follows `/spek-review`. For each finding in the `## Review` section of SESSION.md, it evaluates whether the finding is a genuine problem, implements a fix or records a dismissal with reasoning, and appends a reply under the finding to close the thread. No next-step prompts; the user decides whether to re-review or proceed to retro. Registered in `profiles/base/workflow.yaml` and `.spek/spek.yaml`; added to README and STRUCTURE.md. Also added a TODO item to rename `/spek-implement` to `/spek-build`.

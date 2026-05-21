@@ -23,7 +23,7 @@ Planned modules — not started yet.
 
 Stances implemented (`stances/`, `/spek-stance` skill, `spek local stance`). Possible follow-on:
 
-- Have `/spek-plan` and `/spek-implement` check the active stance in `.spek/SESSION.md` and adjust their behavior accordingly (e.g. collaborative stance → `/spek-plan` surfaces more trade-offs)
+- Have `/spek-plan` and `/spek-build` check the active stance in `.spek/SESSION.md` and adjust their behavior accordingly (e.g. collaborative stance → `/spek-plan` surfaces more trade-offs)
 - Additional stances: `performance.yaml`, `security.yaml`, `mentor.yaml` (explain everything, teach as you go)
 
 ## File naming conventions and project structure
@@ -36,10 +36,6 @@ Stances implemented (`stances/`, `/spek-stance` skill, `spek local stance`). Pos
 
 - `specs/refactoring/base.md` — when to refactor vs. when to leave it, refactor as a separate commit, test coverage before refactoring
 - `specs/refactoring/python.md` — Python-specific: extraction patterns, naming, avoiding over-abstraction
-
-## Workflow commands
-
-- Rename `/spek-implement` to `/spek-build` — shorter, fits the existing verb register (sketch/plan/build/review/retro)
 
 ## Workflow skills
 

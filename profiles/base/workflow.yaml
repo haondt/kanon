@@ -3,7 +3,7 @@ modules:
   - workflow/base
   - workflow/spek-sketch
   - workflow/spek-plan
-  - workflow/spek-implement
+  - workflow/spek-build
   - workflow/spek-review
   - workflow/spek-fix
   - workflow/spek-retro

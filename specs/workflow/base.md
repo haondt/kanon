@@ -13,7 +13,7 @@ Use the session workflow below, driven by slash commands. Each step is invoked e
 |---|---|---|
 | Sketch *(optional)* | `/spek-sketch` | Clarify a fuzzy goal — skip if the goal is already concrete |
 | Plan | `/spek-plan` | Design the approach; get approval before writing code |
-| Implement | `/spek-implement` | Execute the agreed plan |
+| Build | `/spek-build` | Execute the agreed plan |
 | Review *(optional)* | `/spek-review` | Evaluate the implementation for problems and plan/spec faithfulness |
 | Retrospective | `/spek-retro` | Log completed work to `.spek/CHANGELOG.md`; clear `.spek/SESSION.md` |
 

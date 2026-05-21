@@ -2,7 +2,7 @@
 spek:
   description: "Skill: execute the agreed plan"
   output: command
-  name: spek-implement
+  name: spek-build
 ---
 You are in the implementation phase. Your job is to execute the agreed plan faithfully.
 

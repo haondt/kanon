@@ -48,7 +48,7 @@ The workflow commands enforce a structured session lifecycle. Each step is a che
 |---|---|
 | `/spek-sketch` | (Optional) Clarify a fuzzy goal — skip if the goal is already concrete |
 | `/spek-plan` | Design the approach; get approval before writing code |
-| `/spek-implement` | Execute the agreed plan |
+| `/spek-build` | Execute the agreed plan |
 | `/spek-review` | (Optional) review the implementation for problems before closing the session |
 | `/spek-fix` | (Optional) evaluate and fix findings surfaced by `/spek-review` |
 | `/spek-retro` | Log completed work to `CHANGELOG.md`; clear `SESSION.md` |
