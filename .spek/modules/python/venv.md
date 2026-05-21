@@ -1,3 +1,8 @@
+---
+spek:
+  description: "Always use ./venv, never global Python"
+---
+
 # Python virtual environment
 
 - Always use a virtual environment; never install packages into the system Python

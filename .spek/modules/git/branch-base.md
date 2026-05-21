@@ -1,3 +1,8 @@
+---
+spek:
+  description: "Never touch branches without instruction"
+---
+
 # Git branch conventions
 
 - Never create, switch, rename, or delete branches without explicit instruction

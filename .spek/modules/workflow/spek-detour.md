@@ -1,5 +1,6 @@
 ---
 spek:
+  description: "Skill: quick out-of-scope edit"
   output: command
   name: spek-detour
 ---

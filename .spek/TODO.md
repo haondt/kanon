@@ -51,7 +51,7 @@ Stances implemented (`stances/`, `/spek-stance` skill, `spek local stance`). Pos
 
 ## Workflow skills
 
-- `specs/workflow/spek-amend.md` — skill for modifying the current session's goal or plan mid-session: update `.spek/SESSION.md` in place, note what changed and why, without starting a full new define/plan cycle
+- ~~`specs/workflow/spek-amend.md`~~ — done
 - `specs/workflow/spek-todo.md` — skill for adding items to `.spek/TODO.md`; takes a description from the user, finds and surfaces any related inline `TODO:` comments from code, and writes a consolidated backlog entry under the appropriate category
 - ~~`specs/workflow/spek-detour.md`~~ — done
 

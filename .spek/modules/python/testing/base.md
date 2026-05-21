@@ -1,3 +1,8 @@
+---
+spek:
+  description: "Test layout and assertion conventions"
+---
+
 # Python testing conventions
 
 - Organize tests under `tests/`; mirror the source layout (`src/pkg/core/foo.py` → `tests/core/test_foo.py`)

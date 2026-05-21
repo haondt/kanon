@@ -1,3 +1,8 @@
+---
+spek:
+  description: "TODO.md structure and maintenance"
+---
+
 # TODO conventions
 
 Maintain a `.spek/TODO.md` at the project root as the project-level backlog.

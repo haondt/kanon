@@ -1,3 +1,8 @@
+---
+spek:
+  description: "Build tool recipe conventions"
+---
+
 # Python build tool conventions
 
 When using a command runner (just, make, npm scripts, etc.), include the following Python-specific recipes.

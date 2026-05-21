@@ -82,6 +82,7 @@ See `spek --help` or `spek <command> --help` for full options.
 | `/spek-stance` | Activate a behavioral stance for the session |
 | `/spek-think` | Enter brainstorm mode — AI discusses ideas without taking action |
 | `/spek-detour` | Make a quick out-of-scope edit without going through the full workflow |
+| `/spek-amend` | Amend the current session goal or plan in place |
 
 </details>
 

@@ -1,3 +1,8 @@
+---
+spek:
+  description: "No commented-out code or debug artifacts"
+---
+
 # Code hygiene
 
 - No commented-out code in committed files

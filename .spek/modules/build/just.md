@@ -1,3 +1,8 @@
+---
+spek:
+  description: "just task runner conventions"
+---
+
 # just conventions
 
 `justfile` is a task runner. Recipes range from one-liners to multi-step shell scripts — use whichever fits.

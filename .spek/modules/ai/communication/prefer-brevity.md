@@ -1,3 +1,8 @@
+---
+spek:
+  description: "Concise responses, no filler"
+---
+
 # AI output style
 
 - Match response length to the complexity of the request — a simple question gets a direct answer, not headers and sections

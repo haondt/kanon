@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-05-20 (session 15)
+
+- `specs/workflow/spek-amend.md` — new `/spek-amend` skill: updates SESSION.md in place mid-session (goal, plan, or both); infers intent from invocation args → conversation context → interactive prompt; logs change under `## Amendments`
+- `profiles/base/workflow.yaml` and `.spek/spek.yaml` — registered `workflow/spek-amend`
+- Detour: `specs/workflow/base.md` — added rule: never advance to the next workflow step automatically; each step requires explicit user invocation
+
 ## 2026-05-20 (session 14)
 
 - `src/spek/commands/module.py` — new `spek module` command group: picker (questionary checkbox, pre-checked from `spek.yaml`, type-to-filter) and `spek module list` (all available modules with descriptions and selection markers); `--sync` flag runs sync after saving

@@ -1,3 +1,8 @@
+---
+spek:
+  description: "uv-specific dependency management"
+---
+
 # Python dependency management — uv
 
 Extends `python/dependencies/base` with uv-specific conventions.

@@ -7,7 +7,7 @@ spek:
 
 At the start of each session, read `.spek/STRUCTURE.md` to orient yourself to the project before doing anything else.
 
-Use a 4-step convention each session, driven by the slash commands below:
+Use a 4-step convention each session, driven by the slash commands below. Each step is invoked explicitly by the user — never advance to the next step automatically, even if the current step concluded confidently. The user may want to review or edit `.spek/SESSION.md` between steps.
 
 | Step | Command | Action |
 |---|---|---|

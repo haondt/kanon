@@ -1,40 +1,44 @@
 meta:
   spek_version: 0.0.0
-  spek_sha: 19aa206105c883fa07d84f7c02138f4c548c9902
+  spek_sha: dcdff16a96403d14e965fc64c97f5c6fe8f9aa23
   integrations:
   - claude
   profile: python/cli
 modules:
-- ai/communication/prefer-brevity
-- ai/coding/verify-before-use
+- ai/analysis/find-problems
 - ai/coding/prefer-reuse
-- ai/style/stay-in-scope
+- ai/coding/verify-before-use
+- ai/communication/prefer-brevity
 - ai/style/confirm-before-acting
+- ai/style/stay-in-scope
+- build/just
+- code/hygiene
+- docs/changelog
+- docs/readme
+- docs/session
+- docs/structure
+- docs/todo
+- git/branch-base
 - git/commit-base
 - git/commit-long
-- git/branch-base
-- docs/readme
-- docs/structure
-- workflow/base
-- docs/todo
-- workflow/spek-define
-- workflow/spek-plan
-- workflow/spek-implement
-- workflow/spek-review
-- workflow/spek-retro
-- workflow/spek-stance
-- workflow/spek-think
-- workflow/spek-detour
-- code/hygiene
-- python/style
-- python/venv
-- python/dependencies/base
-- python/testing/base
-- python/testing/pytest
 - python/build
+- python/dependencies/base
 - python/dependencies/uv
 - python/models/pydantic
-- build/just
+- python/style
+- python/testing/base
+- python/testing/pytest
+- python/venv
+- workflow/base
+- workflow/spek-amend
+- workflow/spek-define
+- workflow/spek-detour
+- workflow/spek-implement
+- workflow/spek-plan
+- workflow/spek-retro
+- workflow/spek-review
+- workflow/spek-stance
+- workflow/spek-think
 stances:
 - autonomous
 - collaborative

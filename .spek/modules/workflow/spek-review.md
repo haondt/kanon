@@ -1,5 +1,6 @@
 ---
 spek:
+  description: "Skill: review implementation before retro"
   output: command
   name: spek-review
 ---

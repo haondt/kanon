@@ -1,5 +1,6 @@
 ---
 spek:
+  description: "Skill: brainstorm without taking action"
   output: command
   name: spek-think
 ---

@@ -1,3 +1,8 @@
+---
+spek:
+  description: "pytest-specific conventions"
+---
+
 # pytest conventions
 
 - Use `pytest.raises` for exception assertions; never catch exceptions manually in tests

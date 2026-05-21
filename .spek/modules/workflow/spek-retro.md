@@ -1,5 +1,6 @@
 ---
 spek:
+  description: "Skill: log completed work and close session"
   output: command
   name: spek-retro
 ---
