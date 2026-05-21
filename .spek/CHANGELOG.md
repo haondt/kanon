@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-05-20 (session 9)
+
+- Added `specs/workflow/spek-detour.md` — new `/spek-detour` command; makes a quick out-of-scope edit immediately, logs a one-liner to `## Detours` in SESSION.md if a session is active, skips logging otherwise
+- `profiles/base/workflow.yaml` — added `workflow/spek-detour`
+
 ## 2026-05-20 (session 8)
 
 - Added `specs/workflow/spek-think.md` — new `/spek-think` command; enters a non-actionary brainstorming mode for the remainder of the conversation; exits on any other spek command or natural conversation ender
