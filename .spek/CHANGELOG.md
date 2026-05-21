@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-05-21 (session 31)
+
+Added `/spek-todo` — a utility skill that writes an actionable backlog entry to `.spek/TODO.md`. It infers the item from the invocation message or conversation context, checks for duplicates (exact → skip; near-match → add with note), picks or creates a category, and writes 1–2 sentences of detail (capped at 5). Registered in `profiles/base/workflow.yaml`, `.spek/spek.yaml`, README, and STRUCTURE.md.
+
+Also restructured the review/retro workflow: inline `TODO:` scanning and dead-code artifact scanning moved from `/spek-retro` step 7 into `/spek-review` as explicit steps (grep for stale and newly added TODOs; scan for dead code). Retro step 7 now only covers removal of clearly dead artifacts. `/spek-review` findings now include checkboxes to track open threads.
+
+Detour: rewrote `/spek-fix` for clarity and to make the flow collaborative — it now consults the user on each finding, agrees on an approach before writing code, and batch-implements at the end. Fixed structural bugs in the user's draft (duplicate step number, missing sub-item label, typo).
+
+Post-retro: clarified `/spek-review` step 5 (dead code scan) to explicitly say "flag in findings" rather than leaving the disposition implicit.
+
 ## 2026-05-21 (session 30)
 
 Renamed `/spek-implement` to `/spek-build` throughout. The new name fits the established verb register (sketch → plan → build → review → retro) and is shorter. Changed: `specs/workflow/spek-implement.md` → `spek-build.md` (frontmatter updated), `specs/workflow/base.md`, `profiles/base/workflow.yaml`, `.spek/spek.yaml`, `README.md`, `.spek/STRUCTURE.md`, and the AI stances follow-on item in `.spek/TODO.md`. Ran `spek sync --pull` to regenerate `.spek/modules/workflow/` and `.claude/commands/` with the new name.

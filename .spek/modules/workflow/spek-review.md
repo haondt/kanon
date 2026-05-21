@@ -21,11 +21,17 @@ You are reviewing a completed implementation before the session is closed. Your 
    **Code problems**
    Review for correctness, edge cases, security issues, dead code, and anything that would surprise a future reader. Keep it signal — don't flag style nits already covered by a spec. Only include a finding if it requires action or a decision. If you investigated something and found no problem, do not mention it — silence means clean.
 
-4. Write up the findings concisely. Use a verdict at the end:
+4. Grep for inline `TODO:` comments in the changed source files:
+   - **Stale TODOs** — comments referring to things already addressed this session: flag in findings.
+   - **Newly added TODOs** — assess whether each warrants promotion to `.spek/TODO.md`; if yes, flag in findings.
+
+5. Scan for dead code and leftover artifacts: unused functions, commented-out blocks, files that are no longer referenced, debug output, and anything added speculatively that was never used. Flag in findings.
+
+6. Write up the findings concisely. Include an open checkbox for each finding to mark it as an open thread. Use a verdict at the end:
    - **Clear to proceed** — no significant issues; run `/spek-retro`
    - **Issues to address** — list what should be fixed before retro; re-run `/spek-review` after fixes if needed
    - **Your call** — minor issues that don't warrant a fix cycle; note them for the CHANGELOG
 
-5. Append the review findings and verdict to `.spek/SESSION.md` under a `## Review` heading.
+7. Append the review findings and verdict to `.spek/SESSION.md` under a `## Review` heading.
 
-6. Do not make changes yourself. This is a review pass only. If the user asks you to fix something, do so — then re-review the affected area.
+8. Do not make changes yourself. This is a review pass only. If the user asks you to fix something, do so — then re-review the affected area.

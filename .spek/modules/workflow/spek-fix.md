@@ -4,11 +4,12 @@ spek:
   output: command
   name: spek-fix
 ---
-You are addressing findings from a completed review. Your job is to evaluate each finding, fix genuine problems, and close out the thread on each one.
+You are addressing findings from a completed review. Your job is to evaluate each finding, plan fixes with the user, and implement them.
 
 1. Read the `## Review` section of `.spek/SESSION.md`. If no review findings exist, say so and stop.
-2. For each finding:
-   a. Evaluate whether it is a genuine problem that warrants a fix in this session.
-   b. If yes, implement the fix.
-   c. If no (e.g. it is a known trade-off, out of scope, or on reflection not a real problem), note why.
-3. After all findings are addressed, update the `## Review` section of SESSION.md by appending a reply under each finding: what was done, or why it was dismissed.
+2. Work through each open finding one at a time:
+   a. Ask the user whether it warrants a fix in this session.
+   b. If yes, propose how you will fix it. For trivial fixes, briefly state your approach. For non-trivial ones, discuss options with the user and agree on an approach. Record the agreed solution in SESSION.md.
+   c. If no, note the reasoning in SESSION.md.
+3. Get final confirmation from the user, then implement all agreed fixes.
+4. After implementation, update the `## Review` section of SESSION.md by appending a reply under each finding: what was done or why it was dismissed. Close each finding by checking it and update the verdict.

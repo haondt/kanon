@@ -37,10 +37,6 @@ Stances implemented (`stances/`, `/spek-stance` skill, `spek local stance`). Pos
 - `specs/refactoring/base.md` — when to refactor vs. when to leave it, refactor as a separate commit, test coverage before refactoring
 - `specs/refactoring/python.md` — Python-specific: extraction patterns, naming, avoiding over-abstraction
 
-## Workflow skills
-
-- `specs/workflow/spek-todo.md` — skill for adding items to `.spek/TODO.md`; takes a description from the user, finds and surfaces any related inline `TODO:` comments from code, and writes a consolidated backlog entry under the appropriate category
-
 ## External spec sources
 
 Currently spek only syncs modules from its own repo, which limits it to a single opinionated library. The goal is to allow modules, stances, and profiles in `spek.yaml` to reference external sources directly — so personal/work configs can be kept separate and so other people can use spek with their own spec libraries.

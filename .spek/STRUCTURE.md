@@ -9,6 +9,7 @@ CLI tool for managing AI-assisted development conventions across projects.
 - Supports on-demand behavioral stances via `/spek-stance`
 - `/spek-think` enters a non-actionary brainstorming mode for the remainder of the conversation
 - `/spek-detour` makes a quick out-of-scope edit without going through the full workflow
+- `/spek-todo` adds an item to `.spek/TODO.md`, with duplicate detection
 
 ## Tech stack
 

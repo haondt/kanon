@@ -61,6 +61,7 @@ The workflow commands enforce a structured session lifecycle. Each step is a che
 | `/spek-think` | Enter brainstorm mode — AI discusses ideas without taking action |
 | `/spek-detour` | Make a quick out-of-scope edit without going through the full workflow |
 | `/spek-amend` | Amend the current session goal or plan in place |
+| `/spek-todo` | Add an item to the project backlog |
 
 ## Usage
 

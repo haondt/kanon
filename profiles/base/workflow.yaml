@@ -11,3 +11,4 @@ modules:
   - workflow/spek-think
   - workflow/spek-detour
   - workflow/spek-amend
+  - workflow/spek-todo
