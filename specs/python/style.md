@@ -1,3 +1,8 @@
+---
+spek:
+  description: "PEP 8, pathlib, type hints"
+---
+
 # Python style
 
 - Follow PEP 8

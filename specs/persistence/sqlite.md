@@ -1,3 +1,8 @@
+---
+spek:
+  description: "SQLite conventions and WAL mode"
+---
+
 # SQLite
 
 - Always enable WAL mode (`PRAGMA journal_mode=WAL`) for better concurrent read performance

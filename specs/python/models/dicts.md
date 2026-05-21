@@ -1,3 +1,8 @@
+---
+spek:
+  description: "When to use plain dicts"
+---
+
 # Python data modeling — plain dicts
 
 - Use plain dicts for simple, short-lived, or loosely structured data

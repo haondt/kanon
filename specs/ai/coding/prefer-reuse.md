@@ -1,3 +1,8 @@
+---
+spek:
+  description: "Search existing code before writing new"
+---
+
 # Prefer reuse over reinvention
 
 - Before writing new code, search the codebase for an existing implementation of the same logic

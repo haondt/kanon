@@ -1,3 +1,8 @@
+---
+spek:
+  description: "SQLModel ORM conventions"
+---
+
 # SQLModel
 
 - Use separate classes for table models and API schemas when they diverge — do not reuse a table model directly as a response body

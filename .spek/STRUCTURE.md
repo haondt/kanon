@@ -31,7 +31,7 @@ stances/         # YAML files — each lists module paths; activated via /spek-s
 profiles/        # YAML files — named module+stance bundles; base/ and python/
 src/spek/
   cli.py         # Click entrypoint; registers all command groups
-  commands/      # one file per subcommand: init, sync, profile, local, destroy
+  commands/      # one file per subcommand: init, sync, profile, local, module, destroy
   core/          # pure logic, no CLI dependency
 .spek/           # spek's own session/project files (dogfooding)
 ```
@@ -40,7 +40,8 @@ src/spek/
 
 - `config.py` — `SpekConfig` Pydantic model; `load()`/`save()` against `.spek/spek.yaml`
 - `yaml_utils.py` — all YAML I/O: `load_yaml(path, model?)`, `save_yaml(data, path)`; strips frontmatter
-- `render.py` — reads local module copies, strips frontmatter, writes AI tool output files
+- `render.py` — reads local module copies, strips frontmatter, writes AI tool output files; `ModuleFrontmatter` parses `spek.description/output/name`
+- `modules.py` — `list_modules(repo_path)` enumerates all spec files
 - `profiles.py` — `resolve_profile()` recursive resolution with deduplication; `ProfileSpec` model
 - `repo.py` — locates the upstream spek repo; reads its SHA
 

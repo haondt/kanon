@@ -1,3 +1,8 @@
+---
+spek:
+  description: "Config class pattern with singleton"
+---
+
 # Python configuration
 
 - Centralize all config in a single `Config` class in a dedicated `config.py` module; do not scatter `os.getenv` calls throughout the codebase

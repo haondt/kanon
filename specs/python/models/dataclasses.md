@@ -1,3 +1,8 @@
+---
+spek:
+  description: "Python dataclasses usage"
+---
+
 # Python data modeling — dataclasses
 
 - Use `@dataclass` for structured data; prefer it over plain dicts or tuples for anything with more than 2-3 fields

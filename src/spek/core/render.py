@@ -25,6 +25,7 @@ _FRONTMATTER_RE = re.compile(r"^---\n(.*?)\n---\n?", re.DOTALL)
 class _SpekMeta(BaseModel):
     output: str = "rule"
     name: str | None = None
+    description: str | None = None
 
 
 class ModuleFrontmatter(BaseModel):

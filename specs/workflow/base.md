@@ -1,3 +1,8 @@
+---
+spek:
+  description: "4-step session workflow table"
+---
+
 # Dev workflow
 
 At the start of each session, read `.spek/STRUCTURE.md` to orient yourself to the project before doing anything else.

@@ -7,23 +7,12 @@ from pathlib import Path
 
 from spek import __version__
 from spek.core.config import SpekConfig, SpekMeta, CONFIG_FILE
+from spek.core.modules import list_modules
 from spek.core.repo import spek_repo_path, spek_sha
 from spek.core.profiles import resolve_profile, list_profiles
 from spek.core.render import AI_TOOL_OUTPUT_DIRS
 
 INTEGRATIONS = list(AI_TOOL_OUTPUT_DIRS)
-
-
-def _available_modules(repo_path: Path) -> list[str]:
-    specs_dir = repo_path / "specs"
-    seen: set[str] = set()
-    modules: list[str] = []
-    for src in sorted(specs_dir.rglob("*.md")) + sorted(specs_dir.rglob("*.yaml")):
-        rel = str(src.relative_to(specs_dir).with_suffix(""))
-        if rel not in seen:
-            seen.add(rel)
-            modules.append(rel)
-    return sorted(modules)
 
 
 @click.command()
@@ -47,7 +36,7 @@ def init(project_root: str) -> None:
     repo_path = spek_repo_path()
     profiles_dir = repo_path / "profiles"
     profiles = list_profiles(profiles_dir)
-    modules = _available_modules(repo_path)
+    modules = list_modules(repo_path)
 
     integrations = questionary.checkbox(
         "Select integrations:",

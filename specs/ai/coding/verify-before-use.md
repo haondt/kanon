@@ -1,3 +1,8 @@
+---
+spek:
+  description: "Verify APIs exist before calling them"
+---
+
 # AI verification before use
 
 - Before using a library method or class, confirm it exists in the installed version — check docs, source, or type stubs; do not rely on training-data recall

@@ -1,3 +1,8 @@
+---
+spek:
+  description: "Env vars, fail fast, .env.example"
+---
+
 # Configuration conventions
 
 - Read configuration from environment variables; never hardcode secrets or environment-specific values

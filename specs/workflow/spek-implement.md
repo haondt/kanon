@@ -1,5 +1,6 @@
 ---
 spek:
+  description: "Skill: execute the agreed plan"
   output: command
   name: spek-implement
 ---

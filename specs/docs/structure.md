@@ -1,3 +1,8 @@
+---
+spek:
+  description: "STRUCTURE.md maintenance guidelines"
+---
+
 # STRUCTURE.md conventions
 
 Maintain a `.spek/STRUCTURE.md` as a living mini-map of the codebase — oriented primarily toward AI assistants, secondarily toward developers.

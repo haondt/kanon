@@ -1,3 +1,8 @@
+---
+spek:
+  description: "Surface risks; get sign-off on big changes"
+---
+
 # Confirm before acting
 
 - Confirm before executing destructive or hard-to-reverse operations: deleting files, dropping data, overwriting uncommitted changes, force-pushing

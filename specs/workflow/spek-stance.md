@@ -1,5 +1,6 @@
 ---
 spek:
+  description: "Skill: activate a behavioral stance"
   output: command
   name: spek-stance
 ---

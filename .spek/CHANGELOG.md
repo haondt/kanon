@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-05-20 (session 14)
+
+- `src/spek/commands/module.py` — new `spek module` command group: picker (questionary checkbox, pre-checked from `spek.yaml`, type-to-filter) and `spek module list` (all available modules with descriptions and selection markers); `--sync` flag runs sync after saving
+- `src/spek/core/modules.py` — new: `list_modules(repo_path)` extracted from `scaffold.py`; shared by `init` and `module`
+- `src/spek/core/render.py` — added `description: str | None = None` to `_SpekMeta` (nested under `spek:` in frontmatter, alongside `output` and `name`)
+- `specs/**/*.md` — added `spek.description` frontmatter to all 52 spec files (short descriptions, ≤8 words, double-quoted to avoid YAML colon ambiguity)
+- Post-plan fix: description initially placed at top-level `ModuleFrontmatter`; moved inside `spek:` block for consistency with `output`/`name`
+- Post-plan fix: unquoted descriptions containing `: ` caused YAML parse errors; all values now double-quoted
+
 ## 2026-05-20 (session 13)
 
 - `src/spek/commands/scaffold.py` — replaced all three `spek init` text prompts with `questionary` pickers: integrations (checkbox), profile (select with "none" option), modules (checkbox with search filter, pre-checked from resolved profile)

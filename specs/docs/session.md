@@ -1,3 +1,8 @@
+---
+spek:
+  description: "SESSION.md structure and conventions"
+---
+
 # SESSION.md conventions
 
 `.spek/SESSION.md` is a living scratchpad for the current session. It is gitignored — it exists only for the duration of active work and is cleared at retro.

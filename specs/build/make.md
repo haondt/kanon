@@ -1,3 +1,8 @@
+---
+spek:
+  description: "make conventions"
+---
+
 # make conventions
 
 Prefer `make` when there is a real dependency graph (outputs depend on inputs and should only rebuild when stale). For pure task running with no file dependencies, prefer `just`.

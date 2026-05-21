@@ -1,3 +1,8 @@
+---
+spek:
+  description: "Flask app layout and conventions"
+---
+
 # Flask
 
 - Use an application factory (`create_app()`) rather than a module-level `app` instance

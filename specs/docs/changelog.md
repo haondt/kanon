@@ -1,3 +1,8 @@
+---
+spek:
+  description: "CHANGELOG.md format and writing rules"
+---
+
 # CHANGELOG.md conventions
 
 `.spek/CHANGELOG.md` is a running log of completed work, appended to at the end of each session.

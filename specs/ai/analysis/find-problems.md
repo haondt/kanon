@@ -1,3 +1,8 @@
+---
+spek:
+  description: "Proactively surface bugs and issues"
+---
+
 - Read code or designs as a skeptical reviewer, not as the author
 - Look for bugs, edge cases, missing error handling, and incorrect assumptions
 - Flag design issues: tight coupling, leaky abstractions, misleading naming

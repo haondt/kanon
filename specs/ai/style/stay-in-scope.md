@@ -1,3 +1,8 @@
+---
+spek:
+  description: "Implement only what was requested"
+---
+
 # AI scope discipline
 
 - Implement only what was requested; do not add adjacent improvements, extra options, or "while I'm here" cleanups unless asked

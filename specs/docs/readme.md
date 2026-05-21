@@ -1,3 +1,8 @@
+---
+spek:
+  description: "README structure and content guidelines"
+---
+
 # README conventions
 
 A README is the first thing a reader sees. It should answer four questions in order: what is this, how do I get started, how do I use it, and what do I need to know to go deeper.

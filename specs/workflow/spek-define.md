@@ -1,5 +1,6 @@
 ---
 spek:
+  description: "Skill: articulate and record session goal"
   output: command
   name: spek-define
 ---

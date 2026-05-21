@@ -1,5 +1,6 @@
 ---
 spek:
+  description: "Skill: design and get plan approval"
   output: command
   name: spek-plan
 ---

@@ -1,3 +1,8 @@
+---
+spek:
+  description: "Pydantic BaseModel conventions"
+---
+
 # Python data modeling — Pydantic
 
 - Use `BaseModel` for structured data, especially at system boundaries (API payloads, config, deserialized files)

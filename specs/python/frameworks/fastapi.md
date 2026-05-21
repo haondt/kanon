@@ -1,3 +1,8 @@
+---
+spek:
+  description: "FastAPI app layout and conventions"
+---
+
 # FastAPI
 
 - Use `APIRouter` to organize routes by domain; do not put all routes in `__init__.py`

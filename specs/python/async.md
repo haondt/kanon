@@ -1,3 +1,8 @@
+---
+spek:
+  description: "Async/await and concurrency patterns"
+---
+
 # Python async conventions
 
 - Use `async`/`await` throughout; do not mix sync and async in the same call chain

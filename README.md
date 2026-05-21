@@ -53,6 +53,8 @@ spek sync                       # reconcile local copies and regenerate integrat
 spek sync --pull                # force-refresh all modules from upstream
 spek profile list               # list available profiles
 spek profile apply [name]       # re-resolve and apply a profile
+spek module                     # re-select modules interactively
+spek module list                # list all available modules with descriptions
 spek local module <name>        # create a project-local spec module
 spek local stance <name>        # create a project-local stance
 spek destroy                    # remove all spek-managed files from a project

@@ -1,3 +1,8 @@
+---
+spek:
+  description: "Feature branch naming and workflow"
+---
+
 # Feature branch workflow
 
 - Verify that work is happening on a feature branch, not directly on `main/master`; flag it if not
