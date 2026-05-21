@@ -37,6 +37,6 @@ spek:
 </nav>
 ```
 
-**Placeholders:** App name, hrefs, and link labels are illustrative. `id="navbar"` is only needed if targeted externally. htmx and hyperscript are assumed; use project-appropriate equivalents.
+**Placeholders:** App name, hrefs, and link labels are illustrative. `id="navbar"` is only needed if targeted externally.
 
 **Notes:** The burger hyperscript toggles `.is-active` on itself and `next .navbar-menu` (opening/closing the mobile menu); the four `<span>`s render the icon. `hx-boost` converts links to fetch-based navigation.

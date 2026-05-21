@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-05-21 (session 24)
+
+Added `references/bulma/list-page.md` — reference entry for the Bulma list page pattern: a `field is-grouped` toolbar with an expanding live-search input (htmx form + hyperscript debounce) and action buttons on the right, above a list content area (table, grid, etc.). Distilled from two real Razor/htmx app examples.
+
 ## 2026-05-21 (session 23)
 
 Rewrote `references/bulma/navbar-simple.md` with a real-world Bulma navbar template using htmx (`hx-boost`) and hyperscript (burger toggle via `next .navbar-menu`). The entry now includes prose notes distinguishing demo placeholders (app name, hrefs, link labels, `id="navbar"`) from essential parts (burger hyperscript, four `<span>`s, `hx-boost`), and an Extension note on `hx-target`/`hx-select` for partial swaps. Also added `specs/code/templates.md` with a generalized convention for preferring template loops and reusable fragments over hardcoded repetition in any template engine.

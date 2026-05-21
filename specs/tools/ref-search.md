@@ -23,5 +23,5 @@ Always use the `--json` flag — the output is easier to parse than the default 
 
 1. When asked to implement something (a UI component, a library integration, a pattern, etc.), run `spek ref search --json <terms>` first
 2. If a matching entry is returned, use `spek ref read --json <name>` to retrieve it — the `name` field from search results is the exact value to pass to `read`
-3. Use the entry as your implementation base or guide; adapt as needed for the specific context
+3. Use the entry as your implementation base or guide; implement it faithfully but adapt as needed for the specific context and toolchain
 4. Only implement from scratch if no relevant entry exists
