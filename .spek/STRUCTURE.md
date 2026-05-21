@@ -29,7 +29,7 @@ specs/           # the spec module library — content, not code
   python/        # style, venv, config, build, models/, frameworks/, dependencies/, testing/
   systems/       # architectural context modules — how pieces fit together (e.g. systems/frontend/no-build)
   tools/         # CLI tool usage guides for AI (e.g. tools/ref-search instructs AI to use spek ref)
-  workflow/      # spek-sketch/plan/implement/review/retro/stance slash commands
+  workflow/      # spek-sketch/plan/implement/review/fix/retro/stance slash commands
 references/      # on-demand reference entries (library docs, code patterns, examples); searched via spek ref
 stances/         # YAML files — each lists module paths; activated via /spek-stance
 profiles/        # YAML files — named module+stance bundles; base/ and python/

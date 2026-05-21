@@ -37,6 +37,10 @@ Stances implemented (`stances/`, `/spek-stance` skill, `spek local stance`). Pos
 - `specs/refactoring/base.md` — when to refactor vs. when to leave it, refactor as a separate commit, test coverage before refactoring
 - `specs/refactoring/python.md` — Python-specific: extraction patterns, naming, avoiding over-abstraction
 
+## Workflow commands
+
+- Rename `/spek-implement` to `/spek-build` — shorter, fits the existing verb register (sketch/plan/build/review/retro)
+
 ## Workflow skills
 
 - `specs/workflow/spek-todo.md` — skill for adding items to `.spek/TODO.md`; takes a description from the user, finds and surfaces any related inline `TODO:` comments from code, and writes a consolidated backlog entry under the appropriate category

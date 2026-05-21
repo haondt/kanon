@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-05-21 (session 29)
+
+Added `/spek-fix` — a new workflow skill that follows `/spek-review`. For each finding in the `## Review` section of SESSION.md, it evaluates whether the finding is a genuine problem, implements a fix or records a dismissal with reasoning, and appends a reply under the finding to close the thread. No next-step prompts; the user decides whether to re-review or proceed to retro. Registered in `profiles/base/workflow.yaml` and `.spek/spek.yaml`; added to README and STRUCTURE.md. Also added a TODO item to rename `/spek-implement` to `/spek-build`.
+
 ## 2026-05-21 (session 28)
 
 Updated `specs/docs/todo.md`: completed items should be deleted from `TODO.md` entirely rather than struck through, with the CHANGELOG as the paper trail. Removed all accumulated struck-through items from `.spek/TODO.md` to apply the new convention immediately.

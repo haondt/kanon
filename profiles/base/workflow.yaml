@@ -5,6 +5,7 @@ modules:
   - workflow/spek-plan
   - workflow/spek-implement
   - workflow/spek-review
+  - workflow/spek-fix
   - workflow/spek-retro
   - workflow/spek-stance
   - workflow/spek-think

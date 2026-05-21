@@ -1,6 +1,6 @@
 meta:
   spek_version: 0.0.0
-  spek_sha: a4d19e56146f79794b790a9adda7a93b8756a7cd
+  spek_sha: acc92be5b28cec83fe6676333d89e172d8790af4
   integrations:
   - claude
   profile: python/cli
@@ -37,6 +37,7 @@ modules:
 - workflow/spek-plan
 - workflow/spek-retro
 - workflow/spek-review
+- workflow/spek-fix
 - workflow/spek-stance
 - workflow/spek-sketch
 - workflow/spek-think
