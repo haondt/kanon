@@ -23,10 +23,11 @@ specs/           # the spec module library — content, not code
   code/          # hygiene (language-agnostic)
   config/        # configuration conventions
   docs/          # readme, structure, session, changelog, todo
-  frontend/      # hyperscript, htmx, bulma (each with a -strict enforcement variant)
+  frontend/      # hyperscript, htmx, bulma, dcdn (reference/informative modules)
   git/           # commit and branch conventions
   persistence/   # sqlite, postgres, redis
   python/        # style, venv, config, build, models/, frameworks/, dependencies/, testing/
+  systems/       # architectural context modules — how pieces fit together (e.g. systems/frontend/no-build)
   workflow/      # spek-start/plan/implement/review/retro/stance slash commands
 stances/         # YAML files — each lists module paths; activated via /spek-stance
 profiles/        # YAML files — named module+stance bundles; base/ and python/

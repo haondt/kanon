@@ -10,8 +10,7 @@ modules:
   - python/models/sqlmodel
   - build/just
   - frontend/hyperscript
-  - frontend/hyperscript-strict
   - frontend/htmx
-  - frontend/htmx-strict
   - frontend/bulma
-  - frontend/bulma-strict
+  - frontend/dcdn
+  - systems/frontend/no-build
