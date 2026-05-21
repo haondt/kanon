@@ -5,7 +5,7 @@ CLI tool for managing AI-assisted development conventions across projects.
 - Maintains a library of modular spec files (`specs/`) covering git, Python, workflow, docs, etc.
 - Initializes target projects via Q&A (`spek init`), stamping a resolved set of modules and stances into `.spek/`
 - Syncs spec files into committed local copies (`spek sync`) and generates AI tool output (rules, slash commands)
-- Provides a 4-step dev workflow: `/spek-define` → `/spek-plan` → `/spek-implement` → `/spek-retro`
+- Provides a 4-step dev workflow: `/spek-start` → `/spek-plan` → `/spek-implement` → `/spek-retro`
 - Supports on-demand behavioral stances via `/spek-stance`
 - `/spek-think` enters a non-actionary brainstorming mode for the remainder of the conversation
 - `/spek-detour` makes a quick out-of-scope edit without going through the full workflow
@@ -26,7 +26,7 @@ specs/           # the spec module library — content, not code
   git/           # commit and branch conventions
   persistence/   # sqlite, postgres, redis
   python/        # style, venv, config, build, models/, frameworks/, dependencies/, testing/
-  workflow/      # spek-define/plan/implement/review/retro/stance slash commands
+  workflow/      # spek-start/plan/implement/review/retro/stance slash commands
 stances/         # YAML files — each lists module paths; activated via /spek-stance
 profiles/        # YAML files — named module+stance bundles; base/ and python/
 src/spek/

@@ -2,7 +2,7 @@
 spek:
   description: "Skill: articulate and record session goal"
   output: command
-  name: spek-define
+  name: spek-start
 ---
 You are starting a new development session. Your job is to surface a clear, concrete session goal and record it.
 

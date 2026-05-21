@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-05-21 (session 18)
+
+Renamed `/spek-define` to `/spek-start` across the entire codebase. The old name was a weak fit — "define" is abstract and doesn't signal that this command starts a session. Updated: spec file (`specs/workflow/spek-start.md`), workflow table in `specs/workflow/base.md`, fallback message in `specs/workflow/spek-plan.md`, `profiles/base/workflow.yaml`, `.spek/spek.yaml`, README, STRUCTURE.md, and tests. `spek sync --pull` regenerated all module copies and AI output; old `spek-define.md` files were pruned automatically. Also added a `just sync` recipe to the justfile (`{{venv}}/bin/spek sync --pull`).
+
 ## 2026-05-20 (session 17)
 
 Rewrote `README.md` to position spek for a first-time reader coming from Cursor/Windsurf rules. The one-liner now leads with the distribution model ("package manager for AI coding conventions"). A new positioning paragraph before Quick start names the per-project rules problem and states spek's approach. The Overview section was rewritten to make the library → subscription → sync → multi-tool output flow explicit. The workflow slash commands were moved out of a collapsible into a top-level section with framing that explains the structured-session-lifecycle goal. Lexicon entries for `stance` and `profile` were expanded with motivation, not just definitions.

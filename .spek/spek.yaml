@@ -1,6 +1,6 @@
 meta:
   spek_version: 0.0.0
-  spek_sha: fcc466dd87a1c0b4cb2500439ec27238ba2d69ad
+  spek_sha: e17d08242889a8852ffe5c5cdf8e26cd8fa9d34e
   integrations:
   - claude
   profile: python/cli
@@ -31,7 +31,7 @@ modules:
 - python/venv
 - workflow/base
 - workflow/spek-amend
-- workflow/spek-define
+- workflow/spek-start
 - workflow/spek-detour
 - workflow/spek-implement
 - workflow/spek-plan

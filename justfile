@@ -14,6 +14,9 @@ install:
 install-dev: venv
     UV_PROJECT_ENVIRONMENT={{venv}} uv sync --extra dev
 
+sync:
+    {{venv}}/bin/spek sync --pull
+
 test: venv
     {{venv}}/bin/pytest
 
