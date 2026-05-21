@@ -62,6 +62,7 @@ The workflow commands enforce a structured session lifecycle. Each step is a che
 | `/spek-detour` | Make a quick out-of-scope edit without going through the full workflow |
 | `/spek-amend` | Amend the current session goal or plan in place |
 | `/spek-todo` | Add an item to the project backlog |
+| `/spek-onboard` | Onboard an existing project: write STRUCTURE.md, select modules, extract TODOs |
 
 ## Usage
 
@@ -71,8 +72,9 @@ spek sync                       # reconcile local copies and regenerate integrat
 spek sync --pull                # force-refresh all modules from upstream
 spek profile list               # list available profiles
 spek profile apply [name]       # re-resolve and apply a profile
-spek module                     # re-select modules interactively
+spek module edit                # re-select modules interactively
 spek module list                # list all available modules with descriptions
+spek module set <module>...     # non-interactively set modules (full replacement)
 spek local module <name>        # create a project-local spec module
 spek local stance <name>        # create a project-local stance
 spek destroy                    # remove all spek-managed files from a project
@@ -106,6 +108,23 @@ local_stances:             # omitted if empty
 ```
 
 </details>
+
+## Onboarding an existing project
+
+To adopt spek in a project that already has code:
+
+```bash
+spek init      # select integrations, profile, and modules
+spek sync      # copy spec files and generate AI tool output
+```
+
+Then in your AI coding tool:
+
+```
+/spek-onboard
+```
+
+`/spek-onboard` crawls the project to understand the tech stack and structure, writes `.spek/STRUCTURE.md`, proposes an appropriate module selection for your approval, applies it, and extracts any inline `TODO:` comments into `.spek/TODO.md`.
 
 ## Development
 

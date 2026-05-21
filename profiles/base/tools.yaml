@@ -1,3 +1,4 @@
 description: "CLI tools available to the AI during implementation"
 modules:
-  - tools/ref-search
+  - tools/spek/ref
+  - tools/spek/module

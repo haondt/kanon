@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json as json_mod
+
 import click
 import questionary
 from questionary import Choice
@@ -23,14 +25,17 @@ def _resolve_description(name: str, modules_dir: Path, specs_dir: Path) -> str:
     return ""
 
 
-@click.group(invoke_without_command=True)
+@click.group()
+def module() -> None:
+    """Manage modules in spek.yaml."""
+
+
+@module.command("edit")
 @click.option("--project-root", default=".", type=click.Path(exists=True, file_okay=False))
 @click.option("--sync", "run_sync", is_flag=True, help="Run spek sync after saving.")
-@click.pass_context
-def module(ctx: click.Context, project_root: str, run_sync: bool) -> None:
-    """Manage modules in spek.yaml."""
-    if ctx.invoked_subcommand is None:
-        _do_picker(project_root, run_sync)
+def module_edit(project_root: str, run_sync: bool) -> None:
+    """Interactively select modules."""
+    _do_picker(project_root, run_sync)
 
 
 def _do_picker(project_root: str, run_sync: bool) -> None:
@@ -80,7 +85,8 @@ def _do_picker(project_root: str, run_sync: bool) -> None:
 
 @module.command("list")
 @click.option("--project-root", default=".", type=click.Path(exists=True, file_okay=False))
-def module_list(project_root: str) -> None:
+@click.option("--json", "as_json", is_flag=True, help="Output results as JSON.")
+def module_list(project_root: str, as_json: bool) -> None:
     """List all available modules with descriptions."""
     root = Path(project_root).resolve()
     config_path = root / CONFIG_FILE
@@ -95,8 +101,51 @@ def module_list(project_root: str) -> None:
     specs_dir = repo_path / "specs"
     available = list_modules(repo_path)
 
+    if as_json:
+        results = [
+            {
+                "name": name,
+                "description": _resolve_description(name, modules_dir, specs_dir),
+                "active": name in selected_set,
+            }
+            for name in available
+        ]
+        click.echo(json_mod.dumps(results))
+        return
+
     width = max(len(m) for m in available)
     for name in available:
         desc = _resolve_description(name, modules_dir, specs_dir)
         marker = "✓" if name in selected_set else " "
         click.echo(f"  [{marker}] {name:<{width}}  {desc}")
+
+
+@module.command("set")
+@click.argument("modules", nargs=-1, required=True)
+@click.option("--project-root", default=".", type=click.Path(exists=True, file_okay=False))
+@click.option("--sync", "run_sync", is_flag=True, help="Run spek sync after saving.")
+def module_set(modules: tuple[str, ...], project_root: str, run_sync: bool) -> None:
+    """Non-interactively set the module list (full replacement)."""
+    root = Path(project_root).resolve()
+    config_path = root / CONFIG_FILE
+    if not config_path.exists():
+        click.echo("No spek.yaml found. Run 'spek init' first.")
+        raise SystemExit(1)
+
+    repo_path = spek_repo_path()
+    available = set(list_modules(repo_path))
+    unknown = [m for m in modules if m not in available]
+    if unknown:
+        click.echo(f"Unknown module(s): {', '.join(unknown)}")
+        raise SystemExit(1)
+
+    config = SpekConfig.load(config_path)
+    config.modules = list(modules)
+    config.save(config_path)
+    click.echo(f"Saved {len(modules)} module(s) to spek.yaml.")
+
+    if run_sync:
+        from spek.commands.sync import do_sync
+        do_sync(root)
+    else:
+        click.echo("Run 'spek sync' to update AI tool output.")

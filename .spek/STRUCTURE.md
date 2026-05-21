@@ -10,6 +10,7 @@ CLI tool for managing AI-assisted development conventions across projects.
 - `/spek-think` enters a non-actionary brainstorming mode for the remainder of the conversation
 - `/spek-detour` makes a quick out-of-scope edit without going through the full workflow
 - `/spek-todo` adds an item to `.spek/TODO.md`, with duplicate detection
+- `/spek-onboard` onboards an existing project: writes STRUCTURE.md, selects modules via `spek module list --json` + user approval, applies with `spek module set --sync`, extracts inline TODOs
 
 ## Tech stack
 
@@ -28,9 +29,9 @@ specs/           # the spec module library — content, not code
   git/           # commit and branch conventions
   persistence/   # sqlite, postgres, redis
   python/        # style, venv, config, build, models/, frameworks/, dependencies/, testing/
-  systems/       # architectural context modules — how pieces fit together (e.g. systems/frontend/no-build)
-  tools/         # CLI tool usage guides for AI (e.g. tools/ref-search instructs AI to use spek ref)
-  workflow/      # spek-sketch/plan/implement/review/fix/retro/stance slash commands
+  systems/       # architectural context modules — how pieces fit together; systems/base is the behavioral entry point (search ref library first)
+  tools/spek/    # informational reference for spek CLI tools (ref.md, module.md) — what commands exist and what they output, no behavioral rules
+  workflow/      # spek-sketch/plan/implement/review/fix/retro/stance/onboard slash commands
 references/      # on-demand reference entries (library docs, code patterns, examples); searched via spek ref
 stances/         # YAML files — each lists module paths; activated via /spek-stance
 profiles/        # YAML files — named module+stance bundles; base/ and python/
@@ -58,6 +59,12 @@ spek init   → writes .spek/spek.yaml (modules, stances, integrations)
 spek sync   → copies spec files from upstream into .spek/modules/ and .spek/stances/
             → calls render.py to emit .claude/rules/ and .claude/commands/
 ```
+
+## spek module subcommands
+
+- `spek module edit` — interactive checkbox picker (was bare `spek module`; no longer invoked without subcommand)
+- `spek module list [--json]` — lists all available modules; `--json` outputs `[{name, description, active}]` for AI consumption
+- `spek module set [--sync] <module>...` — non-interactive full replacement of the module list; validates names; intended for AI agents
 
 ## Key concepts
 

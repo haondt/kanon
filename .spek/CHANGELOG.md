@@ -1,5 +1,25 @@
 # Changelog
 
+## 2026-05-21 (detour)
+
+Added `tests/test_module_cli.py` — 10 tests covering the new `spek module` subcommands: `list --json` (valid JSON, entry shape, active/inactive flag accuracy, default text output), `set` (saves modules, full replacement, rejects unknown names, no-config error, preserves stances and meta), and bare `module` group displaying all subcommands.
+
+## 2026-05-21 (session 33, post-review)
+
+Informal review of the session 33 onboarding implementation. Found two out-of-scope edits to workflow specs: `spek-build.md` had a grammatically broken bullet (fixed: "To not" → "Do not", "plans" → "plan's"); `spek-plan.md` had step 5 reworded and a new step 7 added ("Encourage the user to continue with `/spek-build`") — both accepted as intentional. Minor finding noted but not actioned: the Docker example in `spek-onboard.md` step 4 refers to a module category that doesn't exist yet.
+
+## 2026-05-21 (session 33)
+
+Implemented the brownfield onboarding flow.
+
+`spek module` was refactored: bare `spek module` now shows group help instead of launching the picker; the picker moved to `spek module edit`; `spek module list` gained a `--json` flag that outputs `[{name, description, active}]` for AI consumption; a new `spek module set [--sync] <module>...` subcommand does a non-interactive full replacement of the module list with name validation.
+
+`specs/tools/ref-search.md` was deleted and replaced by two files with a clearer separation: `specs/tools/spek/ref.md` and `specs/tools/spek/module.md` are purely informational (command syntax and output shape only); the behavioral guidance ("search before implementing from scratch") moved to `specs/systems/base.md`. This keeps tool specs machine-readable references and concentrates behavioral rules in the systems layer where they belong.
+
+Added `specs/workflow/spek-onboard.md` — the `/spek-onboard` skill. It crawls the project to understand the tech stack, writes `.spek/STRUCTURE.md`, enumerates modules with `spek module list --json`, proposes a selection for user approval, applies it with `spek module set --sync`, and greps source files for inline `TODO:` comments to populate `.spek/TODO.md`.
+
+Profiles updated: `base/tools.yaml` now includes `tools/spek/ref` and `tools/spek/module`; `base/base.yaml` includes `systems/base`; `base/workflow.yaml` includes `workflow/spek-onboard`. README updated with `spek module edit`/`set` in the usage table, `/spek-onboard` in the slash commands table, and a new "Onboarding an existing project" section.
+
 ## 2026-05-21 (session 32)
 
 Fixed workflow alignment gaps surfaced by a cross-spec analysis. Added `/spek-fix` as an optional step in the `workflow/base` table (it was registered and documented in the README but absent from the canonical always-active rule). Updated `docs/session` to document the `## Review`, `## Amendments`, and `## Detours` sections that skills write to SESSION.md but that were missing from the spec. Fixed `spek-build`'s closing prompt to mention `/spek-review` as an optional step before retro.

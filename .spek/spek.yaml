@@ -1,6 +1,6 @@
 meta:
   spek_version: 0.0.0
-  spek_sha: af223120f9d348ca8b0ac1879b46d7ec92f832a9
+  spek_sha: 55b786fb06e40bcf86c61548f5e8f21a550e4cea
   integrations:
   - claude
   profile: python/cli
@@ -29,7 +29,9 @@ modules:
 - python/testing/base
 - python/testing/pytest
 - python/venv
-- tools/ref-search
+- tools/spek/ref
+- tools/spek/module
+- systems/base
 - workflow/base
 - workflow/spek-amend
 - workflow/spek-detour
@@ -42,6 +44,7 @@ modules:
 - workflow/spek-sketch
 - workflow/spek-think
 - workflow/spek-todo
+- workflow/spek-onboard
 stances:
 - autonomous
 - collaborative

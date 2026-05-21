@@ -12,3 +12,4 @@ modules:
   - workflow/spek-detour
   - workflow/spek-amend
   - workflow/spek-todo
+  - workflow/spek-onboard
