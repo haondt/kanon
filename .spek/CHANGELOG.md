@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-05-20 (session 16)
+
+- `specs/build/just.md` — added "Using the justfile" section: when a justfile is present, prefer `just <recipe>` over the raw underlying command for any task a recipe covers
+
 ## 2026-05-20 (session 15)
 
 - `specs/workflow/spek-amend.md` — new `/spek-amend` skill: updates SESSION.md in place mid-session (goal, plan, or both); infers intent from invocation args → conversation context → interactive prompt; logs change under `## Amendments`

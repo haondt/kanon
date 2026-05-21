@@ -67,3 +67,7 @@ These names are conventional — use them where they apply:
 | `reinstall` | `clean` + `install` |
 
 For idempotent recipes, always include a --force flag.
+
+## Using the justfile
+
+When a justfile is present, prefer `just <recipe>` over the raw underlying command for any task covered by an existing recipe. Check the justfile before running project commands — do not reach for `uv venv venv`, `./venv/bin/pytest`, or similar when `just venv`, `just test`, etc. exist. Recipes may set required environment variables or manage dependencies in ways the raw command skips.
