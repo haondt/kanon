@@ -78,27 +78,85 @@ def test_sync_stance_modules_not_rendered(tmp_path):
     assert not (tmp_path / ".claude" / "rules" / "ai--assume-and-proceed.md").exists()
 
 
-def test_sync_routes_command_output(tmp_path):
+def test_sync_routes_command_to_skill(tmp_path):
     make_project(tmp_path, ["workflow/spek-sketch"], {
-        "workflow/spek-sketch": "---\nspek:\n  output: command\n---\nSketch the goal.\n",
+        "workflow/spek-sketch": "---\nspek:\n  output: command\n  description: Turn a vague idea into a goal\n---\nSketch the goal.\n",
     })
 
     CliRunner().invoke(cli, ["sync", "--project-root", str(tmp_path)])
 
     assert not (tmp_path / ".claude" / "rules" / "workflow--spek-sketch.md").exists()
-    cmd = tmp_path / ".claude" / "commands" / "workflow--spek-sketch.md"
-    assert cmd.exists()
-    assert cmd.read_text() == "Sketch the goal.\n"
+    assert not (tmp_path / ".claude" / "commands").exists()
+    skill = tmp_path / ".claude" / "skills" / "workflow--spek-sketch" / "SKILL.md"
+    assert skill.exists()
+    content = skill.read_text()
+    assert "Sketch the goal." in content
+    assert "Turn a vague idea into a goal" in content
 
 
 def test_sync_command_name_override(tmp_path):
     make_project(tmp_path, ["workflow/spek-sketch"], {
-        "workflow/spek-sketch": "---\nspek:\n  output: command\n  name: spek-sketch\n---\nSketch the goal.\n",
+        "workflow/spek-sketch": "---\nspek:\n  output: command\n  name: spek-sketch\n  description: Turn a vague idea into a goal\n---\nSketch the goal.\n",
     })
 
     CliRunner().invoke(cli, ["sync", "--project-root", str(tmp_path)])
 
-    assert not (tmp_path / ".claude" / "commands" / "workflow--spek-sketch.md").exists()
-    cmd = tmp_path / ".claude" / "commands" / "spek-sketch.md"
-    assert cmd.exists()
-    assert cmd.read_text() == "Sketch the goal.\n"
+    assert not (tmp_path / ".claude" / "skills" / "workflow--spek-sketch").exists()
+    skill = tmp_path / ".claude" / "skills" / "spek-sketch" / "SKILL.md"
+    assert skill.exists()
+
+
+def test_sync_skill_frontmatter(tmp_path):
+    content = "\n".join([
+        "---",
+        "spek:",
+        "  output: command",
+        "  name: spek-stance",
+        "  description: Switch behavioral stance",
+        "  args: '[stance-name]'",
+        "  integrations:",
+        "    claude:",
+        "      disable-model-invocation: true",
+        "      context: fork",
+        "---",
+        "Stance body.",
+        "",
+    ])
+    make_project(tmp_path, ["workflow/spek-stance"], {"workflow/spek-stance": content})
+
+    CliRunner().invoke(cli, ["sync", "--project-root", str(tmp_path)])
+
+    skill = tmp_path / ".claude" / "skills" / "spek-stance" / "SKILL.md"
+    assert skill.exists()
+    fm_text = skill.read_text()
+    fm = yaml.safe_load(fm_text.split("---")[1])
+    assert fm["name"] == "spek-stance"
+    assert fm["description"] == "Switch behavioral stance"
+    assert fm["argument-hint"] == "[stance-name]"
+    assert fm["disable-model-invocation"] is True
+    assert fm["context"] == "fork"
+    assert "Stance body." in fm_text
+
+
+def test_sync_windsurf_command_still_flat(tmp_path):
+    spek_dir = tmp_path / ".spek"
+    spek_dir.mkdir()
+    (spek_dir / "spek.yaml").write_text(yaml.dump({
+        "meta": {
+            "spek_version": "0.0.0",
+            "spek_sha": "abc1234",
+            "integrations": ["windsurf"],
+        },
+        "modules": ["workflow/spek-sketch"],
+    }))
+    (spek_dir / "modules").mkdir()
+    (spek_dir / "stances").mkdir()
+    dest = spek_dir / "modules" / "workflow" / "spek-sketch.md"
+    dest.parent.mkdir(parents=True)
+    dest.write_text("---\nspek:\n  output: command\n  name: spek-sketch\n---\nSketch the goal.\n")
+
+    CliRunner().invoke(cli, ["sync", "--project-root", str(tmp_path)])
+
+    rule = tmp_path / ".windsurf" / "rules" / "spek-sketch.md"
+    assert rule.exists()
+    assert rule.read_text() == "Sketch the goal.\n"

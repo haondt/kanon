@@ -1,9 +1,13 @@
 ---
 spek:
   description: "How to write a reference entry for the spek reference library"
+  keywords:
+    - spek
+    - reference
+    - authoring
 ---
 
-# Reference entry style
+# references
 
 A reference is a starting point — something an AI or developer can lift and adapt. It can be a code snippet, a fill-in-the-blank template, library documentation, a methodology, a process definition, architectural guidelines, or anything else worth having on hand during implementation.
 

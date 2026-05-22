@@ -46,6 +46,12 @@ Currently spek only syncs modules from its own repo, which limits it to a single
 - Consider how `spek init` / `spek profile apply` should work when profiles live in an external source
 
 
+## Workflow
+
+- Update `specs/workflow/spek-build.md` to mark plan steps complete non-destructively — e.g. append a completion marker rather than overwriting the checkbox, so the original plan text is preserved as a record of what was agreed.
+- Redesign the `spek-review` / `spek-fix` cycle so SESSION.md accumulates an audit trail rather than being edited in place. `spek-fix` should close finding threads and annotate its work but leave the verdict untouched; a subsequent `spek-review` run should validate the fixes, search for new issues, and append its own verdict entry. The `## Review` section should read as a chronological history of passes, not a mutable status board.
+- Update `specs/workflow/spek-retro.md` to prompt the user to clear the conversation context after the retro is complete, using whatever tool is available (e.g. `/clear` in Claude Code).
+
 ## Cleanup
 
 - `specs/workflow/cleanup.md` — standalone spec for identifying and removing dead code: unused functions, stale TODOs, commented-out blocks, unreferenced files, speculative code that was never used. Complements the retro step but can be invoked independently.

@@ -1,8 +1,12 @@
 ---
 spek:
-  description: "Skill: log completed work and close session"
+  description: "Close the session: append to CHANGELOG.md and clear SESSION.md"
   output: command
   name: spek-retro
+  integrations:
+    claude:
+      disable-model-invocation: true
+      context: fork
 ---
 You are closing out a development session. Your job is to record completed work and reset session state.
 

@@ -1,11 +1,8 @@
 ---
-spek:
-  description: "Onboard an existing project: write STRUCTURE.md and select modules"
-  output: command
-  name: spek-onboard
-  integrations:
-    claude:
-      disable-model-invocation: true
+name: spek-onboard
+description: 'Onboard an existing project: write STRUCTURE.md and select modules'
+disable-model-invocation: true
+
 ---
 
 You are onboarding an existing ("brownfield") project into spek. Your job is to understand the project, write its STRUCTURE.md, select and apply appropriate modules, and surface inline TODOs.

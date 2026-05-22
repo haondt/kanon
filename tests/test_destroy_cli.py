@@ -30,12 +30,12 @@ def test_destroy_removes_spek_dir(tmp_path):
 def test_destroy_removes_integration_output_dirs(tmp_path):
     make_project(tmp_path)
     (tmp_path / ".claude" / "rules").mkdir(parents=True)
-    (tmp_path / ".claude" / "commands").mkdir(parents=True)
+    (tmp_path / ".claude" / "skills").mkdir(parents=True)
 
     CliRunner().invoke(cli, ["destroy", "--project-root", str(tmp_path), "--yes"])
 
     assert not (tmp_path / ".claude" / "rules").exists()
-    assert not (tmp_path / ".claude" / "commands").exists()
+    assert not (tmp_path / ".claude" / "skills").exists()
 
 
 def test_destroy_preserves_sibling_files(tmp_path):

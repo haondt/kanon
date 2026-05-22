@@ -1,6 +1,6 @@
 ---
 spek:
-  description: "Skill: add an item to the project backlog"
+  description: Add an item to the project backlog in TODO.md
   output: command
   name: spek-todo
 ---

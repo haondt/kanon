@@ -1,8 +1,11 @@
 ---
 spek:
-  description: "Skill: quick out-of-scope edit"
+  description: Make a quick out-of-scope edit without going through the full workflow
   output: command
   name: spek-detour
+  integrations:
+    claude:
+      disable-model-invocation: true
 ---
 You are making a quick out-of-scope edit that bypasses the normal spek workflow. Do it immediately — no planning, no retro.
 

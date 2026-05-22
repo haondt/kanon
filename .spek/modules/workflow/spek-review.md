@@ -1,8 +1,12 @@
 ---
 spek:
-  description: "Skill: review implementation before retro"
+  description: Review the implementation against the plan and spec before closing the session
   output: command
   name: spek-review
+  integrations:
+    claude:
+      disable-model-invocation: true
+      context: fork
 ---
 You are reviewing a completed implementation before the session is closed. Your job is to find problems — not to narrate what was done.
 

@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-05-21 (skills migration)
+
+Migrated Claude command output from `.claude/commands/` (flat `.md` files) to `.claude/skills/<name>/SKILL.md` with generated YAML frontmatter. This matches the Claude Code skill format and allows per-command metadata (`description`, `argument-hint`, `disable-model-invocation`, `context`) to be declared in spec frontmatter and rendered automatically.
+
+`_SpekMeta` in `render.py` gained two fields: `args` (maps to `argument-hint` in Claude output) and `integrations` (a dict of tool-specific kwargs passed verbatim into the generated frontmatter). The `AI_TOOL_OUTPUT_DIRS["claude"]["command"]` path changed from `.claude/commands` to `.claude/skills`; sync now unconditionally clears all dirs in `AI_TOOL_OUTPUT_DIRS[integration].values()` before rendering. Dead function `output_type()` was removed. Frontmatter separator was fixed to emit `\n---\n` (with blank line before closing delimiter) so the separator is never elided by body content that doesn't start with a newline.
+
+All 12 workflow spec files were updated with user-facing descriptions, `args` entries for specs that take arguments (e.g. spek-stance), and `integrations.claude` blocks carrying `disable-model-invocation` and `context` as appropriate. `tests/test_sync_cli.py` and `tests/test_destroy_cli.py` were updated to cover skill output and frontmatter; 67/67 tests pass. `.claude/skills/` was regenerated via `just sync`; the now-stale `.claude/commands/` directory was removed.
+
+Detours: converted the project-local `writing-specs` and `writing-references` modules to reference entries under `references/spek/specs.md` and `references/spek/references.md` (more portable, searchable via `spek ref`); updated `references/spek/specs.md` to document the `args` and `integrations` frontmatter fields added this session; added `.spek/local/modules/spec-authoring.md` capturing a guardrail-vs-convention authoring principle.
+
 ## 2026-05-21
 
 Added `references/htmx/infinite-scroll.md` — reference entry for the htmx infinite scroll pattern: a sentinel div with `hx-trigger="intersect once"` that replaces itself with the next page via `hx-select` + `hx-swap="outerHTML"`, chaining indefinitely until no next page remains. Includes a Jinja2 template partial and a Flask pagination endpoint sketch.

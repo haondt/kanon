@@ -1,11 +1,8 @@
 ---
-spek:
-  description: Plan the implementation, agree on an approach, and record it in SESSION.md
-  output: command
-  name: spek-plan
-  integrations:
-    claude:
-      disable-model-invocation: true
+name: spek-plan
+description: Plan the implementation, agree on an approach, and record it in SESSION.md
+disable-model-invocation: true
+
 ---
 You are in the planning phase. Your job is to produce a concrete implementation plan and get explicit approval before any code is written.
 

@@ -1,11 +1,8 @@
 ---
-spek:
-  description: Amend the current session goal or plan without restarting
-  output: command
-  name: spek-amend
-  integrations:
-    claude:
-      disable-model-invocation: true
+name: spek-amend
+description: Amend the current session goal or plan without restarting
+disable-model-invocation: true
+
 ---
 You are amending an in-progress session. Your job is to update SESSION.md to reflect a change in direction — without starting a new define/plan cycle.
 

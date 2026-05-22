@@ -150,7 +150,7 @@ def do_sync(root: Path, pull: bool = False) -> None:
 
     # ── Phase 5: generate AI tool output ──────────────────────────────────────
     # Only modules in config.modules (not stance-only) become rules/commands.
-    from spek.core.render import render_module, output_type, output_dir_for
+    from spek.core.render import AI_TOOL_OUTPUT_DIRS, render_module
 
     to_render: list[tuple[str, Path]] = []
     for mod in config.modules:
@@ -166,16 +166,11 @@ def do_sync(root: Path, pull: bool = False) -> None:
         else:
             click.echo(f"  WARNING: local module '{name}' not found, skipping.")
 
-    dirs_to_clear: set[Path] = set()
     for integration in config.meta.integrations:
-        for _, src in to_render:
-            content = src.read_text()
-            ot = output_type(content)
-            if ot in ("rule", "command"):
-                dirs_to_clear.add(output_dir_for(root, integration, ot))
-    for d in dirs_to_clear:
-        if d.exists():
-            shutil.rmtree(d)
+        for rel_dir in set(AI_TOOL_OUTPUT_DIRS.get(integration, {}).values()):
+            d = root / rel_dir
+            if d.exists():
+                shutil.rmtree(d)
 
     for integration in config.meta.integrations:
         click.echo(f"Generating {integration} output:")

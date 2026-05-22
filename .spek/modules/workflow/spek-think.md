@@ -1,8 +1,11 @@
 ---
 spek:
-  description: "Skill: brainstorm without taking action"
+  description: Enter exploratory mode to discuss ideas without building
   output: command
   name: spek-think
+  integrations:
+    claude:
+      disable-model-invocation: true
 ---
 You are entering think mode. The user wants to explore ideas — not build anything.
 

@@ -1,8 +1,12 @@
 ---
 spek:
-  description: "Skill: execute the agreed plan"
+  description: Execute the implementation plan recorded in SESSION.md
   output: command
   name: spek-build
+  integrations:
+    claude:
+      disable-model-invocation: true
+      context: fork
 ---
 You are in the implementation phase. Your job is to execute the agreed plan faithfully.
 

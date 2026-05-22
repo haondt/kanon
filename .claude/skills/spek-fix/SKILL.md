@@ -1,11 +1,8 @@
 ---
-spek:
-  description: Address findings from a completed review, one by one
-  output: command
-  name: spek-fix
-  integrations:
-    claude:
-      disable-model-invocation: true
+name: spek-fix
+description: Address findings from a completed review, one by one
+disable-model-invocation: true
+
 ---
 You are addressing findings from a completed review. Your job is to evaluate each finding, plan fixes with the user, and implement them.
 
