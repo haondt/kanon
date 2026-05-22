@@ -52,6 +52,10 @@ Currently spek only syncs modules from its own repo, which limits it to a single
 - Redesign the `spek-review` / `spek-fix` cycle so SESSION.md accumulates an audit trail rather than being edited in place. `spek-fix` should close finding threads and annotate its work but leave the verdict untouched; a subsequent `spek-review` run should validate the fixes, search for new issues, and append its own verdict entry. The `## Review` section should read as a chronological history of passes, not a mutable status board.
 - Update `specs/workflow/spek-retro.md` to prompt the user to clear the conversation context after the retro is complete, using whatever tool is available (e.g. `/clear` in Claude Code).
 
+## Tools modules
+
+- Convert `specs/tools/` modules (e.g. `tools/spek/ref.md`, `tools/spek/module.md`) from `output: rule` to `output: command` so they are emitted as AI-invoked skills rather than always-on rules. These modules describe CLI tool usage, not behavioral conventions — the AI should pull them on demand rather than having them injected as passive context into every session.
+
 ## Cleanup
 
 - `specs/workflow/cleanup.md` — standalone spec for identifying and removing dead code: unused functions, stale TODOs, commented-out blocks, unreferenced files, speculative code that was never used. Complements the retro step but can be invoked independently.

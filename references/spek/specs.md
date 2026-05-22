@@ -26,7 +26,7 @@ spek:
       context: fork
 ```
 
-- `description` appears in `spek module list` and as the skill description in the AI tool
+- `description` appears in `spek module list` and as the skill description in the AI tool; for commands, this is shown in autocomplete and is the primary signal used to decide whether to invoke the command — write it to convey *when* to use it, not just *what* it is
 - `output: command` marks it as a slash command rather than a passive rule
 - `name` is the slash command name (e.g. `spek-foo` → `/spek-foo`); required for commands
 - `args` is a human-readable argument hint shown in autocomplete (e.g. `"[stance-name]"`)
@@ -34,11 +34,12 @@ spek:
 
 ## Rules
 
-Always-on guidance. Loaded into every context window, so brevity matters.
+Always-on guidance injected into every context window. Brevity and unambiguity are the primary constraints — every word costs context, and vague rules produce inconsistent behavior.
 
 - Single `#` heading naming the topic
 - Bullets only — no prose paragraphs, no sub-sections
-- Each bullet: imperative and specific; omit rationale
+- Each bullet: imperative, specific, and unambiguous; leave no room for interpretation
+- Omit rationale — if a rule needs justification, it belongs in a reference entry
 - One concern per file; split if mixed
 - Target under 15 lines
 
@@ -46,7 +47,12 @@ If you want to add rationale or examples, put them in a reference entry and link
 
 ## Commands
 
-Invoked explicitly by the user. Can be longer and more structured — prose and numbered steps are appropriate. The constraint is clarity, not length.
+Loaded on demand when the user or AI invokes the slash command. Not injected into every context, so length is governed by clarity rather than token cost.
+
+- `description` must be informative enough for a user or AI to decide when to invoke it — include trigger conditions, not just a label
+- Prose and numbered steps are appropriate; match the structure to the complexity of the workflow
+- Be explicit: name the exact files to read or write, the exact checks to perform, the exact output to produce
+- Anticipate ambiguity and resolve it in the spec rather than leaving it to the AI to infer
 
 ## Project-local modules
 

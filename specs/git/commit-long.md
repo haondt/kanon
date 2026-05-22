@@ -5,5 +5,5 @@ spek:
 
 # Git commit style (with body)
 
-- Separate subject from body with a blank line
-- Body explains *why*, not *what*
+- Add more detail to commits with a body
+- Separate from subject with a blank line

@@ -1,5 +1,17 @@
 # Changelog
 
+## 2026-05-22 (detours)
+
+`README.md` quick start updated to `uv tool install haondt-spek` and the `just` prerequisite removed — the tool is now distributed via PyPI so cloning the repo is no longer the install path.
+
+`specs/git/commit-long.md` reworded: the two bullets now read "Add more detail to commits with a body" and "Separate from subject with a blank line" (previously the second bullet was "Body explains *why*, not *what*", which was moved to the `commit-long` body convention). `.spek/modules/git/commit-long.md` regenerated to match.
+
+`references/spek/specs.md` expanded the descriptions and commands sections: `description` guidance now explicitly says to write trigger conditions rather than labels; the rules section tightens the "unambiguous" and "omit rationale" guidance; the commands section notes that commands are loaded on demand (not injected) and calls out the need to be explicit about files, checks, and output.
+
+`specs/workflow/spek-retro.md` description clarified: "clear SESSION.md" → "delete SESSION.md"; step 7 simplified to "Delete `.spek/SESSION.md`".
+
+`.spek/TODO.md` gained a new "Tools modules" category: convert `specs/tools/` modules from `output: rule` to `output: command` so CLI reference docs are pulled on demand rather than injected into every context.
+
 ## 2026-05-21 (session: hooks/settings generation)
 
 `spek sync` now generates `.claude/settings.json` when any active module declares `hooks` in its frontmatter. This allows spec modules to inject Claude Code hook entries automatically — the first use case being auto-loading `.spek/STRUCTURE.md` into context at session start, so AI assistants no longer have to be instructed to read it manually.

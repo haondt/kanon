@@ -4,17 +4,14 @@ A package manager for AI coding conventions — define them once in a central li
 
 Most AI coding tools let you drop a rules file into each project. That works until you have a dozen projects and the rules drift apart. spek manages a central library of spec modules; projects subscribe to a subset via `spek.yaml`, and `spek sync` pulls them into committed local copies and generates AI tool integrations for each configured tool.
 
-## Dependencies
+## Prerequisites
 
 - [uv](https://docs.astral.sh/uv/)
-- [just](https://just.systems/)
 
 ## Quick start
 
 ```bash
-git clone https://github.com/haondt/spek
-cd spek
-just install
+uv tool install haondt-spek
 ```
 
 ```bash

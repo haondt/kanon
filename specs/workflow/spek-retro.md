@@ -1,6 +1,6 @@
 ---
 spek:
-  description: "Close the session: append to CHANGELOG.md and clear SESSION.md"
+  description: "Close the session: append to CHANGELOG.md and delete SESSION.md"
   output: command
   name: spek-retro
   integrations:
@@ -16,5 +16,5 @@ You are closing out a development session. Your job is to record completed work 
 4. Update `README.md` if needed.
 5. Review and update `.spek/STRUCTURE.md` if the session changed the project's shape.
 6. Review and update `.spek/TODO.md`.
-7. Delete the contents of `.spek/SESSION.md` or remove the file entirely.
+7. Delete `.spek/SESSION.md`.
 8. Confirm what was logged and which docs were updated.
