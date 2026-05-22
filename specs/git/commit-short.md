@@ -5,4 +5,5 @@ spek:
 
 # Git commit style (short)
 
-- Subject line only; no body
+- Subject line only
+- 1-2 phrase summary

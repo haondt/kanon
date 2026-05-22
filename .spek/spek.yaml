@@ -1,6 +1,6 @@
 meta:
   spek_version: 0.0.0
-  spek_sha: 0af505cb29b0280942d9e1db7da8b17e41807229
+  spek_sha: 624b8b6b8a2abab26c4387763e6705e54c893b3e
   integrations:
   - claude
   profile: python/cli
