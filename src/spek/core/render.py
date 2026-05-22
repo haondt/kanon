@@ -80,7 +80,7 @@ def render_settings(hooks_by_event: dict[str, list[dict[str, Any]]], project_roo
         claude_hooks[event] = groups
 
     settings_path.parent.mkdir(parents=True, exist_ok=True)
-    settings_path.write_text(json.dumps({"hooks": claude_hooks}, indent=2) + "\n")
+    settings_path.write_text(json.dumps({"includeGitInstructions": False, "hooks": claude_hooks}, indent=2) + "\n")
 
 
 def output_dir_for(project_root: Path, ai_tool: str, out_type: str) -> Path:
