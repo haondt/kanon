@@ -101,8 +101,8 @@ modules:                   # always-active rules/commands
 stances:                   # omitted if empty
   - autonomous
   - collaborative
-local_modules:             # omitted if empty; paths relative to project root
-  - .spek/local/modules/my-conventions.md
+local_modules:             # omitted if empty; short names like regular modules
+  - my-conventions
 local_stances:             # omitted if empty
   - .spek/local/stances/my-stance.yaml
 ```

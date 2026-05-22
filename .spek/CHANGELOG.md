@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-05-21 (detours)
+
+`specs/frontend/hyperscript.md`: added a Behaviors section documenting when to extract hyperscript to a standalone `._hs` file using the `behavior` feature, and how to serve and install it.
+
+Added `references/htmx/live-input.md` — reference entry for the htmx auto-save input pattern: an input that posts via htmx and shows inline success/failure feedback driven by hyperscript custom `show`/`hide` events, with no page navigation.
+
+Added `.spek/local/modules/references-style.md` — a local spec for this repo covering how to write reference entries: what belongs (portable mechanism, generic names), what to strip (project-specific details), structure (description → core content → explanation → variants), length cap (~200 lines), frontmatter, and file naming.
+
+`local_modules` in `spek.yaml` now uses short names identical in format to regular modules (e.g. `my-rules` instead of `.spek/local/modules/my-rules.md`). `sync.py` resolves via `_find` against `LOCAL_MODULES_DIR`; `local.py` registers the short name and uses an f-string instead of `with_suffix` to avoid misbehavior on names containing dots. Added `test_local_module_creates_file_in_subdirectory` to cover the subdirectory case.
+
 ## 2026-05-21 (detour)
 
 Added `tests/test_module_cli.py` — 10 tests covering the new `spek module` subcommands: `list --json` (valid JSON, entry shape, active/inactive flag accuracy, default text output), `set` (saves modules, full replacement, rejects unknown names, no-config error, preserves stances and meta), and bare `module` group displaying all subcommands.
