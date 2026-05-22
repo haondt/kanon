@@ -23,7 +23,7 @@ Active stance name and its module list (written by /spek-stance).
 Assumptions made, technical decisions taken, deviations from the plan, anything worth carrying into the retro or CHANGELOG.
 
 ## Review
-Findings from /spek-review. Each finding has an open checkbox; /spek-fix closes them. Includes a verdict at the end.
+Multi-pass review log. Each `/spek-review` run appends `### Review Pass N` with structured findings; each `/spek-fix` run appends `### Fix Pass N` with fixes. Cycle continues until a review pass returns only an approval finding.
 
 ## Amendments
 One-line record of each change to the goal or plan made via /spek-amend.
