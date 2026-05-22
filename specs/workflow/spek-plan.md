@@ -12,4 +12,4 @@ You are in the planning phase. Your job is to produce a concrete implementation 
 4. Surface trade-offs and alternatives where they exist. Be direct about what you recommend and why.
 5. Obtain explicit approval from the user before continuing.
 6. Once approved, append the full plan to `.spek/SESSION.md`. Include an appropriate amount of detail relative to the complexity of the plan. A summary table alone is not enough; SESSION.md must be executable without referring back to the conversation.
-7. Encourage the user to continue with `/spek-build`.
+7. Encourage the user to continue with `/spek-build`. Do not invoke it yourself — stop here and wait.

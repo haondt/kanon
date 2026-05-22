@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-05-21
+
+Added `references/htmx/infinite-scroll.md` — reference entry for the htmx infinite scroll pattern: a sentinel div with `hx-trigger="intersect once"` that replaces itself with the next page via `hx-select` + `hx-swap="outerHTML"`, chaining indefinitely until no next page remains. Includes a Jinja2 template partial and a Flask pagination endpoint sketch.
+
+Fixed `specs/workflow/spek-plan.md` step 7 to explicitly prohibit auto-invoking `/spek-build` after plan approval — the prior wording ("encourage the user to continue") was ambiguous enough to allow it.
+
+Fixed `references/bulma/navbar-simple.md` to replace hardcoded app-specific values (`spek`, `/commands`, `/cli`) with generic placeholders.
+
 ## 2026-05-21 (detours)
 
 `specs/frontend/hyperscript.md`: added a Behaviors section documenting when to extract hyperscript to a standalone `._hs` file using the `behavior` feature, and how to serve and install it.
