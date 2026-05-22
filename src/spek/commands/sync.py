@@ -4,7 +4,7 @@ import shutil
 import click
 from pathlib import Path
 
-from spek.core.config import SpekConfig, CONFIG_FILE, MODULES_DIR, STANCES_DIR
+from spek.core.config import SpekConfig, CONFIG_FILE, MODULES_DIR, STANCES_DIR, LOCAL_MODULES_DIR
 from spek.core.yaml_utils import load_yaml
 
 
@@ -158,12 +158,13 @@ def do_sync(root: Path, pull: bool = False) -> None:
         if p:
             to_render.append((mod, p))
 
-    for local_path in config.local_modules:
-        abs_path = (root / local_path).resolve()
-        if abs_path.exists():
-            to_render.append((abs_path.stem, abs_path))
+    local_modules_dir = root / LOCAL_MODULES_DIR
+    for name in config.local_modules:
+        p = _find(name, local_modules_dir)
+        if p:
+            to_render.append((name, p))
         else:
-            click.echo(f"  WARNING: local module '{local_path}' not found, skipping.")
+            click.echo(f"  WARNING: local module '{name}' not found, skipping.")
 
     dirs_to_clear: set[Path] = set()
     for integration in config.meta.integrations:

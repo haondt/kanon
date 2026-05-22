@@ -24,7 +24,7 @@ def test_local_module_creates_file(tmp_path):
     module_file = tmp_path / ".spek" / "local" / "modules" / "my-rules.md"
     assert module_file.exists()
     config = SpekConfig.load(tmp_path / ".spek" / "spek.yaml")
-    assert ".spek/local/modules/my-rules.md" in config.local_modules
+    assert "my-rules" in config.local_modules
 
 
 def test_local_module_duplicate_exits(tmp_path):
@@ -42,6 +42,18 @@ def test_local_module_no_config_exits(tmp_path):
     result = CliRunner().invoke(cli, ["local", "module", "my-rules", "--project-root", str(tmp_path)])
     assert result.exit_code != 0
     assert "spek init" in result.output
+
+
+def test_local_module_creates_file_in_subdirectory(tmp_path):
+    make_config(tmp_path)
+
+    result = CliRunner().invoke(cli, ["local", "module", "subdir/my-rules", "--project-root", str(tmp_path)])
+
+    assert result.exit_code == 0, result.output
+    module_file = tmp_path / ".spek" / "local" / "modules" / "subdir" / "my-rules.md"
+    assert module_file.exists()
+    config = SpekConfig.load(tmp_path / ".spek" / "spek.yaml")
+    assert "subdir/my-rules" in config.local_modules
 
 
 def test_local_stance_creates_file(tmp_path):

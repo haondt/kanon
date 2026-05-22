@@ -1,6 +1,6 @@
 meta:
   spek_version: 0.0.0
-  spek_sha: 55b786fb06e40bcf86c61548f5e8f21a550e4cea
+  spek_sha: 32a73762df3344df471ab9a490d6bd2a22690b91
   integrations:
   - claude
   profile: python/cli
@@ -49,3 +49,5 @@ stances:
 - autonomous
 - collaborative
 - critic
+local_modules:
+- references-style

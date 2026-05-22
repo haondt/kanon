@@ -38,22 +38,21 @@ def local_module(name: str, project_root: str, run_sync: bool) -> None:
     local_dir = root / LOCAL_MODULES_DIR
     local_dir.mkdir(parents=True, exist_ok=True)
 
-    filename = name if name.endswith(".md") else name + ".md"
-    module_path = local_dir / filename
-    relative_path = str(module_path.relative_to(root))
+    module_path = local_dir / f"{name}.md"
 
     if module_path.exists():
-        click.echo(f"{relative_path} already exists.")
+        click.echo(f"{module_path.relative_to(root)} already exists.")
         raise SystemExit(1)
 
+    module_path.parent.mkdir(parents=True, exist_ok=True)
     module_path.write_text(MODULE_STUB.format(name=name))
 
     config = SpekConfig.load(config_path)
-    if relative_path not in config.local_modules:
-        config.local_modules.append(relative_path)
+    if name not in config.local_modules:
+        config.local_modules.append(name)
         config.save(config_path)
 
-    click.echo(f"Created {relative_path} and registered it in spek.yaml.")
+    click.echo(f"Created {module_path.relative_to(root)} and registered '{name}' in spek.yaml.")
 
     if run_sync:
         from spek.commands.sync import do_sync
