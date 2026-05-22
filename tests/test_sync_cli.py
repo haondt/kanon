@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 
 import yaml
@@ -160,3 +161,91 @@ def test_sync_windsurf_command_still_flat(tmp_path):
     rule = tmp_path / ".windsurf" / "rules" / "spek-sketch.md"
     assert rule.exists()
     assert rule.read_text() == "Sketch the goal.\n"
+
+
+def test_sync_writes_settings_for_hooks_module(tmp_path):
+    content = "\n".join([
+        "---",
+        "spek:",
+        "  integrations:",
+        "    claude:",
+        "      hooks:",
+        "        SessionStart:",
+        "          - matcher: startup",
+        "            command: echo hello",
+        "---",
+        "Rule body.",
+    ])
+    make_project(tmp_path, ["workflow/base"], {"workflow/base": content})
+
+    result = CliRunner().invoke(cli, ["sync", "--project-root", str(tmp_path)])
+
+    assert result.exit_code == 0, result.output
+    settings = tmp_path / ".claude" / "settings.json"
+    assert settings.exists()
+    data = json.loads(settings.read_text())
+    group = data["hooks"]["SessionStart"][0]
+    assert group["matcher"] == "startup"
+    assert group["hooks"][0]["command"] == "echo hello"
+
+
+def test_sync_no_settings_when_no_hooks(tmp_path):
+    make_project(tmp_path, ["workflow/base"], {"workflow/base": "Just a rule."})
+
+    result = CliRunner().invoke(cli, ["sync", "--project-root", str(tmp_path)])
+
+    assert result.exit_code == 0, result.output
+    assert not (tmp_path / ".claude" / "settings.json").exists()
+
+
+def test_sync_accumulates_hooks_across_modules(tmp_path):
+    module_a = "\n".join([
+        "---",
+        "spek:",
+        "  integrations:",
+        "    claude:",
+        "      hooks:",
+        "        SessionStart:",
+        "          - matcher: startup",
+        "            command: echo module-a",
+        "---",
+        "Body A.",
+    ])
+    module_b = "\n".join([
+        "---",
+        "spek:",
+        "  integrations:",
+        "    claude:",
+        "      hooks:",
+        "        SessionStart:",
+        "          - matcher: clear",
+        "            command: echo module-b",
+        "---",
+        "Body B.",
+    ])
+    make_project(tmp_path, ["workflow/a", "workflow/b"], {
+        "workflow/a": module_a,
+        "workflow/b": module_b,
+    })
+
+    result = CliRunner().invoke(cli, ["sync", "--project-root", str(tmp_path)])
+
+    assert result.exit_code == 0, result.output
+    data = json.loads((tmp_path / ".claude" / "settings.json").read_text())
+    groups = data["hooks"]["SessionStart"]
+    matchers = [g["matcher"] for g in groups]
+    assert "startup" in matchers
+    assert "clear" in matchers
+
+
+def test_sync_deletes_stale_settings_on_rehook(tmp_path):
+    stale = tmp_path / ".claude" / "settings.json"
+    stale.parent.mkdir(parents=True)
+    stale.write_text('{"hooks": {"OldEvent": []}}')
+
+    make_project(tmp_path, ["workflow/base"], {"workflow/base": "Just a rule."})
+
+    result = CliRunner().invoke(cli, ["sync", "--project-root", str(tmp_path)])
+
+    assert result.exit_code == 0, result.output
+    assert not stale.exists()

@@ -77,3 +77,14 @@ def test_destroy_abort_on_no(tmp_path):
 
     assert result.exit_code != 0
     assert (tmp_path / ".spek").exists()
+
+
+def test_destroy_removes_settings_file(tmp_path):
+    make_project(tmp_path)
+    settings = tmp_path / ".claude" / "settings.json"
+    settings.parent.mkdir(parents=True)
+    settings.write_text('{"hooks": {}}')
+
+    CliRunner().invoke(cli, ["destroy", "--project-root", str(tmp_path), "--yes"])
+
+    assert not settings.exists()

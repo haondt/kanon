@@ -5,7 +5,7 @@ import click
 from pathlib import Path
 
 from spek.core.config import SpekConfig, CONFIG_FILE
-from spek.core.render import AI_TOOL_OUTPUT_DIRS
+from spek.core.render import AI_TOOL_OUTPUT_DIRS, AI_TOOL_SETTINGS_FILES
 
 
 @click.command()
@@ -22,7 +22,8 @@ def destroy(project_root: str, yes: bool) -> None:
 
     config = SpekConfig.load(config_path)
 
-    targets: list[Path] = [root / ".spek"]
+    dir_targets: list[Path] = [root / ".spek"]
+    file_targets: list[Path] = []
     seen: set[Path] = set()
     for integration in config.meta.integrations:
         tool_dirs = AI_TOOL_OUTPUT_DIRS.get(integration, {})
@@ -30,19 +31,29 @@ def destroy(project_root: str, yes: bool) -> None:
             p = root / rel
             if p not in seen:
                 seen.add(p)
-                targets.append(p)
+                dir_targets.append(p)
+        settings_rel = AI_TOOL_SETTINGS_FILES.get(integration)
+        if settings_rel:
+            p = root / settings_rel
+            if p not in seen:
+                seen.add(p)
+                file_targets.append(p)
 
-    existing = [t for t in targets if t.exists()]
+    existing_dirs = [t for t in dir_targets if t.exists()]
+    existing_files = [t for t in file_targets if t.exists()]
 
     click.echo("Will remove:")
-    for t in existing:
+    for t in existing_dirs + existing_files:
         click.echo(f"  {t.relative_to(root)}")
 
     if not yes:
         click.confirm("Proceed?", default=False, abort=True)
 
-    for t in existing:
+    for t in existing_dirs:
         shutil.rmtree(t)
+        click.echo(f"  removed {t.relative_to(root)}")
+    for t in existing_files:
+        t.unlink()
         click.echo(f"  removed {t.relative_to(root)}")
 
     click.echo("Done.")

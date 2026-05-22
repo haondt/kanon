@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 from typing import Any
 
@@ -16,6 +17,10 @@ AI_TOOL_OUTPUT_DIRS: dict[str, dict[str, str]] = {
         "rule": ".windsurf/rules",
         "command": ".windsurf/rules",
     },
+}
+
+AI_TOOL_SETTINGS_FILES: dict[str, str] = {
+    "claude": ".claude/settings.json",
 }
 
 
@@ -37,6 +42,45 @@ def parse_frontmatter(content: str) -> tuple[ModuleFrontmatter, str]:
         return ModuleFrontmatter(), content
     data: dict[str, Any] = parse_yaml(match.group(1))
     return ModuleFrontmatter.model_validate(data), content[match.end():]
+
+
+def collect_hooks(content: str, ai_tool: str) -> dict[str, list[dict[str, Any]]]:
+    meta, _ = parse_frontmatter(content)
+    if not meta.spek.integrations:
+        return {}
+    tool_integrations = meta.spek.integrations.get(ai_tool, {})
+    hooks = tool_integrations.get("hooks", {})
+    if not hooks:
+        return {}
+    return {event: list(entries) for event, entries in hooks.items()}
+
+
+def render_settings(hooks_by_event: dict[str, list[dict[str, Any]]], project_root: Path, ai_tool: str) -> None:
+    rel = AI_TOOL_SETTINGS_FILES.get(ai_tool)
+    if rel is None:
+        return
+    if not hooks_by_event:
+        return
+    settings_path = project_root / rel
+
+    claude_hooks: dict[str, list[dict[str, Any]]] = {}
+    for event, entries in hooks_by_event.items():
+        groups = []
+        for entry in entries:
+            matcher = entry.get("matcher", "")
+            command = entry.get("command", "")
+            if not command:
+                raise ValueError(
+                    f"Hook entry for event '{event}' (matcher={matcher!r}) is missing a 'command' key"
+                )
+            groups.append({
+                "matcher": matcher,
+                "hooks": [{"type": "command", "command": command}],
+            })
+        claude_hooks[event] = groups
+
+    settings_path.parent.mkdir(parents=True, exist_ok=True)
+    settings_path.write_text(json.dumps({"hooks": claude_hooks}, indent=2) + "\n")
 
 
 def output_dir_for(project_root: Path, ai_tool: str, out_type: str) -> Path:
@@ -63,7 +107,8 @@ def render_module(content: str, module: str, ai_tool: str, project_root: Path) -
         if meta.spek.args:
             fm["argument-hint"] = meta.spek.args
         if meta.spek.integrations:
-            fm.update(meta.spek.integrations.get("claude", {}))
+            claude_meta = {k: v for k, v in meta.spek.integrations.get("claude", {}).items() if k != "hooks"}
+            fm.update(claude_meta)
         out_path = skill_dir / "SKILL.md"
         out_path.write_text(f"---\n{dump_yaml(fm)}\n---\n{body}")
         return out_path

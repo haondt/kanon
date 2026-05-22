@@ -1,5 +1,19 @@
 # Changelog
 
+## 2026-05-21 (session: hooks/settings generation)
+
+`spek sync` now generates `.claude/settings.json` when any active module declares `hooks` in its frontmatter. This allows spec modules to inject Claude Code hook entries automatically — the first use case being auto-loading `.spek/STRUCTURE.md` into context at session start, so AI assistants no longer have to be instructed to read it manually.
+
+`render.py` gained `collect_hooks(content, ai_tool)` (parses `integrations.{ai_tool}.hooks` from frontmatter) and `render_settings(hooks_by_event, project_root, ai_tool)` (writes `.claude/settings.json` from accumulated hook entries; raises `ValueError` on missing/empty `command`). `AI_TOOL_SETTINGS_FILES` constant maps integrations to their settings file path. `render_module` now excludes the `hooks` key when building SKILL.md frontmatter so hook declarations don't bleed into Claude's skill metadata.
+
+`sync.py` accumulates hooks across all rendered modules into a combined `hooks_by_event` dict and calls `render_settings` after the render loop. Stale settings files are deleted at the start of Phase 5 (before output dirs are wiped).
+
+`destroy.py` now also removes settings files listed in `AI_TOOL_SETTINGS_FILES` for each active integration, using `unlink()` rather than `rmtree()`.
+
+`specs/workflow/base.md` was updated to declare two `SessionStart` hook entries: one for `startup` (new session) and one for `clear` (after `/clear`). Each runs `bash -c 'test -f .spek/STRUCTURE.md && cat .spek/STRUCTURE.md'` so it silently no-ops on projects without STRUCTURE.md. The manual instruction to read STRUCTURE.md at session start was removed from the rule body since the hook now handles it automatically.
+
+9 unit tests added to `tests/test_render.py` covering `collect_hooks` and `render_settings`; 4 integration tests added to `test_sync_cli.py`; 1 test added to `test_destroy_cli.py`. Suite: 81 tests, all passing.
+
 ## 2026-05-21 (skills migration)
 
 Migrated Claude command output from `.claude/commands/` (flat `.md` files) to `.claude/skills/<name>/SKILL.md` with generated YAML frontmatter. This matches the Claude Code skill format and allows per-command metadata (`description`, `argument-hint`, `disable-model-invocation`, `context`) to be declared in spec frontmatter and rendered automatically.

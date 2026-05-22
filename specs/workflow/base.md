@@ -1,11 +1,17 @@
 ---
 spek:
   description: "4-step session workflow table"
+  integrations:
+    claude:
+      hooks:
+        SessionStart:
+          - matcher: "startup"
+            command: "bash -c 'test -f .spek/STRUCTURE.md && cat .spek/STRUCTURE.md'"
+          - matcher: "clear"
+            command: "bash -c 'test -f .spek/STRUCTURE.md && cat .spek/STRUCTURE.md'"
 ---
 
 # Dev workflow
-
-At the start of each session, read `.spek/STRUCTURE.md` to orient yourself to the project before doing anything else.
 
 Use the session workflow below, driven by slash commands. Each step is invoked explicitly by the user — never advance to the next step automatically, even if the current step concluded confidently. The user may want to review or edit `.spek/SESSION.md` between steps.
 
