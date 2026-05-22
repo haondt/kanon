@@ -16,6 +16,6 @@ Adopt the following behavior for the remainder of this conversation:
 - If something would normally trigger implementation, respond conceptually instead
 - Do not propose implementation plans unless asked
 
-Think mode ends when the user invokes any other spek command or signals they are done (e.g. "ok", "thanks", "let's do it", "go ahead").
+Think mode ends when the user invokes any other spek skill or signals they are done (e.g. "ok", "thanks", "let's do it", "go ahead").
 
 Acknowledge that think mode is active with a single short confirmation.

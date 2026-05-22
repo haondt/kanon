@@ -10,7 +10,7 @@ spek:
 
 # specs
 
-Specs are Markdown files that shape AI behavior — either as always-on rules or as explicitly invoked slash commands.
+Specs are Markdown files that shape AI behavior — either as always-on rules or as explicitly invoked skills.
 
 ## Frontmatter
 
@@ -27,8 +27,8 @@ spek:
 ```
 
 - `description` appears in `spek module list` and as the skill description in the AI tool; for skills, this is shown in autocomplete and is the primary signal used to decide whether to invoke the skill — write it to convey *when* to use it, not just *what* it is
-- `output: skill` marks it as a slash command rather than a passive rule
-- `name` is the slash command name (e.g. `spek-foo` → `/spek-foo`); required for skills
+- `output: skill` marks it as an invocable skill rather than a passive rule
+- `name` is the skill name (e.g. `spek-foo` → `/spek-foo`); required for skills
 - `args` is a human-readable argument hint shown in autocomplete (e.g. `"[stance-name]"`)
 - `integrations` passes additional keys verbatim into the rendered output for a specific tool; for Claude, these become SKILL.md frontmatter fields (`disable-model-invocation`, `context`, etc.)
 
@@ -47,7 +47,7 @@ If you want to add rationale or examples, put them in a reference entry and link
 
 ## Skills
 
-Loaded on demand when the user or AI invokes the slash command. Not injected into every context, so length is governed by clarity rather than token cost.
+Loaded on demand when the user or AI invokes the skill. Not injected into every context, so length is governed by clarity rather than token cost.
 
 - `description` must be informative enough for a user or AI to decide when to invoke it — include trigger conditions, not just a label
 - Prose and numbered steps are appropriate; match the structure to the complexity of the workflow

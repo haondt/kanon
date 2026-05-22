@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-05-22 (session: terminology cleanup)
+
+Replaced remaining "slash command" / "command" references with "skill" across documentation and specs, following the `output: command` → `output: skill` rename completed in the previous session. Changed files: `references/spek/specs.md` (4 wording changes), `.spek/STRUCTURE.md` (workflow directory annotation), `specs/workflow/base.md` ("driven by slash commands" → "driven by skills"), and `README.md` (section heading + one sentence).
+
+Review-triggered fixes: `specs/workflow/spek-plan.md` step 1 changed "this command" → "this skill"; `specs/workflow/spek-think.md` "any other spek command" → "any other spek skill". Both propagated via `just sync`.
+
 ## 2026-05-22 (session: output-type rename)
 
 Renamed the `output: command` output type to `output: skill` throughout the codebase. "skills" is the unified term in modern AI tool platforms (e.g. agentskills.io), and all 12 workflow spec files already used skill-style output; the old `command` key was an artifact of an earlier naming pass.

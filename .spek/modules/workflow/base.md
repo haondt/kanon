@@ -13,7 +13,7 @@ spek:
 
 # Dev workflow
 
-Use the session workflow below, driven by slash commands. Each step is invoked explicitly by the user — never advance to the next step automatically, even if the current step concluded confidently. The user may want to review or edit `.spek/SESSION.md` between steps.
+Use the session workflow below, driven by skills (invoked with `/`). Each step is invoked explicitly by the user — never advance to the next step automatically, even if the current step concluded confidently. The user may want to review or edit `.spek/SESSION.md` between steps.
 
 | Step | Command | Action |
 |---|---|---|

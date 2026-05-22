@@ -35,9 +35,9 @@ spek maintains a library of spec modules — markdown files covering coding conv
 | **stance** | A named set of modules activatable on demand via `/spek-stance`; use when you need the AI to behave differently for a specific task without permanently changing your config |
 | **integration** | The AI tool output files that spek generates from your modules (`claude`, `windsurf`, etc.) |
 
-## Slash commands
+## Skills
 
-The workflow commands enforce a structured session lifecycle. Each step is a checkpoint where you can review and adjust before the AI proceeds — goal before planning, plan before coding, implementation before closing.
+The workflow skills enforce a structured session lifecycle. Each step is a checkpoint where you can review and adjust before the AI proceeds — goal before planning, plan before coding, implementation before closing.
 
 **Workflow**
 
@@ -91,7 +91,7 @@ meta:
   integrations:
     - claude
   profile: "python/cli"    # omitted if no profile was used
-modules:                   # always-active rules/commands
+modules:                   # always-active rules/skills
   - git/commit-base
   - python/style
   - workflow/spek-sketch
