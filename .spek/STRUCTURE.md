@@ -96,4 +96,6 @@ This repo dogfoods spek, so it contains **both** the spec library **and** a `.sp
 
 **Rule:** if a task involves spec content (guidelines, rules, conventions shipped to users), edit files under `specs/`. If a task involves this project's own session or docs, edit files under `.spek/`. Never edit `.spek/modules/` by hand.
 
+**Sync timing:** `just sync` is run at the user's discretion — they may choose to sync mid-session or wait until after the retro. During a session, `.spek/modules/` may intentionally lag `specs/`; do not flag this as an error.
+
 Before writing or editing a spec, run `spek ref read spek/specs`. Before writing or editing a reference entry, run `spek ref read spek/references`.

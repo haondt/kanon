@@ -1,5 +1,23 @@
 # Changelog
 
+## 2026-05-22 (session: review/fix redesign)
+
+Redesigned the `spek-review` / `spek-fix` cycle from a mutable-verdict model to a structured, pass-based audit trail.
+
+`specs/workflow/spek-review.md` completely rewritten: each invocation appends a `### Review Pass N` block to `## Review` in SESSION.md rather than overwriting it. Output is a flat, typed findings list (`- **[type/severity]** location — description`) with no verdict, no checkboxes, and no per-dimension sections. Types: `bug`, `grammar`, `spec`, `question`, `dead-code`, `plan`, `security`, `test`, `approval`. Re-review passes explicitly carry forward unresolved findings.
+
+`specs/workflow/spek-fix.md` completely rewritten: reads the most recent `### Review Pass N`, appends `### Fix Pass N`, fixes every finding unconditionally. No-op if the only finding is the approval sentinel. Ends by prompting the user to re-run `/spek-review`.
+
+`specs/docs/session.md` `## Review` description updated to describe the multi-pass append model.
+
+`specs/workflow/spek-build.md` step-completion instruction made explicitly additive: suffix ` — done` or add a `Completed.` sub-bullet; never overwrite or erase original step text.
+
+`specs/workflow/spek-retro.md` gained a step 9: prompt the user to clear conversation context (e.g. `/clear` in Claude Code).
+
+`specs/workflow/spek-plan.md` and `specs/workflow/spek-detour.md` each gained an explicit reference-library search step (`spek ref search`) before proposing a plan or making a change.
+
+All completed Workflow items removed from `.spek/TODO.md`. Detour: added sync-timing note to `.spek/STRUCTURE.md` clarifying that `.spek/modules/` may intentionally lag `specs/` during a session.
+
 ## 2026-05-22 (session: terminology cleanup)
 
 Replaced remaining "slash command" / "command" references with "skill" across documentation and specs, following the `output: command` → `output: skill` rename completed in the previous session. Changed files: `references/spek/specs.md` (4 wording changes), `.spek/STRUCTURE.md` (workflow directory annotation), `specs/workflow/base.md` ("driven by slash commands" → "driven by skills"), and `README.md` (section heading + one sentence).

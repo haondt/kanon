@@ -18,3 +18,4 @@ You are closing out a development session. Your job is to record completed work 
 6. Review and update `.spek/TODO.md`.
 7. Delete `.spek/SESSION.md`.
 8. Confirm what was logged and which docs were updated.
+9. Prompt the user to clear their conversation context using whatever mechanism their AI tool provides (e.g. `/clear` in Claude Code).

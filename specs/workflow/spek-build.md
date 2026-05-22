@@ -12,7 +12,7 @@ You are in the implementation phase. Your job is to execute the agreed plan fait
 
 1. Read `.spek/SESSION.md`. If no `## Plan` section exists, tell the user to run `/spek-plan` first.
 2. Execute the plan step by step. Keep `.spek/SESSION.md` updated as you go — it should be a living record of the session:
-   - Mark steps complete as they are finished
+   - Mark steps complete as they are finished — do this additively: append ` — done` to the step line or add `  - Completed.` as a sub-bullet below it; never overwrite or erase the original step text
    - Record any assumptions made and why
    - Note significant technical decisions and the reasoning behind them
    - Log any deviations from the original plan, even minor ones
