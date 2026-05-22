@@ -3,6 +3,10 @@ spek:
   description: "Onboard an existing project: write STRUCTURE.md and select modules"
   output: skill
   name: spek-onboard
+  preapproved_tools:
+    - Bash(spek module *)
+    - Edit(.spek/TODO.md)
+    - Write(.spek/TODO.md)
   integrations:
     claude:
       disable-model-invocation: true
@@ -16,7 +20,7 @@ You are onboarding an existing ("brownfield") project into spek. Your job is to 
 
 3. **Write `.spek/STRUCTURE.md`.** If the file already exists and has content beyond a placeholder, ask the user whether to overwrite before proceeding. Write a complete structure document following the `docs/structure` conventions: project summary (one sentence + 3–5 bullets), annotated directory layout, key modules or packages and how they relate, tech stack, architectural patterns, domain concepts, and non-obvious conventions.
 
-4. **Select modules.** Run `spek module list --json` to enumerate available modules. Based on the tech stack and project shape from step 2, select the modules that apply. Prefer specificity — if the project uses Docker, include the relevant docker module; if it does not, leave it out.
+4. **Select modules.** Use `spek module list` to enumerate available modules. Based on the tech stack and project shape from step 2, select the modules that apply. Prefer specificity — if the project uses Docker, include the relevant docker module; if it does not, leave it out.
 
 5. **Present the proposed selection** to the user and wait for explicit approval. Call out any borderline inclusions and explain why you included or excluded them.
 

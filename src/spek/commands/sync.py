@@ -150,7 +150,7 @@ def do_sync(root: Path, pull: bool = False) -> None:
 
     # ── Phase 5: generate AI tool output ──────────────────────────────────────
     # Only modules in config.modules (not stance-only) become rules/commands.
-    from spek.core.render import AI_TOOL_OUTPUT_DIRS, AI_TOOL_SETTINGS_FILES, collect_hooks, render_module, render_settings
+    from spek.core.render import AI_TOOL_OUTPUT_DIRS, AI_TOOL_SETTINGS_FILES, collect_hooks, collect_preapproved_tools, render_module, render_settings
 
     to_render: list[tuple[str, Path]] = []
     for mod in config.modules:
@@ -179,13 +179,19 @@ def do_sync(root: Path, pull: bool = False) -> None:
     for integration in config.meta.integrations:
         click.echo(f"Generating {integration} output:")
         hooks_by_event: dict[str, list[dict]] = {}
+        preapproved_tools: list[str] = []
+        seen_tools: set[str] = set()
         for name, src in to_render:
             content = src.read_text()
             out_path = render_module(content, name, integration, root)
             click.echo(f"  {name} → {out_path.relative_to(root)}")
             for event, entries in collect_hooks(content, integration).items():
                 hooks_by_event.setdefault(event, []).extend(entries)
-        render_settings(hooks_by_event, root, integration)
+            for tool in collect_preapproved_tools(content):
+                if tool not in seen_tools:
+                    seen_tools.add(tool)
+                    preapproved_tools.append(tool)
+        render_settings(hooks_by_event, root, integration, preapproved_tools)
 
     click.echo("Done.")
 

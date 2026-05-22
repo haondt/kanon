@@ -1,5 +1,17 @@
 # Changelog
 
+## 2026-05-22 (session: render.py skill enhancements and workflow spec refinements)
+
+Extended `render.py` and workflow specs to give fork-context skills richer tool access and context.
+
+`render.py` gains `collect_preapproved_tools(content)` to extract `preapproved_tools` from rule module frontmatter. `render_module` now merges `preapproved_tools` into `allowed-tools` in Claude skill frontmatter; when `context: fork`, it also appends STRUCTURE.md preload commands to `allowed-tools` and injects a `## Project structure` shell-expansion block at the end of the skill body (so fork subagents receive codebase context automatically). `render_settings` gained an optional `preapproved_tools` parameter that writes a `permissions.allow` block into `.claude/settings.json`. `sync.py` accumulates `preapproved_tools` across all rendered modules and passes them to `render_settings`.
+
+`spek-build`, `spek-review`, `spek-retro`, `spek-fix`, and `spek-detour` workflow specs were updated with explicit `allowed-tools` in frontmatter and `context: fork` where applicable. `spek-review` was revised so the approval finding is omitted when other findings are present. `spek-fix` was revised to propose and get explicit user approval for each fix before implementing. `spek-todo` and `spek-onboard` gained minor refinements.
+
+`specs/tools/spek/ref.md` and `specs/tools/spek/module.md` were condensed from sub-section prose to flat bullet lists (both now under 8 lines). `references/spek/specs.md` was updated to document the 1–1024 character `description` limit and keyword/trigger guidance for skill descriptions.
+
+The session's original goal (converting `tools/spek/ref.md` and `module.md` to `output: skill`) was attempted and then reversed — the `output: rule` form is the current behavior; the conversion remains a backlog item.
+
 ## 2026-05-22 (session: review/fix redesign)
 
 Redesigned the `spek-review` / `spek-fix` cycle from a mutable-verdict model to a structured, pass-based audit trail.

@@ -3,6 +3,14 @@ spek:
   description: "Close the session: append to CHANGELOG.md and delete SESSION.md"
   output: skill
   name: spek-retro
+  preapproved_tools:
+    - Edit(.spek/CHANGELOG.md)
+    - Write(.spek/CHANGELOG.md)
+    - Edit(.spek/TODO.md)
+    - Write(.spek/TODO.md)
+    - Bash(git diff *)
+    - Bash(git log *)
+    - Bash(rm .spek/SESSION.md)
   integrations:
     claude:
       disable-model-invocation: true

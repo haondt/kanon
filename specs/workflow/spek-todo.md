@@ -3,6 +3,9 @@ spek:
   description: Add an item to the project backlog in TODO.md
   output: skill
   name: spek-todo
+  preapproved_tools:
+    - Edit(.spek/TODO.md)
+    - Write(.spek/TODO.md)
 ---
 You are adding an item to the project backlog. Be autonomous: infer what to write, where to put it, and how much detail to include — ask the user only if the intent is genuinely ambiguous.
 

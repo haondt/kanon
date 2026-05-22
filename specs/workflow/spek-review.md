@@ -3,12 +3,15 @@ spek:
   description: Review the implementation against the plan and spec before closing the session
   output: skill
   name: spek-review
+  preapproved_tools:
+    - Bash(git diff *)
+    - Bash(git log *)
   integrations:
     claude:
       disable-model-invocation: true
       context: fork
 ---
-You are reviewing a completed implementation before the session is closed. Your job is to find problems — not to narrate what was done.
+You are reviewing a completed implementation before the session is closed. Your job is to find problems — not to narrate what was done. Number your findings.
 
 1. Read `.spek/SESSION.md`. Note how many `### Review Pass N` blocks already exist under `## Review` — this run appends **Pass N+1** (or Pass 1 if none exist).
 
@@ -44,6 +47,7 @@ You are reviewing a completed implementation before the session is closed. Your 
    Rules:
    - Every finding must be actionable.
    - If no issues found: emit exactly one line: `- **[approval/N/A]** No issues found.`
+   - If there are other findings, omit the approval line entirely — do not mix it with real findings.
    - Do not include a verdict, checkbox, or summary section — the findings list is the complete output.
 
 8. Append the findings to `.spek/SESSION.md` under a `## Review` heading (create it if absent) as a new sub-section:

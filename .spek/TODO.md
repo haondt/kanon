@@ -45,11 +45,6 @@ Currently spek only syncs modules from its own repo, which limits it to a single
 - `spek sync --pull` fetches each module from its declared source; modules with no source continue to resolve against the built-in repo as today
 - Consider how `spek init` / `spek profile apply` should work when profiles live in an external source
 
-
-## Tools modules
-
-- Convert `specs/tools/` modules (e.g. `tools/spek/ref.md`, `tools/spek/module.md`) from `output: rule` to `output: skill` so they are emitted as AI-invoked skills rather than always-on rules. These modules describe CLI tool usage, not behavioral conventions — the AI should pull them on demand rather than having them injected as passive context into every session. We should also consider if the subcommands (module list, module set, etc) should be a single skill or broken into multiple.
-
 ## Cleanup
 
 - `specs/workflow/cleanup.md` — standalone spec for identifying and removing dead code: unused functions, stale TODOs, commented-out blocks, unreferenced files, speculative code that was never used. Complements the retro step but can be invoked independently.

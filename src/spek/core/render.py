@@ -6,6 +6,7 @@ from typing import Any
 
 from pydantic import BaseModel
 
+from spek.core.utils import deep_merge
 from spek.core.yaml_utils import FRONTMATTER_RE, dump_yaml, parse_yaml
 
 AI_TOOL_OUTPUT_DIRS: dict[str, dict[str, str]] = {
@@ -15,12 +16,18 @@ AI_TOOL_OUTPUT_DIRS: dict[str, dict[str, str]] = {
     },
     "windsurf": {
         "rule": ".windsurf/rules",
-        "skill": ".windsurf/rules",
+        "skill": ".windsurf/skills",
     },
 }
 
 AI_TOOL_SETTINGS_FILES: dict[str, str] = {
     "claude": ".claude/settings.json",
+}
+
+AI_TOOL_ADDITIONAL_SETTINGS: dict[str, dict[str, Any]] = {
+    "claude": {
+        "includeGitInstructions": False,
+    }
 }
 
 
@@ -30,10 +37,12 @@ class _SpekMeta(BaseModel):
     description: str | None = None
     args: str | None = None
     integrations: dict[str, dict[str, Any]] | None = None
+    preapproved_tools: list[str] = []
 
 
 class ModuleFrontmatter(BaseModel):
     spek: _SpekMeta = _SpekMeta()
+
 
 
 def parse_frontmatter(content: str) -> tuple[ModuleFrontmatter, str]:
@@ -44,8 +53,17 @@ def parse_frontmatter(content: str) -> tuple[ModuleFrontmatter, str]:
     return ModuleFrontmatter.model_validate(data), content[match.end():]
 
 
+def collect_preapproved_tools(content: str) -> list[str]:
+    meta, _ = parse_frontmatter(content)
+    if meta.spek.output == "skill":
+        return []
+    return list(meta.spek.preapproved_tools)
+
+
 def collect_hooks(content: str, ai_tool: str) -> dict[str, list[dict[str, Any]]]:
     meta, _ = parse_frontmatter(content)
+    if meta.spek.output == "skill":
+        return {}
     if not meta.spek.integrations:
         return {}
     tool_integrations = meta.spek.integrations.get(ai_tool, {})
@@ -55,15 +73,21 @@ def collect_hooks(content: str, ai_tool: str) -> dict[str, list[dict[str, Any]]]
     return {event: list(entries) for event, entries in hooks.items()}
 
 
-def render_settings(hooks_by_event: dict[str, list[dict[str, Any]]], project_root: Path, ai_tool: str) -> None:
+def render_settings(
+    hooks_by_event: dict[str, list[dict[str, Any]]],
+    project_root: Path,
+    ai_tool: str,
+    preapproved_tools: list[str] | None = None,
+) -> None:
     rel = AI_TOOL_SETTINGS_FILES.get(ai_tool)
     if rel is None:
         return
-    if not hooks_by_event:
+    preapproved_tools = preapproved_tools or []
+    if not hooks_by_event and not preapproved_tools:
         return
     settings_path = project_root / rel
 
-    claude_hooks: dict[str, list[dict[str, Any]]] = {}
+    hooks: dict[str, list[dict[str, Any]]] = {}
     for event, entries in hooks_by_event.items():
         groups = []
         for entry in entries:
@@ -77,10 +101,18 @@ def render_settings(hooks_by_event: dict[str, list[dict[str, Any]]], project_roo
                 "matcher": matcher,
                 "hooks": [{"type": "command", "command": command}],
             })
-        claude_hooks[event] = groups
+        hooks[event] = groups
 
     settings_path.parent.mkdir(parents=True, exist_ok=True)
-    settings_path.write_text(json.dumps({"includeGitInstructions": False, "hooks": claude_hooks}, indent=2) + "\n")
+    settings_object: dict[str, Any] = {}
+    if preapproved_tools:
+        settings_object["permissions"] = {"allow": preapproved_tools}
+    if hooks:
+        settings_object["hooks"] = hooks
+    additional_settings = AI_TOOL_ADDITIONAL_SETTINGS.get(ai_tool)
+    if additional_settings:
+        settings_object = deep_merge(settings_object, additional_settings)
+    settings_path.write_text(json.dumps(settings_object, indent=2) + "\n")
 
 
 def output_dir_for(project_root: Path, ai_tool: str, out_type: str) -> Path:
@@ -106,9 +138,17 @@ def render_module(content: str, module: str, ai_tool: str, project_root: Path) -
             fm["description"] = meta.spek.description
         if meta.spek.args:
             fm["argument-hint"] = meta.spek.args
+        if meta.spek.preapproved_tools:
+            existing = fm.get("allowed-tools", [])
+            fm["allowed-tools"] = existing + [t for t in meta.spek.preapproved_tools if t not in existing]
         if meta.spek.integrations:
             claude_meta = {k: v for k, v in meta.spek.integrations.get("claude", {}).items() if k != "hooks"}
             fm.update(claude_meta)
+            if claude_meta.get("context") == "fork":
+                existing = fm.get("allowed-tools", [])
+                injected = ["Bash(test .spek/STRUCTURE.md)", "Bash(cat .spek/STRUCTURE.md)"]
+                fm["allowed-tools"] = existing + [t for t in injected if t not in existing]
+                body = body.rstrip("\n") + "\n\n## Project structure\n\n!`test -f .spek/STRUCTURE.md && cat .spek/STRUCTURE.md`\n"
         out_path = skill_dir / "SKILL.md"
         out_path.write_text(f"---\n{dump_yaml(fm)}\n---\n{body}")
         return out_path
