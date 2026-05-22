@@ -1,6 +1,5 @@
 .spek/SESSION.md
-.claude/rules/
-.claude/commands/
+.claude/
 __pycache__/
 *.py[cod]
 *.egg-info/
