@@ -1,7 +1,7 @@
 ---
 spek:
   description: Execute the implementation plan recorded in SESSION.md
-  output: command
+  output: skill
   name: spek-build
   integrations:
     claude:

@@ -17,8 +17,8 @@ Specs are Markdown files that shape AI behavior — either as always-on rules or
 ```yaml
 spek:
   description: "One phrase — the constraint, not the module name"
-  output: command         # omit for rules (default)
-  name: spek-foo          # required if output: command
+  output: skill           # omit for rules (default)
+  name: spek-foo          # required if output: skill
   args: "[stance-name]"   # optional; generic argument hint
   integrations:           # optional; integration-specific kwargs passed into rendered output
     claude:
@@ -26,9 +26,9 @@ spek:
       context: fork
 ```
 
-- `description` appears in `spek module list` and as the skill description in the AI tool; for commands, this is shown in autocomplete and is the primary signal used to decide whether to invoke the command — write it to convey *when* to use it, not just *what* it is
-- `output: command` marks it as a slash command rather than a passive rule
-- `name` is the slash command name (e.g. `spek-foo` → `/spek-foo`); required for commands
+- `description` appears in `spek module list` and as the skill description in the AI tool; for skills, this is shown in autocomplete and is the primary signal used to decide whether to invoke the skill — write it to convey *when* to use it, not just *what* it is
+- `output: skill` marks it as a slash command rather than a passive rule
+- `name` is the slash command name (e.g. `spek-foo` → `/spek-foo`); required for skills
 - `args` is a human-readable argument hint shown in autocomplete (e.g. `"[stance-name]"`)
 - `integrations` passes additional keys verbatim into the rendered output for a specific tool; for Claude, these become SKILL.md frontmatter fields (`disable-model-invocation`, `context`, etc.)
 
@@ -45,7 +45,7 @@ Always-on guidance injected into every context window. Brevity and unambiguity a
 
 If you want to add rationale or examples, put them in a reference entry and link from the spec.
 
-## Commands
+## Skills
 
 Loaded on demand when the user or AI invokes the slash command. Not injected into every context, so length is governed by clarity rather than token cost.
 

@@ -1,7 +1,7 @@
 ---
 spek:
   description: Make a quick out-of-scope edit without going through the full workflow
-  output: command
+  output: skill
   name: spek-detour
   integrations:
     claude:

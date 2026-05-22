@@ -1,7 +1,7 @@
 ---
 spek:
   description: Enter exploratory mode to discuss ideas without building
-  output: command
+  output: skill
   name: spek-think
   integrations:
     claude:

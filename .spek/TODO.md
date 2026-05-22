@@ -54,7 +54,7 @@ Currently spek only syncs modules from its own repo, which limits it to a single
 
 ## Tools modules
 
-- Convert `specs/tools/` modules (e.g. `tools/spek/ref.md`, `tools/spek/module.md`) from `output: rule` to `output: command` so they are emitted as AI-invoked skills rather than always-on rules. These modules describe CLI tool usage, not behavioral conventions — the AI should pull them on demand rather than having them injected as passive context into every session.
+- Convert `specs/tools/` modules (e.g. `tools/spek/ref.md`, `tools/spek/module.md`) from `output: rule` to `output: skill` so they are emitted as AI-invoked skills rather than always-on rules. These modules describe CLI tool usage, not behavioral conventions — the AI should pull them on demand rather than having them injected as passive context into every session.
 
 ## Cleanup
 

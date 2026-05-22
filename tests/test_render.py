@@ -51,7 +51,8 @@ def test_render_settings_writes_json(tmp_path):
             "SessionStart": [
                 {"matcher": "startup", "hooks": [{"type": "command", "command": "echo hello"}]}
             ]
-        }
+        },
+        "includeGitInstructions": False,
     }
 
 

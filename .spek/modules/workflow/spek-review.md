@@ -1,7 +1,7 @@
 ---
 spek:
   description: Review the implementation against the plan and spec before closing the session
-  output: command
+  output: skill
   name: spek-review
   integrations:
     claude:

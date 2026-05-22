@@ -11,11 +11,11 @@ from spek.core.yaml_utils import FRONTMATTER_RE, dump_yaml, parse_yaml
 AI_TOOL_OUTPUT_DIRS: dict[str, dict[str, str]] = {
     "claude": {
         "rule": ".claude/rules",
-        "command": ".claude/skills",
+        "skill": ".claude/skills",
     },
     "windsurf": {
         "rule": ".windsurf/rules",
-        "command": ".windsurf/rules",
+        "skill": ".windsurf/rules",
     },
 }
 
@@ -97,7 +97,7 @@ def render_module(content: str, module: str, ai_tool: str, project_root: Path) -
     out_dir = output_dir_for(project_root, ai_tool, out_type)
     stem = meta.spek.name if meta.spek.name else module.replace("/", "--")
 
-    if out_type == "command" and ai_tool == "claude":
+    if out_type == "skill" and ai_tool == "claude":
         skill_dir = out_dir / stem
         skill_dir.mkdir(parents=True, exist_ok=True)
         fm: dict[str, Any] = {}

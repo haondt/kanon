@@ -1,7 +1,7 @@
 ---
 spek:
   description: Amend the current session goal or plan without restarting
-  output: command
+  output: skill
   name: spek-amend
   integrations:
     claude:

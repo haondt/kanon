@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-05-22 (session: output-type rename)
+
+Renamed the `output: command` output type to `output: skill` throughout the codebase. "skills" is the unified term in modern AI tool platforms (e.g. agentskills.io), and all 12 workflow spec files already used skill-style output; the old `command` key was an artifact of an earlier naming pass.
+
+Changed: `AI_TOOL_OUTPUT_DIRS["claude"]["command"]` key in `render.py` (2 dict sites + 1 branch condition); all 12 `specs/workflow/*.md` frontmatter blocks; 4 fixture strings and 1 test name in `tests/test_sync_cli.py`; the description and section heading in `references/spek/specs.md`; one TODO.md backlog item and two lines in `.spek/STRUCTURE.md`. `spek sync` was re-run to regenerate `.spek/modules/workflow/`.
+
+Detours: updated `specs/workflow/spek-plan.md` to forbid post-approval changes, rewrote the body for directness (bold step verbs, explicit approval definition, hard stop in step 6); fixed a pre-existing test gap in `test_render_settings_writes_json` to include `includeGitInstructions: false` in expected output.
+
 ## 2026-05-22 (detours)
 
 `README.md` quick start updated to `uv tool install haondt-spek` and the `just` prerequisite removed — the tool is now distributed via PyPI so cloning the repo is no longer the install path.
@@ -10,7 +18,7 @@
 
 `specs/workflow/spek-retro.md` description clarified: "clear SESSION.md" → "delete SESSION.md"; step 7 simplified to "Delete `.spek/SESSION.md`".
 
-`.spek/TODO.md` gained a new "Tools modules" category: convert `specs/tools/` modules from `output: rule` to `output: command` so CLI reference docs are pulled on demand rather than injected into every context.
+`.spek/TODO.md` gained a new "Tools modules" category: convert `specs/tools/` modules from `output: rule` to `output: skill` so CLI reference docs are pulled on demand rather than injected into every context.
 
 ## 2026-05-21 (session: hooks/settings generation)
 

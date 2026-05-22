@@ -1,7 +1,7 @@
 ---
 spek:
   description: Address findings from a completed review, one by one
-  output: command
+  output: skill
   name: spek-fix
   integrations:
     claude:

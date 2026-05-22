@@ -1,7 +1,7 @@
 ---
 spek:
   description: Switch behavioral stance by loading a named module set
-  output: command
+  output: skill
   name: spek-stance
   args: "[stance-name]"
   integrations:

@@ -1,7 +1,7 @@
 ---
 spek:
   description: Turn a vague idea into a concrete, plannable goal
-  output: command
+  output: skill
   name: spek-sketch
   integrations:
     claude:

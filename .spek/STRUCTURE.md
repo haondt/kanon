@@ -46,7 +46,7 @@ src/spek/
 
 - `config.py` — `SpekConfig` Pydantic model; `load()`/`save()` against `.spek/spek.yaml`
 - `yaml_utils.py` — all YAML I/O: `load_yaml(path, model?)`, `save_yaml(data, path)`; also exports `FRONTMATTER_RE` (shared frontmatter regex)
-- `render.py` — reads local module copies, strips frontmatter, writes AI tool output files; `ModuleFrontmatter` parses `spek.description/output/name/args/integrations`; for `output: command` + claude, writes `<name>/SKILL.md` with generated YAML frontmatter (`description`, `argument-hint`, plus any keys from `integrations.claude` except `hooks`); `collect_hooks(content, ai_tool)` extracts hook declarations from frontmatter; `render_settings(hooks_by_event, project_root, ai_tool)` writes `.claude/settings.json` from accumulated hook entries
+- `render.py` — reads local module copies, strips frontmatter, writes AI tool output files; `ModuleFrontmatter` parses `spek.description/output/name/args/integrations`; for `output: skill` + claude, writes `<name>/SKILL.md` with generated YAML frontmatter (`description`, `argument-hint`, plus any keys from `integrations.claude` except `hooks`); `collect_hooks(content, ai_tool)` extracts hook declarations from frontmatter; `render_settings(hooks_by_event, project_root, ai_tool)` writes `.claude/settings.json` from accumulated hook entries
 - `modules.py` — `list_modules(repo_path)` enumerates all spec files
 - `profiles.py` — `resolve_profile()` recursive resolution with deduplication; `ProfileSpec` model
 - `references.py` — `search_references(repo_path, terms, project_root?)` keyword search; `read_reference(repo_path, name, project_root?)` retrieves content; local refs in `.spek/local/references/` shadow upstream on name collision; `ReferenceResult` model
@@ -76,8 +76,8 @@ spek sync   → copies spec files from upstream into .spek/modules/ and .spek/st
 
 ## Non-obvious
 
-- Output type (`rule` vs `command`) is declared in spec file frontmatter; frontmatter is stripped before writing output
-- `command` output for Claude is written as `.claude/skills/<name>/SKILL.md` with a YAML frontmatter block (`description`, `argument-hint`, and any `integrations.claude` keys passed verbatim except `hooks`); Windsurf `command` output remains a flat `.md` in `.windsurf/rules/`
+- Output type (`rule` vs `skill`) is declared in spec file frontmatter; frontmatter is stripped before writing output
+- `skill` output for Claude is written as `.claude/skills/<name>/SKILL.md` with a YAML frontmatter block (`description`, `argument-hint`, and any `integrations.claude` keys passed verbatim except `hooks`); Windsurf `skill` output remains a flat `.md` in `.windsurf/rules/`
 - Hook declarations in `integrations.claude.hooks` frontmatter accumulate across all modules and are written to `.claude/settings.json` by `render_settings`; the file is fully spek-managed (overwritten each sync, deleted by `spek destroy`) — user-managed overrides belong in `.claude/settings.local.json`
 - Whether a module is always-active or stance-only is determined entirely by its presence in `spek.yaml.modules`, not by anything in the file itself
 - `_metadata.py` version is `"0.0.0"` in the repo — CI rewrites it from the git tag at build time; do not edit manually

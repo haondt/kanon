@@ -81,7 +81,7 @@ def test_sync_stance_modules_not_rendered(tmp_path):
 
 def test_sync_routes_command_to_skill(tmp_path):
     make_project(tmp_path, ["workflow/spek-sketch"], {
-        "workflow/spek-sketch": "---\nspek:\n  output: command\n  description: Turn a vague idea into a goal\n---\nSketch the goal.\n",
+        "workflow/spek-sketch": "---\nspek:\n  output: skill\n  description: Turn a vague idea into a goal\n---\nSketch the goal.\n",
     })
 
     CliRunner().invoke(cli, ["sync", "--project-root", str(tmp_path)])
@@ -95,9 +95,9 @@ def test_sync_routes_command_to_skill(tmp_path):
     assert "Turn a vague idea into a goal" in content
 
 
-def test_sync_command_name_override(tmp_path):
+def test_sync_skill_name_override(tmp_path):
     make_project(tmp_path, ["workflow/spek-sketch"], {
-        "workflow/spek-sketch": "---\nspek:\n  output: command\n  name: spek-sketch\n  description: Turn a vague idea into a goal\n---\nSketch the goal.\n",
+        "workflow/spek-sketch": "---\nspek:\n  output: skill\n  name: spek-sketch\n  description: Turn a vague idea into a goal\n---\nSketch the goal.\n",
     })
 
     CliRunner().invoke(cli, ["sync", "--project-root", str(tmp_path)])
@@ -111,7 +111,7 @@ def test_sync_skill_frontmatter(tmp_path):
     content = "\n".join([
         "---",
         "spek:",
-        "  output: command",
+        "  output: skill",
         "  name: spek-stance",
         "  description: Switch behavioral stance",
         "  args: '[stance-name]'",
@@ -154,7 +154,7 @@ def test_sync_windsurf_command_still_flat(tmp_path):
     (spek_dir / "stances").mkdir()
     dest = spek_dir / "modules" / "workflow" / "spek-sketch.md"
     dest.parent.mkdir(parents=True)
-    dest.write_text("---\nspek:\n  output: command\n  name: spek-sketch\n---\nSketch the goal.\n")
+    dest.write_text("---\nspek:\n  output: skill\n  name: spek-sketch\n---\nSketch the goal.\n")
 
     CliRunner().invoke(cli, ["sync", "--project-root", str(tmp_path)])
 

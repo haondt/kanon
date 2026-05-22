@@ -1,7 +1,7 @@
 ---
 spek:
   description: Add an item to the project backlog in TODO.md
-  output: command
+  output: skill
   name: spek-todo
 ---
 You are adding an item to the project backlog. Be autonomous: infer what to write, where to put it, and how much detail to include — ask the user only if the intent is genuinely ambiguous.

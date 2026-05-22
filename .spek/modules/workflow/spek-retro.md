@@ -1,7 +1,7 @@
 ---
 spek:
   description: "Close the session: append to CHANGELOG.md and delete SESSION.md"
-  output: command
+  output: skill
   name: spek-retro
   integrations:
     claude:

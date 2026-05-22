@@ -1,7 +1,7 @@
 ---
 spek:
   description: "Onboard an existing project: write STRUCTURE.md and select modules"
-  output: command
+  output: skill
   name: spek-onboard
   integrations:
     claude:
