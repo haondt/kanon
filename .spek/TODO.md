@@ -41,6 +41,7 @@ Stances implemented (`stances/`, `/spek-stance` skill, `spek local stance`). Pos
 
 Currently spek only syncs modules from its own repo, which limits it to a single opinionated library. The goal is to allow modules, stances, and profiles in `spek.yaml` to reference external sources directly — so personal/work configs can be kept separate and so other people can use spek with their own spec libraries.
 
+- Add `~/.spek/settings.json` — a global user-level config file that declares a list of module sources (initially local directories; eventually remote sources like GitHub repos). Other global settings can live here too. `spek sync` and `spek module list` should respect declared sources alongside the built-in repo.
 - Replace the flat module path string (e.g. `git/commit-base`) with a richer format that can optionally carry a source (e.g. a repo URL + ref) alongside the path
 - `spek sync --pull` fetches each module from its declared source; modules with no source continue to resolve against the built-in repo as today
 - Consider how `spek init` / `spek profile apply` should work when profiles live in an external source
@@ -48,6 +49,26 @@ Currently spek only syncs modules from its own repo, which limits it to a single
 ## Frontend patterns
 
 - Add `specs/systems/basic-crud.md` (conventions for a basic crud app) and `references/basic-crud-frontend`, `references/basic-crud-backend`, `references/basic-crud-htmx`, etc (full pattern: URL structure, create/edit page shape, form layout, button placement, `hx-confirm` for delete, response fragment conventions, etc). Use `spek.template: jinja` in the spec with `{% if "frontend/htmx" in modules %}` blocks so htmx-specific content is only rendered when that module is active. (`spek.template: jinja` is now implemented.)
+
+## spek-audit
+
+New standalone skill that evaluates a project against its active spek modules and guides remediation.
+
+- Initial AI pass (module-by-module) writes findings to `.spek/audit.yaml` with severity and status
+- Triage phase walks through findings one at a time; resolutions: fix in-place, manual user fix, move to TODO, deactivate module, defer for upstream spec change, ignore/note in STRUCTURE.md
+- O(n) fix evaluation — lazily marks findings already resolved by a prior fix rather than re-scanning
+- Final retro phase: CHANGELOG entry + delete audit file
+- Follows the linting model: AI writes `audit.yaml` directly, `spek session validate` (or equivalent) enforces schema
+
+## Plan splitting (`/spek-split`)
+
+Add a `/spek-split` skill and supporting conventions for decomposing a large SESSION.md plan into multiple committed sub-plans, each executable as a standalone session.
+
+- **`/spek-split` skill** (runs between `/spek-plan` and `/spek-build`): reads SESSION.md, proposes a set of sub-plans and a group directory name (AI-suggested, user-approved), writes `.spek/plans/<group>/index.yaml` and one `.md` plan file per sub-plan, then prompts the user to either defer all (deletes SESSION.md) or start one now (moves that plan file to SESSION.md).
+- **Directory structure:** `.spek/plans/<group>/index.yaml` (goal, overview, ordered plan list with `status: pending/done`) + `.spek/plans/<group>/<name>.md` (Goal + Plan + `## Group` section containing `<group>/<name>`). Plan files are committed; the structure mirrors the existing `.spek/` conventions.
+- **`## Group` convention in SESSION.md:** a single line `<group>/<plan>` added to plan files and preserved in SESSION.md after loading; skills that need broader context can follow it to `index.yaml` without it being mandatory.
+- **Retro extension:** if SESSION.md contains a `## Group` section, retro locates the matching entry in `index.yaml` and sets `status: done` before clearing SESSION.md. No in-progress state — plans go directly from `pending` to `done`.
+- **Loading a plan:** user manually moves a plan file to SESSION.md (`mv .spek/plans/<group>/<name>.md .spek/SESSION.md`); no new skill needed for this step.
 
 ## Cleanup
 
