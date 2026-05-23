@@ -8,7 +8,7 @@ from typing import Any
 import yaml
 from pydantic import BaseModel, field_validator
 
-from spek.core.session import _literal_representer, _make_dumper
+from spek.core.yaml_utils import _make_dumper
 
 TODO_FILE = ".spek/todo.yaml"
 

@@ -9,6 +9,8 @@ from click.testing import CliRunner
 from spek.cli import cli
 from spek.core.session import (
     Finding,
+    FindingSeverity,
+    FindingType,
     PlanSection,
     PlanStep,
     ReviewPass,
@@ -39,17 +41,17 @@ def test_plan_step_strips_text():
 
 
 def test_finding_validates_status():
-    f = Finding(text="x", status="open")
+    f = Finding(type=FindingType.bug, severity=FindingSeverity.minor, text="x", status="open")
     assert f.status == "open"
 
 
 def test_finding_strips_fix_note():
-    f = Finding(text="x", fix_note="  note  ")
+    f = Finding(type=FindingType.bug, severity=FindingSeverity.minor, text="x", fix_note="  note  ")
     assert f.fix_note == "note"
 
 
 def test_finding_fix_note_none_stays_none():
-    f = Finding(text="x", fix_note=None)
+    f = Finding(type=FindingType.bug, severity=FindingSeverity.minor, text="x", fix_note=None)
     assert f.fix_note is None
 
 
@@ -58,7 +60,7 @@ def test_session_roundtrip(tmp_path):
     state.plan.steps["s1"] = PlanStep(text="Step one")
     state.plan.notes["pn1"] = "A plan note"
     state.build.notes["bn1"] = "A build note"
-    state.review["p1"] = ReviewPass(findings={"f1": Finding(text="A finding")})
+    state.review["p1"] = ReviewPass(findings={"f1": Finding(type=FindingType.bug, severity=FindingSeverity.major, text="A finding")})
     state.amendments.append("Changed scope")
     state.detours.append("Fixed typo")
     state._meta.next_key = {"pn": 2, "bn": 2, "f": 2, "p": 2}
@@ -96,9 +98,18 @@ def test_lint_session_empty_goal(tmp_path):
 
 
 def test_finding_rejects_invalid_status():
-    import pytest
     with pytest.raises(Exception):
-        Finding(text="t", status="bad")
+        Finding(type=FindingType.bug, severity=FindingSeverity.minor, text="t", status="bad")
+
+
+def test_finding_rejects_invalid_type():
+    with pytest.raises(Exception):
+        Finding(type="invalid_type", severity=FindingSeverity.minor, text="t")
+
+
+def test_finding_rejects_invalid_severity():
+    with pytest.raises(Exception):
+        Finding(type=FindingType.bug, severity="extreme", text="t")
 
 
 def test_lint_session_clean():
@@ -280,7 +291,7 @@ def test_session_review_add_finding(tmp_path):
     invoke("start", "Goal", project_root=tmp_path)
     CliRunner().invoke(cli, ["session", "review", "start", "--project-root", str(tmp_path)])
     result = CliRunner().invoke(cli, [
-        "session", "review", "add-finding", "p1", "Missing error handling",
+        "session", "review", "add-finding", "p1", "bug", "major", "Missing error handling",
         "--json", "--project-root", str(tmp_path)
     ])
     assert result.exit_code == 0
@@ -289,14 +300,48 @@ def test_session_review_add_finding(tmp_path):
     assert data["count"] == 1
 
 
+def test_session_review_add_finding_stores_type_and_severity(tmp_path):
+    invoke("start", "Goal", project_root=tmp_path)
+    CliRunner().invoke(cli, ["session", "review", "start", "--project-root", str(tmp_path)])
+    CliRunner().invoke(cli, [
+        "session", "review", "add-finding", "p1", "security", "critical", "SQL injection risk",
+        "--project-root", str(tmp_path)
+    ])
+    state, _ = load_session(tmp_path)
+    f = state.review["p1"].findings["f1"]
+    assert f.type == FindingType.security
+    assert f.severity == FindingSeverity.critical
+    assert f.text == "SQL injection risk"
+
+
+def test_session_review_add_finding_rejects_invalid_type(tmp_path):
+    invoke("start", "Goal", project_root=tmp_path)
+    CliRunner().invoke(cli, ["session", "review", "start", "--project-root", str(tmp_path)])
+    result = CliRunner().invoke(cli, [
+        "session", "review", "add-finding", "p1", "invalid_type", "minor", "Some text",
+        "--project-root", str(tmp_path)
+    ])
+    assert result.exit_code != 0
+
+
+def test_session_review_add_finding_rejects_invalid_severity(tmp_path):
+    invoke("start", "Goal", project_root=tmp_path)
+    CliRunner().invoke(cli, ["session", "review", "start", "--project-root", str(tmp_path)])
+    result = CliRunner().invoke(cli, [
+        "session", "review", "add-finding", "p1", "bug", "extreme", "Some text",
+        "--project-root", str(tmp_path)
+    ])
+    assert result.exit_code != 0
+
+
 def test_session_review_finding_keys_global_across_passes(tmp_path):
     invoke("start", "Goal", project_root=tmp_path)
     CliRunner().invoke(cli, ["session", "review", "start", "--project-root", str(tmp_path)])
-    CliRunner().invoke(cli, ["session", "review", "add-finding", "p1", "Finding 1", "--project-root", str(tmp_path)])
-    CliRunner().invoke(cli, ["session", "review", "add-finding", "p1", "Finding 2", "--project-root", str(tmp_path)])
+    CliRunner().invoke(cli, ["session", "review", "add-finding", "p1", "bug", "minor", "Finding 1", "--project-root", str(tmp_path)])
+    CliRunner().invoke(cli, ["session", "review", "add-finding", "p1", "bug", "minor", "Finding 2", "--project-root", str(tmp_path)])
     CliRunner().invoke(cli, ["session", "review", "start", "--project-root", str(tmp_path)])
     result = CliRunner().invoke(cli, [
-        "session", "review", "add-finding", "p2", "Finding 3",
+        "session", "review", "add-finding", "p2", "bug", "minor", "Finding 3",
         "--json", "--project-root", str(tmp_path)
     ])
     data = json.loads(result.output)
@@ -306,7 +351,7 @@ def test_session_review_finding_keys_global_across_passes(tmp_path):
 def test_session_review_close_and_reopen_finding(tmp_path):
     invoke("start", "Goal", project_root=tmp_path)
     CliRunner().invoke(cli, ["session", "review", "start", "--project-root", str(tmp_path)])
-    CliRunner().invoke(cli, ["session", "review", "add-finding", "p1", "A finding", "--project-root", str(tmp_path)])
+    CliRunner().invoke(cli, ["session", "review", "add-finding", "p1", "bug", "minor", "A finding", "--project-root", str(tmp_path)])
     CliRunner().invoke(cli, ["session", "review", "close-finding", "p1", "f1", "--project-root", str(tmp_path)])
     state, _ = load_session(tmp_path)
     assert state.review["p1"].findings["f1"].status == "closed"
@@ -316,10 +361,58 @@ def test_session_review_close_and_reopen_finding(tmp_path):
     assert state.review["p1"].findings["f1"].status == "reopened"
 
 
+def test_session_review_approve_happy_path(tmp_path):
+    invoke("start", "Goal", project_root=tmp_path)
+    CliRunner().invoke(cli, ["session", "review", "start", "--project-root", str(tmp_path)])
+    CliRunner().invoke(cli, ["session", "review", "add-finding", "p1", "bug", "minor", "A finding", "--project-root", str(tmp_path)])
+    CliRunner().invoke(cli, ["session", "review", "close-finding", "p1", "f1", "--project-root", str(tmp_path)])
+    result = CliRunner().invoke(cli, [
+        "session", "review", "approve", "p1", "--json", "--project-root", str(tmp_path)
+    ])
+    assert result.exit_code == 0
+    state, _ = load_session(tmp_path)
+    assert state.review["p1"].status == "approved"
+
+
+def test_session_review_approve_blocks_on_open_findings(tmp_path):
+    invoke("start", "Goal", project_root=tmp_path)
+    CliRunner().invoke(cli, ["session", "review", "start", "--project-root", str(tmp_path)])
+    CliRunner().invoke(cli, ["session", "review", "add-finding", "p1", "bug", "major", "Unclosed finding", "--project-root", str(tmp_path)])
+    result = CliRunner().invoke(cli, [
+        "session", "review", "approve", "p1", "--project-root", str(tmp_path)
+    ])
+    assert result.exit_code != 0
+    state, _ = load_session(tmp_path)
+    assert state.review["p1"].status == "open"
+
+
+def test_session_review_approve_no_findings(tmp_path):
+    invoke("start", "Goal", project_root=tmp_path)
+    CliRunner().invoke(cli, ["session", "review", "start", "--project-root", str(tmp_path)])
+    result = CliRunner().invoke(cli, [
+        "session", "review", "approve", "p1", "--json", "--project-root", str(tmp_path)
+    ])
+    assert result.exit_code == 0
+    state, _ = load_session(tmp_path)
+    assert state.review["p1"].status == "approved"
+
+
+def test_session_review_start_does_not_reuse_approved_pass(tmp_path):
+    invoke("start", "Goal", project_root=tmp_path)
+    CliRunner().invoke(cli, ["session", "review", "start", "--project-root", str(tmp_path)])
+    CliRunner().invoke(cli, ["session", "review", "approve", "p1", "--project-root", str(tmp_path)])
+    result = CliRunner().invoke(cli, [
+        "session", "review", "start", "--json", "--project-root", str(tmp_path)
+    ])
+    assert result.exit_code == 0
+    data = json.loads(result.output)
+    assert data["pass_key"] == "p2"
+
+
 def test_session_review_set_fix_note(tmp_path):
     invoke("start", "Goal", project_root=tmp_path)
     CliRunner().invoke(cli, ["session", "review", "start", "--project-root", str(tmp_path)])
-    CliRunner().invoke(cli, ["session", "review", "add-finding", "p1", "A finding", "--project-root", str(tmp_path)])
+    CliRunner().invoke(cli, ["session", "review", "add-finding", "p1", "spec", "nit", "A finding", "--project-root", str(tmp_path)])
     CliRunner().invoke(cli, [
         "session", "review", "set-fix-note", "p1", "f1", "Fixed it",
         "--project-root", str(tmp_path)

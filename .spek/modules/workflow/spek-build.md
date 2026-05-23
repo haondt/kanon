@@ -3,8 +3,6 @@ spek:
   description: Execute the implementation plan recorded in session.yaml
   output: skill
   name: spek-build
-  preapproved_tools:
-    - Bash(spek session *)
   integrations:
     claude:
       disable-model-invocation: true

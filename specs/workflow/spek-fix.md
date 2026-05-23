@@ -3,8 +3,6 @@ spek:
   description: Address all findings from the most recent review pass
   output: skill
   name: spek-fix
-  preapproved_tools:
-    - Bash(spek session *)
   integrations:
     claude:
       disable-model-invocation: true
@@ -13,7 +11,7 @@ You are addressing findings from the most recent review pass. Your job is to imp
 
 1. Run `spek session review status --json` to get all review passes. Identify the most recent pass key (e.g. `p2`). Run `spek session review status --pass <key> --json` to get its findings. If no review passes exist, say so and stop.
 
-2. If the only finding is `No issues found.` (i.e. an approval finding): confirm this to the user and stop — there is nothing to fix.
+2. Check the pass `status` field from the JSON. If `status == "approved"`: confirm this to the user and stop — there is nothing to fix.
 
 3. For each finding, in order:
    a. Propose your solution: describe what you plan to change and why it addresses the finding.

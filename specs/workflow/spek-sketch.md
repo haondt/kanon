@@ -3,8 +3,6 @@ spek:
   description: Turn a vague idea into a concrete, plannable goal
   output: skill
   name: spek-sketch
-  preapproved_tools:
-    - Bash(spek session *)
   integrations:
     claude:
       disable-model-invocation: true

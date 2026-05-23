@@ -2,34 +2,40 @@ from __future__ import annotations
 
 import hashlib
 import io
+from enum import Enum
 from pathlib import Path
 from typing import Any, Literal
 
 import yaml
 from pydantic import BaseModel, field_validator
 
+from spek.core.yaml_utils import _make_dumper
+
 SESSION_FILE = ".spek/session.yaml"
-
-
-# ── YAML representer ──────────────────────────────────────────────────────────
-
-def _literal_representer(dumper: yaml.Dumper, data: str) -> yaml.ScalarNode:
-    if "\n" in data:
-        return dumper.represent_scalar("tag:yaml.org,2002:str", data, style="|")
-    return dumper.represent_scalar("tag:yaml.org,2002:str", data)
-
-
-def _make_dumper() -> type[yaml.Dumper]:
-    class _Dumper(yaml.Dumper):
-        pass
-    _Dumper.add_representer(str, _literal_representer)
-    return _Dumper
 
 
 # ── models ────────────────────────────────────────────────────────────────────
 
 def _strip(v: str | None) -> str | None:
     return v.strip() if v else v
+
+
+class FindingType(str, Enum):
+    bug = "bug"
+    grammar = "grammar"
+    spec = "spec"
+    question = "question"
+    dead_code = "dead_code"
+    plan = "plan"
+    security = "security"
+    test = "test"
+
+
+class FindingSeverity(str, Enum):
+    critical = "critical"
+    major = "major"
+    minor = "minor"
+    nit = "nit"
 
 
 class PlanStep(BaseModel):
@@ -43,6 +49,8 @@ class PlanStep(BaseModel):
 
 
 class Finding(BaseModel):
+    type: FindingType
+    severity: FindingSeverity
     text: str
     status: Literal["open", "closed", "reopened"] = "open"
     fix_note: str | None = None
@@ -59,6 +67,7 @@ class Finding(BaseModel):
 
 
 class ReviewPass(BaseModel):
+    status: Literal["open", "approved"] = "open"
     findings: dict[str, Finding] = {}
 
 
@@ -119,7 +128,7 @@ class SessionState(BaseModel):
 
 def _dump(state: SessionState) -> str:
     buf = io.StringIO()
-    yaml.dump(state.to_dict(), buf, Dumper=_make_dumper(), default_flow_style=False, sort_keys=False,
+    yaml.dump(state.to_dict(), buf, Dumper=_make_dumper(FindingType, FindingSeverity), default_flow_style=False, sort_keys=False,
               allow_unicode=True)
     return buf.getvalue()
 

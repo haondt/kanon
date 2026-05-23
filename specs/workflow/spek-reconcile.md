@@ -6,7 +6,6 @@ spek:
   preapproved_tools:
     - Bash(git diff *)
     - Bash(git status)
-    - Bash(spek session *)
   integrations:
     claude:
       disable-model-invocation: true

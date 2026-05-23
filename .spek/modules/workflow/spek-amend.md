@@ -3,8 +3,6 @@ spek:
   description: Amend the current session goal or plan without restarting
   output: skill
   name: spek-amend
-  preapproved_tools:
-    - Bash(spek session *)
   integrations:
     claude:
       disable-model-invocation: true

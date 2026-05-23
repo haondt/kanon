@@ -6,7 +6,6 @@ spek:
   preapproved_tools:
     - Bash(git diff *)
     - Bash(git log *)
-    - Bash(spek session *)
   integrations:
     claude:
       disable-model-invocation: true
@@ -30,27 +29,19 @@ You are reviewing a completed implementation before the session is closed. Your 
 
 5. Scan for dead code and leftover artifacts: unused functions, commented-out blocks, files no longer referenced, debug output, speculative code never used. Flag any found.
 
-6. If this is a re-review pass (Pass 2+), run `spek session review status --pass <prev-pass-key> --json` to read prior findings. Explicitly check each. If a finding is still unresolved or the fix was insufficient, carry it forward: `- **[type/severity]** (carried from Pass N #M, fix insufficient) — description`.
+6. If this is a re-review pass (Pass 2+), run `spek session review status --pass <prev-pass-key> --json` to read prior findings. Explicitly check each. If a finding is still unresolved or the fix was insufficient, carry it forward with the same type and severity as the original — include `(carried from <finding-key>, fix insufficient)` in the description.
 
-7. Produce the findings list. Each finding is one line:
+7. Categorize each finding. Valid types and severities:
 
-   ```
-   - **[type/severity]** `location` — description
-   ```
-
-   Types: `bug`, `grammar`, `spec`, `question`, `dead-code`, `plan`, `security`, `test`, `approval`
+   Types: `bug`, `grammar`, `spec`, `question`, `dead_code`, `plan`, `security`, `test`
    - `test` — only when the project already has a test suite or a testing spec module is active
    - `question` — ambiguous; surface for user judgment
-   - `approval` — used only for the no-issues case
 
-   Severities: `critical`, `major`, `minor`, `nit`, `N/A` (approval only)
+   Severities: `critical`, `major`, `minor`, `nit`
 
-   Rules:
-   - Every finding must be actionable.
-   - If no issues found: emit exactly one line: `- **[approval/N/A]** No issues found.`
-   - If there are other findings, omit the approval line entirely — do not mix it with real findings.
-   - Do not include a verdict, checkbox, or summary section — the findings list is the complete output.
+   Every finding must be actionable. If no issues found, skip to step 8.
 
-8. Record all findings via CLI:
-   - For each finding: `spek session review add-finding <pass-key> "<text>"`
-   - Output the findings list to the user as well so they can read it directly.
+8. Record findings via CLI:
+   - For each finding: `spek session review add-finding <pass-key> <type> <severity> "<location> — description"`
+   - If there were findings: output the findings list to the user so they can read it directly.
+   - If no issues found: run `spek session review approve <pass-key>` and tell the user the pass was approved with no issues.

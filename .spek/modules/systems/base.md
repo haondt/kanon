@@ -3,9 +3,9 @@ spek:
   description: "Use the spek reference library before implementing from scratch"
   preapproved_tools:
     - Bash(spek ref *)
-    - Bash(git status)
-    - Edit(.spek/STRUCTURE.md)
-    - Write(.spek/STRUCTURE.md)
+    - Bash(spek session *)
+    - Bash(spek todo *)
+    - Bash(spek module list)
 ---
 
 # spek reference library

@@ -1,13 +1,14 @@
 from __future__ import annotations
 
 import re
-import yaml
+from enum import Enum
 from pathlib import Path
 from typing import Any, TypeVar, overload
 
-FRONTMATTER_RE = re.compile(r"^---\n(.*?)\n---\n?", re.DOTALL)
-
+import yaml
 from pydantic import BaseModel
+
+FRONTMATTER_RE = re.compile(r"^---\n(.*?)\n---\n?", re.DOTALL)
 
 T = TypeVar("T", bound=BaseModel)
 
@@ -26,6 +27,25 @@ def load_yaml(path: Path, model: type[T] | None = None) -> T | dict[str, Any]:
     if model is None:
         return data
     return model.model_validate(data)
+
+
+def _literal_representer(dumper: yaml.Dumper, data: str) -> yaml.ScalarNode:
+    if "\n" in data or len(data) > 80:
+        return dumper.represent_scalar("tag:yaml.org,2002:str", data, style="|")
+    return dumper.represent_scalar("tag:yaml.org,2002:str", data)
+
+
+def _enum_str_representer(dumper: yaml.Dumper, data: Enum) -> yaml.ScalarNode:
+    return dumper.represent_scalar("tag:yaml.org,2002:str", data.value)
+
+
+def _make_dumper(*enum_types: type) -> type[yaml.Dumper]:
+    class _Dumper(yaml.Dumper):
+        pass
+    _Dumper.add_representer(str, _literal_representer)
+    for enum_type in enum_types:
+        _Dumper.add_representer(enum_type, _enum_str_representer)
+    return _Dumper
 
 
 def dump_yaml(data: dict[str, Any] | BaseModel) -> str:

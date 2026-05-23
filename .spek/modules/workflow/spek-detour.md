@@ -3,8 +3,6 @@ spek:
   description: Make a quick out-of-scope edit without going through the full workflow
   output: skill
   name: spek-detour
-  preapproved_tools:
-    - Bash(spek session *)
   integrations:
     claude:
       disable-model-invocation: true

@@ -3,8 +3,6 @@ spek:
   description: "When starting a task — design the approach, agree on it before writing code, and record the plan in session.yaml"
   output: skill
   name: spek-plan
-  preapproved_tools:
-    - Bash(spek session *)
   integrations:
     claude:
       disable-model-invocation: true

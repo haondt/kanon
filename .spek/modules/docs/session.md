@@ -16,13 +16,18 @@ spek:
 | `plan.notes` | dict[key → string] | Stable-keyed plan-time notes (keys: `pn1`, `pn2`, …) |
 | `stance` | string \| null | Active stance name |
 | `build.notes` | dict[key → string] | Stable-keyed build-time notes (keys: `bn1`, `bn2`, …) |
-| `review` | dict[pass-key → pass] | Review passes; each pass has `findings` dict |
-| `review[p].findings` | dict[key → finding] | Finding objects with `text`, `status`, and optional `fix_note` |
+| `review` | dict[pass-key → pass] | Review passes; each pass has `status` and `findings` dict |
+| `review[p].status` | `Literal['open','approved']` | Pass-level approval marker; `'open'` until all findings are closed |
+| `review[p].findings` | dict[key → finding] | Finding objects with `type`, `severity`, `text`, `status`, and optional `fix_note` |
 | `amendments` | list[string] | One-line records of goal or plan changes |
 | `detours` | list[string] | One-line records of out-of-scope edits |
 | `_meta.next_key` | dict[ns → int] | Tracks next available key per namespace; never decremented |
 
 Finding `status` values: `open` | `closed` | `reopened`
+
+`FindingType` values: `bug` | `grammar` | `spec` | `question` | `dead_code` | `plan` | `security` | `test`
+
+`FindingSeverity` values: `critical` | `major` | `minor` | `nit`
 
 Key namespaces: `pn` (plan notes), `bn` (build notes), `f` (findings, global across passes), `p` (review passes)
 

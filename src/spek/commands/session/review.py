@@ -4,7 +4,7 @@ import json as json_mod
 
 import click
 
-from spek.core.session import Finding, ReviewPass, next_finding_key, next_pass_key
+from spek.core.session import Finding, FindingSeverity, FindingType, ReviewPass, next_finding_key, next_pass_key
 from ._helpers import _load, _save_and_emit_hashes
 
 
@@ -18,14 +18,15 @@ def session_review() -> None:
 @click.option("--json", "as_json", is_flag=True)
 def review_start(project_root: str, as_json: bool) -> None:
     """Start a new review pass (idempotent if last pass is empty)."""
-    state, _, root = _load(project_root)
+    state, h, root = _load(project_root)
 
-    # idempotent: if last pass has no findings, return it
+    # idempotent: reuse last pass only if it is open and has no findings
     if state.review:
         last_key = list(state.review.keys())[-1]
-        if not state.review[last_key].findings:
+        last_pass = state.review[last_key]
+        if not last_pass.findings and last_pass.status == "open":
             if as_json:
-                click.echo(json_mod.dumps({"pass_key": last_key}))
+                click.echo(json_mod.dumps({"before": h, "after": h, "pass_key": last_key}))
             else:
                 click.echo(f"Using existing empty pass: {last_key}")
             return
@@ -37,10 +38,12 @@ def review_start(project_root: str, as_json: bool) -> None:
 
 @session_review.command("add-finding")
 @click.argument("pass_key")
+@click.argument("type", type=click.Choice([t.value for t in FindingType]))
+@click.argument("severity", type=click.Choice([s.value for s in FindingSeverity]))
 @click.argument("text")
 @click.option("--project-root", default=".", type=click.Path(file_okay=False))
 @click.option("--json", "as_json", is_flag=True)
-def review_add_finding(pass_key: str, text: str, project_root: str, as_json: bool) -> None:
+def review_add_finding(pass_key: str, type: str, severity: str, text: str, project_root: str, as_json: bool) -> None:
     """Add a finding to a review pass."""
     state, _, root = _load(project_root)
     rpass = state.review.get(pass_key)
@@ -48,9 +51,28 @@ def review_add_finding(pass_key: str, text: str, project_root: str, as_json: boo
         click.echo(f"Review pass {pass_key!r} not found.", err=True)
         raise SystemExit(1)
     fkey = next_finding_key(state)
-    rpass.findings[fkey] = Finding(text=text)
+    rpass.findings[fkey] = Finding(type=FindingType(type), severity=FindingSeverity(severity), text=text)
     count = len(rpass.findings)
     _save_and_emit_hashes(state, root, as_json, {"finding_key": fkey, "count": count})
+
+
+@session_review.command("approve")
+@click.argument("pass_key")
+@click.option("--project-root", default=".", type=click.Path(file_okay=False))
+@click.option("--json", "as_json", is_flag=True)
+def review_approve(pass_key: str, project_root: str, as_json: bool) -> None:
+    """Approve a review pass (all findings must be closed)."""
+    state, _, root = _load(project_root)
+    rpass = state.review.get(pass_key)
+    if rpass is None:
+        click.echo(f"Review pass {pass_key!r} not found.", err=True)
+        raise SystemExit(1)
+    open_findings = [k for k, f in rpass.findings.items() if f.status in ("open", "reopened")]
+    if open_findings:
+        click.echo(f"Cannot approve: findings still open: {', '.join(open_findings)}", err=True)
+        raise SystemExit(1)
+    rpass.status = "approved"
+    _save_and_emit_hashes(state, root, as_json, {"pass_key": pass_key})
 
 
 @session_review.command("close-finding")
@@ -135,7 +157,7 @@ def review_status(pass_key: str | None, finding_key: str | None, project_root: s
         if as_json:
             click.echo(json_mod.dumps({"hash": h, "pass_key": pass_key, "finding_key": finding_key, **finding.model_dump()}))
         else:
-            click.echo(f"[{finding.status}] {finding.text}")
+            click.echo(f"[{finding.status}] {finding.type}/{finding.severity}: {finding.text}")
             if finding.fix_note:
                 click.echo(f"  fix: {finding.fix_note}")
         return
@@ -149,24 +171,29 @@ def review_status(pass_key: str | None, finding_key: str | None, project_root: s
             click.echo(json_mod.dumps({
                 "hash": h,
                 "pass_key": pass_key,
+                "status": rpass.status,
                 "findings": {fk: f.model_dump() for fk, f in rpass.findings.items()},
             }))
         else:
+            click.echo(f"{pass_key} [{rpass.status}]:")
             for fk, f in rpass.findings.items():
-                click.echo(f"  {fk} [{f.status}]: {f.text}")
+                click.echo(f"  {fk} [{f.status}] {f.type}/{f.severity}: {f.text}")
         return
 
     if as_json:
         click.echo(json_mod.dumps({
             "hash": h,
             "passes": {
-                pk: {"findings": {fk: f.model_dump() for fk, f in rp.findings.items()}}
+                pk: {
+                    "status": rp.status,
+                    "findings": {fk: f.model_dump() for fk, f in rp.findings.items()},
+                }
                 for pk, rp in state.review.items()
             },
         }))
         return
 
     for pk, rp in state.review.items():
-        click.echo(f"{pk}:")
+        click.echo(f"{pk} [{rp.status}]:")
         for fk, f in rp.findings.items():
-            click.echo(f"  {fk} [{f.status}]: {f.text}")
+            click.echo(f"  {fk} [{f.status}] {f.type}/{f.severity}: {f.text}")

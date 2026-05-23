@@ -4,8 +4,6 @@ spek:
   output: skill
   name: spek-stance
   args: "[stance-name]"
-  preapproved_tools:
-    - Bash(spek session *)
   integrations:
     claude:
       disable-model-invocation: true

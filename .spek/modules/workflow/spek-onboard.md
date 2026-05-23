@@ -3,9 +3,6 @@ spek:
   description: "Onboard an existing project: write STRUCTURE.md and select modules"
   output: skill
   name: spek-onboard
-  preapproved_tools:
-    - Bash(spek module *)
-    - Bash(spek todo *)
   integrations:
     claude:
       disable-model-invocation: true

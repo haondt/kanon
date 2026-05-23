@@ -82,7 +82,8 @@ def session_status(full: bool, project_root: str, as_json: bool) -> None:
             payload["build"]["notes"] = dict(state.build.notes)
             payload["review_passes"] = {
                 pk: {
-                    "findings": {fk: f.model_dump() for fk, f in rp.findings.items()}
+                    "status": rp.status,
+                    "findings": {fk: f.model_dump() for fk, f in rp.findings.items()},
                 }
                 for pk, rp in state.review.items()
             }
@@ -117,9 +118,9 @@ def session_status(full: bool, project_root: str, as_json: bool) -> None:
         if state.review:
             click.echo("\nReview:")
             for pk, rp in state.review.items():
-                click.echo(f"  {pk}:")
+                click.echo(f"  {pk} [{rp.status}]:")
                 for fk, f in rp.findings.items():
-                    click.echo(f"    {fk} [{f.status}]: {f.text}")
+                    click.echo(f"    {fk} [{f.status}] {f.type}/{f.severity}: {f.text}")
         if state.amendments:
             click.echo("\nAmendments:")
             for a in state.amendments:

@@ -9,7 +9,7 @@ CLI tool for managing AI-assisted development conventions across projects.
 - Supports on-demand behavioral stances via `/spek-stance`
 - `/spek-think` enters a non-actionary brainstorming mode for the remainder of the conversation
 - `/spek-detour` makes a quick out-of-scope edit without going through the full workflow
-- `/spek-todo` adds an item to `.spek/TODO.md`, with duplicate detection
+- `/spek-todo` adds an item to `.spek/todo.yaml`
 - `/spek-onboard` onboards an existing project: writes STRUCTURE.md, selects modules via `spek module list --json` + user approval, applies with `spek module set --sync`, extracts inline TODOs
 
 ## Tech stack
@@ -24,7 +24,7 @@ specs/           # the spec module library — content, not code
   build/         # just, make
   code/          # hygiene (language-agnostic)
   config/        # configuration conventions
-  docs/          # readme, structure, session, todo (changelog.md deleted)
+  docs/          # readme, structure, session, todo
   frontend/      # hyperscript, htmx, bulma, dcdn (reference/informative modules)
   git/           # commit and branch conventions
   persistence/   # sqlite, postgres, redis
@@ -45,12 +45,12 @@ src/spek/
 ## Core modules (`src/spek/core/`)
 
 - `config.py` — `SpekConfig` Pydantic model; `load()`/`save()` against `.spek/spek.yaml`
-- `yaml_utils.py` — all YAML I/O: `load_yaml(path, model?)`, `save_yaml(data, path)`; also exports `FRONTMATTER_RE` (shared frontmatter regex)
+- `yaml_utils.py` — all YAML I/O: `load_yaml(path, model?)`, `save_yaml(data, path)`; also exports `FRONTMATTER_RE` (shared frontmatter regex); exports `_literal_representer`, `_enum_str_representer`, `_make_dumper(*enum_types)` for YAML serialization with block-literal strings and str-enum support
 - `render.py` — reads local module copies, strips frontmatter, writes AI tool output files; `ModuleFrontmatter` parses `spek.description/output/name/args/integrations/preapproved_tools/template`; `output` and `template` are `Literal`-typed (`Literal["rule","skill"]` and `Literal["jinja"] | None`); when `template: jinja`, body is rendered through `_apply_jinja(body, context)` (Jinja2 `StrictUndefined`, `keep_trailing_newline=True`) with `modules` and `integrations` as sets before rule/skill branching; for `output: skill` + claude, writes `<name>/SKILL.md` with generated YAML frontmatter (`description`, `argument-hint`, plus any keys from `integrations.claude` except `hooks`); `preapproved_tools` from spec frontmatter are merged into `allowed-tools` in the skill frontmatter; when `context: fork`, appends STRUCTURE.md preload commands to `allowed-tools` and injects a `## Project structure` shell-expansion block into the skill body; `collect_hooks(content, ai_tool)` extracts hook declarations from frontmatter; `collect_preapproved_tools(content)` extracts rule-module `preapproved_tools`; `render_settings(hooks_by_event, project_root, ai_tool, preapproved_tools?)` writes `.claude/settings.json` with `permissions.allow` + hooks
 - `modules.py` — `list_modules(repo_path)` enumerates all spec files
 - `profiles.py` — `resolve_profile()` recursive resolution with deduplication; `ProfileSpec` model
 - `references.py` — `search_references(repo_path, terms, project_root?)` keyword search; `read_reference(repo_path, name, project_root?)` retrieves content; local refs in `.spek/local/references/` shadow upstream on name collision; `ReferenceResult` model
-- `session.py` — `SessionState` Pydantic model (goal, plan, build, review, amendments, detours, stance, `_meta`); load/save/lint; private `_Dumper` subclass for YAML block-literal strings; `_meta.next_key` tracks next stable key per namespace (`pn`, `bn`, `f`, `p`); backing file `.spek/session.yaml`
+- `session.py` — `SessionState` Pydantic model (goal, plan, build, review, amendments, detours, stance, `_meta`); load/save/lint; `_meta.next_key` tracks next stable key per namespace (`pn`, `bn`, `f`, `p`); `Finding` has required `type: FindingType` and `severity: FindingSeverity` fields; `ReviewPass` has `status: Literal['open','approved']`; YAML serialization helpers moved to `yaml_utils.py`; backing file `.spek/session.yaml`
 - `todo.py` — `TodoState` / `TodoSection` Pydantic models; load/save/lint; backing file `.spek/todo.yaml`
 - `utils.py` — `deep_merge(d1, d2, conflicts?)` — recursive dict merge with three conflict modes (`new`/`old`/`err`); list deduplication safe for unhashable types
 - `repo.py` — locates the upstream spek repo (`spek_repo_path`); auto-discovers the local project root (`local_project_path`); reads HEAD SHA
@@ -75,7 +75,7 @@ Full `spek session` command group. Reads/writes `.spek/session.yaml`. All reads 
 - `build note/unnote/status`
 - `detour add/status`
 - `stance set/clear/status`
-- `review start/add-finding/close-finding/reopen-finding/set-fix-note/status`
+- `review start/add-finding/close-finding/reopen-finding/set-fix-note/approve/status`
 - `lint` / `clear` — validate schema / delete session.yaml
 
 ## spek todo subcommands
@@ -109,9 +109,9 @@ Full `spek todo` command group. Reads/writes `.spek/todo.yaml`. `section add` au
 - `_metadata.py` version is `"0.0.0"` in the repo — CI rewrites it from the git tag at build time; do not edit manually
 - `spek.yaml` is for *target projects* — this repo's `.spek/spek.yaml` is its own dogfooded config
 - `.spek/modules/` and `.spek/stances/` in target projects are committed — AI output can be regenerated without the upstream spek repo
-- Session state is now `.spek/session.yaml` (gitignored); todo backlog is `.spek/todo.yaml` (committed); the old `.spek/SESSION.md` and `.spek/TODO.md` are inert artifacts left in place
-- CHANGELOG machinery has been removed — `specs/docs/changelog.md` is deleted; no `spek changelog` CLI exists; running project changelogs remain in `.spek/CHANGELOG.md` but are managed manually
+- Session state is now `.spek/session.yaml` (gitignored); todo backlog is `.spek/todo.yaml` (committed); `.spek/TODO.md` has been deleted; `.spek/SESSION.md` is no longer created by any code path
 - `commands/session/` and `commands/todo/` are packages (one module per subgroup) rather than single files
+- Do not edit `.claude/*`, `.windsurf/*` or any other tool-specific files directly. Those files are generated by spek, if you ever need to edit rules or skills or settings, you should be looking at the upstream specs, python code or other generators.
 
 ## Working in this repo — avoid confusing `specs/` and `.spek/`
 
@@ -121,7 +121,7 @@ This repo dogfoods spek, so it contains **both** the spec library **and** a `.sp
 |---|---|---|
 | `specs/` | The distributable module library — source of truth | Adding or changing spec content for users of spek |
 | `.spek/modules/` | Synced copies of whichever modules this project uses | Never edit directly — regenerated by `spek sync` |
-| `.spek/` (other files) | Session state, changelog, todo, structure for this project | Session workflow (session.yaml, todo.yaml, CHANGELOG.md) |
+| `.spek/` (other files) | Session state, todo, structure for this project | Session workflow (session.yaml, todo.yaml) |
 
 **Rule:** if a task involves spec content (guidelines, rules, conventions shipped to users), edit files under `specs/`. If a task involves this project's own session or docs, edit files under `.spek/`. Never edit `.spek/modules/` by hand.
 

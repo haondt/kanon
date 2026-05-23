@@ -4,8 +4,6 @@ spek:
   output: skill
   name: spek-retro
   preapproved_tools:
-    - Bash(spek session *)
-    - Bash(spek todo *)
     - Bash(git diff *)
     - Bash(git log *)
   integrations:
