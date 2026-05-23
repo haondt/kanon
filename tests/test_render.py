@@ -142,3 +142,25 @@ def test_render_module_windsurf_fork_skill_no_preload(tmp_path):
     render_module(content, "workflow/my-skill", "windsurf", tmp_path)
     skill_md = (tmp_path / ".windsurf/skills/my-skill.md").read_text()
     assert "!`test -f" not in skill_md
+
+
+def test_render_module_skill_merges_preapproved_and_integration_allowed_tools(tmp_path):
+    content = dedent("""\
+        ---
+        spek:
+          output: skill
+          name: merge-test
+          description: Test merging allowed-tools
+          preapproved_tools:
+            - Bash(spek ref *)
+          integrations:
+            claude:
+              allowed-tools:
+                - Skill(other-skill)
+        ---
+        Body.
+        """)
+    render_module(content, "test/merge-test", "claude", tmp_path)
+    skill_md = (tmp_path / ".claude/skills/merge-test/SKILL.md").read_text()
+    assert "Bash(spek ref *)" in skill_md
+    assert "Skill(other-skill)" in skill_md

@@ -1,5 +1,21 @@
 # Changelog
 
+## 2026-05-22 (session: spec audit — condense all specs/ to bullets-only)
+
+Audited and condensed 15 spec files across `specs/` to comply with the bullets-only, no-code-block, no-sub-section rule for rule-type specs. The goal was to eliminate teaching aids and structural prose that belonged in reference entries rather than active AI rules.
+
+Changes by group:
+
+- **Minor fixes (3 files):** `ai/coding/prefer-reuse.md` — removed nested sub-bullet; `python/dependencies/uv.md` — removed prose opener; `git/commit-long.md` — fixed mid-sentence trailing period.
+- **Code blocks and sub-sections removed (4 files):** `python/build.md`, `python/config.md`, `python/frameworks/fastapi.md`, `python/frameworks/flask.md` — collapsed code examples and headings into behavioral bullets.
+- **Multi-section docs specs collapsed (5 files):** `docs/changelog.md`, `docs/readme.md`, `docs/session.md`, `docs/structure.md`, `docs/todo.md` — dropped `## Format`/`## Guidelines`/`## Structure` headings and code blocks; distilled into ~6–8 bullets each.
+- **Major rewrites (3 files):** `build/just.md` (~55 lines → ~10 bullets), `build/make.md` (~45 lines → ~8 bullets), `systems/frontend/no-build.md` (~55 lines → ~12 bullets).
+- **Frontend informative specs trimmed (3 files):** `frontend/dcdn.md`, `frontend/htmx.md`, `frontend/hyperscript.md` — removed command tables and code pattern examples; kept core guidance as bullets or brief prose.
+
+The review/fix cycle produced two additional changes: a test was added to `tests/test_render.py` verifying that `preapproved_tools` and `integrations.claude.allowed-tools` are merged rather than one clobbering the other; and `specs/build/just.md`'s idempotent-recipe bullet was corrected to describe the actual just idiom (`force="false":` argument with optional `[arg()]`) rather than implying a standard `--force` CLI flag.
+
+Detours: `specs/python/config.md` implementation detail moved to a new `references/python/config.md`; `specs/python/venv.md` wording tightened; `specs/systems/frontend/no-build.md` trimmed from 9 to 6 bullets by removing coverage already in component specs; `spek sync` run mid-session.
+
 ## 2026-05-22 (session: spek-reconcile skill + render/utils fixes)
 
 Added `specs/workflow/spek-reconcile.md` — a new skill for catching up SESSION.md after the human does implementation work directly (manual coding, raw prompts, or detours). The skill reads `SESSION.md` and `git diff HEAD`, infers which plan steps are complete, marks them done, adds a brief observation note, and prompts the user to run `/spek-review`. Registered in `.spek/spek.yaml`; synced to `.claude/skills/spek-reconcile/SKILL.md`.

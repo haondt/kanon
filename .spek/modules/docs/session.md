@@ -5,37 +5,13 @@ spek:
 
 # SESSION.md conventions
 
-`.spek/SESSION.md` is a living scratchpad for the current session. It is gitignored — it exists only for the duration of active work and is cleared at retro.
-
-## Structure
-
-```markdown
-## Goal
-One paragraph or tight bullet list describing what this session is trying to accomplish.
-
-## Plan
-Step-by-step implementation plan as agreed during /spek-plan. Steps are marked done as they are completed.
-
-## Stance
-Active stance name and its module list (written by /spek-stance).
-
-## Notes
-Assumptions made, technical decisions taken, deviations from the plan, anything worth carrying into the retro or CHANGELOG.
-
-## Review
-Multi-pass review log. Each `/spek-review` run appends `### Review Pass N` with structured findings; each `/spek-fix` run appends `### Fix Pass N` with fixes. Cycle continues until a review pass returns only an approval finding.
-
-## Amendments
-One-line record of each change to the goal or plan made via /spek-amend.
-
-## Detours
-One-line record of each out-of-scope edit made via /spek-detour.
-```
-
-Only include sections that are relevant — don't create empty headings.
-
-## Guidelines
-
-- Keep it honest: reflect actual progress, not intended progress
-- Record decisions and assumptions as they happen, not after the fact
-- The Notes section is the raw material for the CHANGELOG entry — write it with that in mind
+- `.spek/SESSION.md` is a living scratchpad for the current session; it is gitignored and cleared at retro
+- Include only sections that are relevant — do not create empty headings
+- `## Goal` — one paragraph or tight bullet list describing what the session is trying to accomplish
+- `## Plan` — step-by-step plan as agreed during `/spek-plan`; mark steps done additively by appending ` — done`
+- `## Stance` — active stance name and its module list (written by `/spek-stance`)
+- `## Notes` — assumptions made, technical decisions taken, deviations from the plan; the raw material for the CHANGELOG entry
+- `## Review` — multi-pass review log; each `/spek-review` run appends `### Review Pass N`, each `/spek-fix` run appends `### Fix Pass N`
+- `## Amendments` — one-line record of each change to the goal or plan made via `/spek-amend`
+- `## Detours` — one-line record of each out-of-scope edit made via `/spek-detour`
+- Keep it honest: reflect actual progress, not intended progress; record decisions as they happen, not after the fact

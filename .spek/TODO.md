@@ -45,10 +45,11 @@ Currently spek only syncs modules from its own repo, which limits it to a single
 - `spek sync --pull` fetches each module from its declared source; modules with no source continue to resolve against the built-in repo as today
 - Consider how `spek init` / `spek profile apply` should work when profiles live in an external source
 
+## Frontend patterns
+
+- Add `specs/systems/htmx-crud` (short spec instructing the agent to follow the htmx-crud ref for new CRUD views) and `references/htmx-crud` (the full pattern: URL structure, create/edit page shape, form layout, button placement, `hx-confirm` for delete, response fragment conventions). Start as a single ref; split into structure vs interaction refs only if it grows unwieldy.
+
 ## Cleanup
 
 - `specs/workflow/cleanup.md` — standalone spec for identifying and removing dead code: unused functions, stale TODOs, commented-out blocks, unreferenced files, speculative code that was never used. Complements the retro step but can be invoked independently.
 
-## Spec library maintenance
-
-- Audit all files under `specs/` against the current spec authoring conventions (`spek ref read spek/specs`): trim overly long or ambiguous specs, tighten language, ensure format and frontmatter are consistent.
