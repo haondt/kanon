@@ -183,7 +183,14 @@ def do_sync(root: Path, pull: bool = False) -> None:
         seen_tools: set[str] = set()
         for name, src in to_render:
             content = src.read_text()
-            out_path = render_module(content, name, integration, root)
+            out_path = render_module(
+                content,
+                name,
+                integration,
+                root,
+                modules=config.modules + config.local_modules,
+                integrations=config.meta.integrations,
+            )
             click.echo(f"  {name} → {out_path.relative_to(root)}")
             for event, entries in collect_hooks(content, integration).items():
                 hooks_by_event.setdefault(event, []).extend(entries)

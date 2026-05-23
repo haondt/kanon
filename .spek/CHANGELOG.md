@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-05-23 (session: Jinja2 templating for spec modules)
+
+Added opt-in Jinja2 templating to the spec render pipeline. A module sets `spek.template: jinja` in its frontmatter; the body is then rendered through Jinja2 before output is written, with `modules` (active module set) and `integrations` (configured AI tool set) available as template variables. This allows spec files to conditionally include content based on what modules or integrations are active — the primary use case being cross-cutting system specs like `specs/systems/basic-crud.md` that should emit htmx-specific content only when the htmx module is present.
+
+Implementation: `render.py` gained `_apply_jinja(body, context)` (uses `jinja2.Environment` with `StrictUndefined` and `keep_trailing_newline=True`) and a `template: Literal["jinja"] | None` field on `_SpekMeta`. `render_module` applies Jinja before the rule/skill branching if `meta.spek.template == "jinja"`. `sync.py` passes `modules=config.modules + config.local_modules` and `integrations=config.meta.integrations` to `render_module`. `output` and `template` fields on `_SpekMeta` are now `Literal`-typed so Pydantic rejects unknown values at parse time rather than silently ignoring them.
+
+Tests: 4 new tests in `tests/test_render.py` cover Jinja conditional on `modules`, Jinja conditional on `integrations`, non-Jinja modules unaffected, `StrictUndefined` raising on unknown variables, and Jinja with `output: skill`. Suite: 104 tests passing.
+
+Detours: venv path switched from `venv/` to `.venv/` throughout (`justfile`, three spec files); `specs/python/models/pydantic.md` gained `Literal`/`Enum` guidance (1–5 values on one model → `Literal`, more than 5 or shared → `Enum`).
+
 ## 2026-05-22 (session: spec audit — condense all specs/ to bullets-only)
 
 Audited and condensed 15 spec files across `specs/` to comply with the bullets-only, no-code-block, no-sub-section rule for rule-type specs. The goal was to eliminate teaching aids and structural prose that belonged in reference entries rather than active AI rules.

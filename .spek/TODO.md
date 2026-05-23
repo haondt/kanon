@@ -47,7 +47,7 @@ Currently spek only syncs modules from its own repo, which limits it to a single
 
 ## Frontend patterns
 
-- Add `specs/systems/htmx-crud` (short spec instructing the agent to follow the htmx-crud ref for new CRUD views) and `references/htmx-crud` (the full pattern: URL structure, create/edit page shape, form layout, button placement, `hx-confirm` for delete, response fragment conventions). Start as a single ref; split into structure vs interaction refs only if it grows unwieldy.
+- Add `specs/systems/basic-crud.md` (conventions for a basic crud app) and `references/basic-crud-frontend`, `references/basic-crud-backend`, `references/basic-crud-htmx`, etc (full pattern: URL structure, create/edit page shape, form layout, button placement, `hx-confirm` for delete, response fragment conventions, etc). Use `spek.template: jinja` in the spec with `{% if "frontend/htmx" in modules %}` blocks so htmx-specific content is only rendered when that module is active. (`spek.template: jinja` is now implemented.)
 
 ## Cleanup
 

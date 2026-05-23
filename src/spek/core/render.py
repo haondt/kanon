@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
+import jinja2
 from pydantic import BaseModel
 
 from spek.core.utils import deep_merge
@@ -32,16 +33,22 @@ AI_TOOL_ADDITIONAL_SETTINGS: dict[str, dict[str, Any]] = {
 
 
 class _SpekMeta(BaseModel):
-    output: str = "rule"
+    output: Literal["rule", "skill"] = "rule"
     name: str | None = None
     description: str | None = None
     args: str | None = None
     integrations: dict[str, dict[str, Any]] | None = None
     preapproved_tools: list[str] = []
+    template: Literal["jinja"] | None = None
 
 
 class ModuleFrontmatter(BaseModel):
     spek: _SpekMeta = _SpekMeta()
+
+
+def _apply_jinja(body: str, context: dict[str, Any]) -> str:
+    env = jinja2.Environment(undefined=jinja2.StrictUndefined, keep_trailing_newline=True)
+    return env.from_string(body).render(**context)
 
 
 def parse_frontmatter(content: str) -> tuple[ModuleFrontmatter, str]:
@@ -122,8 +129,23 @@ def output_dir_for(project_root: Path, ai_tool: str, out_type: str) -> Path:
     return project_root / rel
 
 
-def render_module(content: str, module: str, ai_tool: str, project_root: Path) -> Path:
+def render_module(
+    content: str,
+    module: str,
+    ai_tool: str,
+    project_root: Path,
+    modules: list[str] | None = None,
+    integrations: list[str] | None = None,
+) -> Path:
     meta, body = parse_frontmatter(content)
+    if meta.spek.template == "jinja":
+        body = _apply_jinja(
+            body,
+            {
+                "modules": set(modules or []),
+                "integrations": set(integrations or []),
+            },
+        )
     out_type = meta.spek.output
     out_dir = output_dir_for(project_root, ai_tool, out_type)
     stem = meta.spek.name if meta.spek.name else module.replace("/", "--")

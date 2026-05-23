@@ -1,24 +1,22 @@
-venv := "venv"
-
 default:
     @just --list
 
 [script]
 venv force="false":
-    if [ -d "{{venv}}" ] && [ "{{force}}" != "true" ]; then exit 0; fi
-    uv venv --clear {{venv}}
+    if [ -d ".venv" ] && [ "{{force}}" != "true" ]; then exit 0; fi
+    uv venv --clear .venv
 
 install:
     uv tool install --editable .
 
 install-dev: venv
-    UV_PROJECT_ENVIRONMENT={{venv}} uv sync --extra dev
+    UV_PROJECT_ENVIRONMENT=.venv uv sync --extra dev
 
 sync:
-    {{venv}}/bin/spek sync --pull
+    .venv/bin/spek sync --pull
 
 test: venv
-    {{venv}}/bin/pytest
+    .venv/bin/pytest
 
 test-cov: venv
-    {{venv}}/bin/pytest --cov=spek --cov-report=term-missing
+    .venv/bin/pytest --cov=spek --cov-report=term-missing

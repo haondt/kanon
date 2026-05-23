@@ -6,6 +6,8 @@ from textwrap import dedent
 
 import pytest
 
+import jinja2
+
 from spek.core.render import collect_hooks, collect_preapproved_tools, render_module, render_settings
 
 
@@ -164,3 +166,67 @@ def test_render_module_skill_merges_preapproved_and_integration_allowed_tools(tm
     skill_md = (tmp_path / ".claude/skills/merge-test/SKILL.md").read_text()
     assert "Bash(spek ref *)" in skill_md
     assert "Skill(other-skill)" in skill_md
+
+
+def _jinja_rule_content(body: str) -> str:
+    return dedent(f"""\
+        ---
+        spek:
+          template: jinja
+        ---
+        {body}
+        """)
+
+
+def test_render_module_jinja_branches_on_modules(tmp_path):
+    body = "{% if 'python/style' in modules %}python present{% else %}python absent{% endif %}"
+    content = _jinja_rule_content(body)
+    out = render_module(content, "test/jinja-mod", "claude", tmp_path, modules=["python/style"])
+    assert out.read_text().strip() == "python present"
+
+    out2 = render_module(content, "test/jinja-mod", "claude", tmp_path, modules=[])
+    assert out2.read_text().strip() == "python absent"
+
+
+def test_render_module_jinja_branches_on_integrations(tmp_path):
+    body = "{% if 'claude' in integrations %}has claude{% else %}no claude{% endif %}"
+    content = _jinja_rule_content(body)
+    out = render_module(content, "test/jinja-int", "claude", tmp_path, integrations=["claude"])
+    assert out.read_text().strip() == "has claude"
+
+    out2 = render_module(content, "test/jinja-int", "claude", tmp_path, integrations=[])
+    assert out2.read_text().strip() == "no claude"
+
+
+def test_render_module_no_template_unaffected(tmp_path):
+    content = dedent("""\
+        ---
+        spek: {}
+        ---
+        Plain body with {{ literal braces }}.
+        """)
+    out = render_module(content, "test/plain", "claude", tmp_path)
+    assert "{{ literal braces }}" in out.read_text()
+
+
+def test_render_module_jinja_unknown_variable_raises(tmp_path):
+    body = "{{ undefined_var }}"
+    content = _jinja_rule_content(body)
+    with pytest.raises(jinja2.UndefinedError):
+        render_module(content, "test/jinja-undef", "claude", tmp_path)
+
+
+def test_render_module_jinja_with_skill_output(tmp_path):
+    content = dedent("""\
+        ---
+        spek:
+          output: skill
+          name: jinja-skill
+          description: A Jinja-templated skill
+          template: jinja
+        ---
+        {% if 'python/style' in modules %}python present{% else %}python absent{% endif %}
+        """)
+    out = render_module(content, "test/jinja-skill", "claude", tmp_path, modules=["python/style"])
+    assert out == tmp_path / ".claude/skills/jinja-skill/SKILL.md"
+    assert "python present" in out.read_text()
