@@ -41,7 +41,7 @@ Stances implemented (`stances/`, `/spek-stance` skill, `spek local stance`). Pos
 
 Currently spek only syncs modules from its own repo, which limits it to a single opinionated library. The goal is to allow modules, stances, and profiles in `spek.yaml` to reference external sources directly — so personal/work configs can be kept separate and so other people can use spek with their own spec libraries.
 
-- Add `~/.spek/settings.json` — a global user-level config file that declares a list of module sources (initially local directories; eventually remote sources like GitHub repos). Other global settings can live here too. `spek sync` and `spek module list` should respect declared sources alongside the built-in repo.
+- Add `~/.spek/settings.yaml` — a global user-level config file that declares a list of module sources (initially local directories; eventually remote sources like GitHub repos). Other global settings can live here too. `spek sync` and `spek module list` should respect declared sources alongside the built-in repo.
 - Replace the flat module path string (e.g. `git/commit-base`) with a richer format that can optionally carry a source (e.g. a repo URL + ref) alongside the path
 - `spek sync --pull` fetches each module from its declared source; modules with no source continue to resolve against the built-in repo as today
 - Consider how `spek init` / `spek profile apply` should work when profiles live in an external source
