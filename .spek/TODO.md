@@ -70,6 +70,10 @@ Add a `/spek-split` skill and supporting conventions for decomposing a large SES
 - **Retro extension:** if SESSION.md contains a `## Group` section, retro locates the matching entry in `index.yaml` and sets `status: done` before clearing SESSION.md. No in-progress state — plans go directly from `pending` to `done`.
 - **Loading a plan:** user manually moves a plan file to SESSION.md (`mv .spek/plans/<group>/<name>.md .spek/SESSION.md`); no new skill needed for this step.
 
+## spek ref
+
+- Invert the `--match-any` flag on `spek ref search`: default to any-keyword matching and add a `--match-all` flag (or rename to `--all`) for requiring all terms to match.
+
 ## Cleanup
 
 - `specs/workflow/cleanup.md` — standalone spec for identifying and removing dead code: unused functions, stale TODOs, commented-out blocks, unreferenced files, speculative code that was never used. Complements the retro step but can be invoked independently.

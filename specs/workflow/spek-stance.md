@@ -4,6 +4,8 @@ spek:
   output: skill
   name: spek-stance
   args: "[stance-name]"
+  preapproved_tools:
+    - Bash(spek session *)
   integrations:
     claude:
       disable-model-invocation: true
@@ -21,8 +23,8 @@ You are switching behavioral stance. A stance is a named set of modules that sha
 
 3. Adopt every behavior and instruction described in the resolved files for the remainder of this session.
 
-4. Record the active stance in `.spek/SESSION.md` under a `## Stance` heading (create the file if it does not exist). Include the stance name and its module list.
+4. Record the active stance: `spek session stance set "<stance-name>"`. If no session exists, skip this step.
 
 5. Briefly confirm which stance is active and summarize its key behaviors in 2–3 bullet points. Do not reproduce the full file content.
 
-If the user asks to clear or reset the stance, remove the `## Stance` section from `.spek/SESSION.md` and confirm.
+If the user asks to clear or reset the stance, run `spek session stance clear` and confirm.

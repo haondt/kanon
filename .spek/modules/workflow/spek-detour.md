@@ -3,6 +3,8 @@ spek:
   description: Make a quick out-of-scope edit without going through the full workflow
   output: skill
   name: spek-detour
+  preapproved_tools:
+    - Bash(spek session *)
   integrations:
     claude:
       disable-model-invocation: true
@@ -17,8 +19,8 @@ You are making a quick out-of-scope edit that bypasses the normal spek workflow.
 
 3. Make the change.
 
-4. Check if `.spek/SESSION.md` exists. If yes, append a `## Detours` section (or add to it if it already exists) with a single bullet: what changed and why it was a detour rather than a session task. Keep it to one line.
+4. Check if a session exists by running `spek session goal`. If the command succeeds, record the detour: `spek session detour add "<what changed and why it was a detour>"`. Keep it to one line.
 
-5. If no `.spek/SESSION.md` exists, skip step 4.
+5. If no session exists, skip step 4.
 
 6. Confirm what was done in one sentence.

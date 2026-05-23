@@ -7,6 +7,8 @@ from spek.commands.local import local
 from spek.commands.module import module
 from spek.commands.destroy import destroy
 from spek.commands.ref import ref
+from spek.commands.session import session
+from spek.commands.todo import todo
 
 
 @click.group()
@@ -22,3 +24,5 @@ cli.add_command(local)
 cli.add_command(module)
 cli.add_command(destroy)
 cli.add_command(ref)
+cli.add_command(session)
+cli.add_command(todo)

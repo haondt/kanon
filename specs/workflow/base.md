@@ -13,7 +13,7 @@ spek:
 
 # Dev workflow
 
-Use the session workflow below, driven by skills (invoked with `/`). Each step is invoked explicitly by the user — never advance to the next step automatically, even if the current step concluded confidently. The user may want to review or edit `.spek/SESSION.md` between steps.
+Use the session workflow below, driven by skills (invoked with `/`). Each step is invoked explicitly by the user — never advance to the next step automatically, even if the current step concluded confidently. The user may review session state between steps via `spek session status`.
 
 | Step | Command | Action |
 |---|---|---|
@@ -22,14 +22,13 @@ Use the session workflow below, driven by skills (invoked with `/`). Each step i
 | Build | `/spek-build` | Execute the agreed plan |
 | Review *(optional)* | `/spek-review` | Evaluate the implementation for problems and plan/spec faithfulness |
 | Fix *(optional)* | `/spek-fix` | Address findings from `/spek-review` |
-| Retrospective | `/spek-retro` | Log completed work to `.spek/CHANGELOG.md`; clear `.spek/SESSION.md` |
+| Retrospective | `/spek-retro` | Close the session; clear `.spek/session.yaml` |
 
 ## Session files
 
 | File | Committed | Purpose |
 |---|---|---|
-| `.spek/SESSION.md` | No (gitignored) | In-progress goal and plan; handoff state |
-| `.spek/CHANGELOG.md` | Yes | Running log of completed work |
-| `.spek/TODO.md` | Yes | Project backlog |
+| `.spek/session.yaml` | No (gitignored) | In-progress goal, plan, review, and build notes |
+| `.spek/todo.yaml` | Yes | Project backlog |
 | `.spek/STRUCTURE.md` | Yes | Living map of the codebase |
 

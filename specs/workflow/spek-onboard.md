@@ -5,8 +5,7 @@ spek:
   name: spek-onboard
   preapproved_tools:
     - Bash(spek module *)
-    - Edit(.spek/TODO.md)
-    - Write(.spek/TODO.md)
+    - Bash(spek todo *)
   integrations:
     claude:
       disable-model-invocation: true
@@ -26,6 +25,6 @@ You are onboarding an existing ("brownfield") project into spek. Your job is to 
 
 6. **Apply the selection.** Once approved, run `spek module set --sync <module>...` with the full approved list.
 
-7. **Extract inline TODOs.** Grep source files for `TODO:` comments, excluding generated directories (`.venv`, `venv`, node_modules, `.git`, build output, dist). For each unique TODO found, add it to `.spek/TODO.md` under an appropriate category. Skip any already covered by an existing backlog item.
+7. **Extract inline TODOs.** Grep source files for `TODO:` comments, excluding generated directories (`.venv`, `venv`, node_modules, `.git`, build output, dist). For each unique TODO found, run `spek todo add --section <key> "<text>"` to add it under an appropriate category. Skip any already covered by an existing backlog item.
 
 8. **Report.** Summarize what was written to STRUCTURE.md, which modules were added or removed, and how many TODOs were extracted.

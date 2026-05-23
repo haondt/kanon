@@ -1,5 +1,17 @@
 # Changelog
 
+## 2026-05-23 (session: YAML-backed session and todo CLI)
+
+Replaced markdown-backed `.spek/SESSION.md` and `.spek/TODO.md` with YAML files managed via `spek session` and `spek todo` CLI commands. The session file is now `.spek/session.yaml`; the todo file is `.spek/todo.yaml`. Existing `.spek/SESSION.md` and `.spek/TODO.md` are left in place as inert artifacts; the CLI reads and writes only the new YAML files. CHANGELOG machinery was removed entirely (spec deleted; no CLI replacement).
+
+New source files: `src/spek/core/session.py` (Pydantic models: `SessionState`, `PlanStep`, `BuildSection`, `Finding`, `ReviewPass`, `SessionMeta`; load/save/lint; YAML block-literal representer via private `_Dumper` subclass; `_meta.next_key` for stable non-reusing keys per namespace: `pn`, `bn`, `f`, `p`), `src/spek/core/todo.py` (`TodoState`, `TodoSection`; load/save/lint), `src/spek/commands/session/` (package; full `spek session` command group including `start`, `goal`, `status`, `plan`, `amend`, `build`, `detour`, `stance`, `review`, `lint`, `clear`), `src/spek/commands/todo/` (package; full `spek todo` command group including `status`, `search`, `add`, `remove`, `section`). Both command groups registered in `src/spek/cli.py`. All read commands emit a file hash; all write commands emit before/after hash.
+
+Spec changes: `specs/docs/session.md` and `specs/docs/todo.md` rewritten as canonical YAML schema references. `specs/docs/changelog.md` deleted. `specs/workflow/base.md` and all ten workflow skills (`spek-sketch`, `spek-plan`, `spek-build`, `spek-reconcile`, `spek-review`, `spek-fix`, `spek-amend`, `spek-detour`, `spek-stance`, `spek-todo`, `spek-retro`) updated to use CLI commands instead of direct file edits; `preapproved_tools` updated accordingly. `specs/systems/base.md` had stale `Edit(.spek/SESSION.md)` / `Write(.spek/SESSION.md)` entries removed. `specs/workflow/spek-onboard.md` updated to use `spek todo add` instead of writing `.spek/TODO.md` directly. `specs/python/models/pydantic.md` gained `Literal`/`Enum` guidance. `specs/python/style.md` gained a `module-size` rule.
+
+Tests: 168 tests passing (`tests/test_session.py`, `tests/test_todo.py` added).
+
+Detours: `specs/python/module-size.md` added (new rule for splitting large Python modules); `commands/session.py` and `commands/todo_cmd.py` converted to packages (`commands/session/` and `commands/todo/`).
+
 ## 2026-05-23 (session: Jinja2 templating for spec modules)
 
 Added opt-in Jinja2 templating to the spec render pipeline. A module sets `spek.template: jinja` in its frontmatter; the body is then rendered through Jinja2 before output is written, with `modules` (active module set) and `integrations` (configured AI tool set) available as template variables. This allows spec files to conditionally include content based on what modules or integrations are active — the primary use case being cross-cutting system specs like `specs/systems/basic-crud.md` that should emit htmx-specific content only when the htmx module is present.

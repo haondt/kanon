@@ -4,8 +4,6 @@ spek:
   preapproved_tools:
     - Bash(spek ref *)
     - Bash(git status)
-    - Edit(.spek/SESSION.md)
-    - Write(.spek/SESSION.md)
     - Edit(.spek/STRUCTURE.md)
     - Write(.spek/STRUCTURE.md)
 ---
