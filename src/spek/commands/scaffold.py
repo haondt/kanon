@@ -36,7 +36,7 @@ def init(project_root: str) -> None:
     repo_path = spek_repo_path()
     profiles_dir = repo_path / "profiles"
     profiles = list_profiles(profiles_dir)
-    modules = list_modules(repo_path)
+    modules = list_modules(repo_path / "specs")
 
     integrations = questionary.checkbox(
         "Select integrations:",

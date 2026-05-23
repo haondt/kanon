@@ -216,6 +216,12 @@ def test_render_module_jinja_unknown_variable_raises(tmp_path):
         render_module(content, "test/jinja-undef", "claude", tmp_path)
 
 
+def test_render_module_skill_without_name_raises(tmp_path):
+    content = "---\nspek:\n  output: skill\n  description: No name set\n---\nBody.\n"
+    with pytest.raises(ValueError, match="spek.name"):
+        render_module(content, "workflow/unnamed", "claude", tmp_path)
+
+
 def test_render_module_jinja_with_skill_output(tmp_path):
     content = dedent("""\
         ---

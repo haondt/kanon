@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from pydantic import BaseModel
 
+from spek.core.settings import SourceSpec
 from spek.core.yaml_utils import load_yaml, save_yaml
 
 CONFIG_FILE = ".spek/spek.yaml"
@@ -10,6 +11,8 @@ MODULES_DIR = ".spek/modules"
 STANCES_DIR = ".spek/stances"
 LOCAL_MODULES_DIR = ".spek/local/modules"
 LOCAL_STANCES_DIR = ".spek/local/stances"
+
+SPEK_NAMESPACE = "spek"
 
 
 class SpekMeta(BaseModel):
@@ -25,6 +28,7 @@ class SpekConfig(BaseModel):
     stances: list[str] = []
     local_modules: list[str] = []
     local_stances: list[str] = []
+    sources: dict[str, SourceSpec] = {}
 
     @classmethod
     def load(cls, path: Path) -> SpekConfig:

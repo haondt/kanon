@@ -147,11 +147,15 @@ def render_module(
             },
         )
     out_type = meta.spek.output
+    if out_type == "skill" and not meta.spek.name:
+        raise ValueError(
+            f"Skill module '{module}' is missing spek.name — skills require an explicit name"
+        )
     out_dir = output_dir_for(project_root, ai_tool, out_type)
-    stem = meta.spek.name if meta.spek.name else module.replace("/", "--")
+    stem = meta.spek.name if meta.spek.name else module
 
     if out_type == "skill" and ai_tool == "claude":
-        skill_dir = out_dir / stem
+        skill_dir = out_dir / Path(stem)
         skill_dir.mkdir(parents=True, exist_ok=True)
         fm: dict[str, Any] = {}
         fm["name"] = stem
@@ -178,7 +182,7 @@ def render_module(
         out_path.write_text(f"---\n{dump_yaml(fm)}\n---\n{body}")
         return out_path
 
-    out_dir.mkdir(parents=True, exist_ok=True)
-    out_path = out_dir / (stem + ".md")
+    out_path = out_dir / Path(stem).with_suffix(".md")
+    out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(body)
     return out_path

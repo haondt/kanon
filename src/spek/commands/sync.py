@@ -4,7 +4,9 @@ import shutil
 import click
 from pathlib import Path
 
-from spek.core.config import SpekConfig, CONFIG_FILE, MODULES_DIR, STANCES_DIR, LOCAL_MODULES_DIR
+from spek.core.config import SpekConfig, CONFIG_FILE, MODULES_DIR, STANCES_DIR, LOCAL_MODULES_DIR, SPEK_NAMESPACE
+from spek.core.modules import parse_module_ref, resolve_sources
+from spek.core.settings import load_global_settings
 from spek.core.yaml_utils import load_yaml
 
 
@@ -54,26 +56,32 @@ def do_sync(root: Path, pull: bool = False) -> None:
     try:
         from spek.core.repo import spek_repo_path, spek_sha
         repo_path = spek_repo_path()
-        upstream_specs: Path | None = repo_path / "specs"
-        upstream_stances: Path | None = repo_path / "stances"
     except Exception:
         repo_path = None
-        upstream_specs = None
-        upstream_stances = None
+
+    # Build namespace → specs_dir mapping
+    global_settings = load_global_settings()
+    sources = resolve_sources(
+        repo_path,
+        {k: v for k, v in global_settings.sources.items()},
+        {k: v for k, v in config.sources.items()},
+    )
+
+    upstream_stances = (repo_path / "stances") if repo_path else None
 
     # ── Phase 0: --pull — force-refresh all stances and modules ────────────────
     if pull:
-        if upstream_specs is None:
-            click.echo("Cannot locate spek repo — --pull requires it.")
-            raise SystemExit(1)
         click.echo("Pulling from upstream:")
-        for stance_name in config.stances:
-            src = _find(stance_name, upstream_stances, (".yaml",))
-            if src:
-                _copy_to(src, stances_dir, stance_name)
-                click.echo(f"  stance:{stance_name} ← upstream")
-            else:
-                click.echo(f"  WARNING: stance '{stance_name}' not found upstream.")
+        if upstream_stances:
+            for stance_name in config.stances:
+                src = _find(stance_name, upstream_stances, (".yaml",))
+                if src:
+                    _copy_to(src, stances_dir, stance_name)
+                    click.echo(f"  stance:{stance_name} ← upstream")
+                else:
+                    click.echo(f"  WARNING: stance '{stance_name}' not found upstream.")
+        elif config.stances:
+            click.echo("  WARNING: spek source not available — skipping stance pull.")
 
     # ── Phase 1: reconcile stances in .spek/stances/ ─────────────────────────
     expected_stances: set[Path] = set()
@@ -112,12 +120,25 @@ def do_sync(root: Path, pull: bool = False) -> None:
 
     all_modules_needed = direct_modules | stance_modules
 
+    def _storage_key(mod_ref: str) -> str:
+        ns, bare = parse_module_ref(mod_ref)
+        return f"{ns}/{bare}"
+
+    def _specs_dir_for(ns: str) -> Path | None:
+        return sources.get(ns)
+
     # ── Phase 3 (--pull): force-refresh all modules ─────────────────────────────
-    if pull and upstream_specs:
+    if pull:
         for mod in all_modules_needed:
-            src = _find(mod, upstream_specs)
+            ns, bare = parse_module_ref(mod)
+            specs_dir = _specs_dir_for(ns)
+            if specs_dir is None:
+                click.echo(f"  WARNING: unknown namespace '{ns}' for module '{mod}', skipping.")
+                continue
+            src = _find(bare, specs_dir)
             if src:
-                _copy_to(src, modules_dir, mod)
+                storage_key = _storage_key(mod)
+                _copy_to(src, modules_dir, storage_key)
                 click.echo(f"  {mod} ← upstream")
             else:
                 click.echo(f"  WARNING: module '{mod}' not found upstream.")
@@ -125,19 +146,23 @@ def do_sync(root: Path, pull: bool = False) -> None:
     # ── Phase 4: reconcile modules in .spek/modules/ ─────────────────────────
     expected_modules: set[Path] = set()
     for mod in all_modules_needed:
-        local = _find(mod, modules_dir)
+        ns, bare = parse_module_ref(mod)
+        storage_key = _storage_key(mod)
+        local = _find(storage_key, modules_dir)
         if local:
             expected_modules.add(local)
-        elif upstream_specs:
-            src = _find(mod, upstream_specs)
-            if src:
-                dst = _copy_to(src, modules_dir, mod)
-                expected_modules.add(dst)
-                click.echo(f"  pulled '{mod}' from upstream")
-            else:
-                click.echo(f"  WARNING: module '{mod}' not found locally or upstream, skipping.")
         else:
-            click.echo(f"  WARNING: module '{mod}' missing and no upstream available.")
+            specs_dir = _specs_dir_for(ns)
+            if specs_dir is not None:
+                src = _find(bare, specs_dir)
+                if src:
+                    dst = _copy_to(src, modules_dir, storage_key)
+                    expected_modules.add(dst)
+                    click.echo(f"  pulled '{mod}' from upstream")
+                else:
+                    click.echo(f"  WARNING: module '{mod}' not found in source '{ns}', skipping.")
+            else:
+                click.echo(f"  WARNING: unknown namespace '{ns}' for module '{mod}', skipping.")
 
     _prune(modules_dir, expected_modules)
 
@@ -149,14 +174,14 @@ def do_sync(root: Path, pull: bool = False) -> None:
             config.save(config_path)
 
     # ── Phase 5: generate AI tool output ──────────────────────────────────────
-    # Only modules in config.modules (not stance-only) become rules/commands.
     from spek.core.render import AI_TOOL_OUTPUT_DIRS, AI_TOOL_SETTINGS_FILES, collect_hooks, collect_preapproved_tools, render_module, render_settings
 
     to_render: list[tuple[str, Path]] = []
     for mod in config.modules:
-        p = _find(mod, modules_dir)
+        storage_key = _storage_key(mod)
+        p = _find(storage_key, modules_dir)
         if p:
-            to_render.append((mod, p))
+            to_render.append((storage_key, p))
 
     local_modules_dir = root / LOCAL_MODULES_DIR
     for name in config.local_modules:
@@ -181,17 +206,17 @@ def do_sync(root: Path, pull: bool = False) -> None:
         hooks_by_event: dict[str, list[dict]] = {}
         preapproved_tools: list[str] = []
         seen_tools: set[str] = set()
-        for name, src in to_render:
+        for render_name, src in to_render:
             content = src.read_text()
             out_path = render_module(
                 content,
-                name,
+                render_name,
                 integration,
                 root,
                 modules=config.modules + config.local_modules,
                 integrations=config.meta.integrations,
             )
-            click.echo(f"  {name} → {out_path.relative_to(root)}")
+            click.echo(f"  {render_name} → {out_path.relative_to(root)}")
             for event, entries in collect_hooks(content, integration).items():
                 hooks_by_event.setdefault(event, []).extend(entries)
             for tool in collect_preapproved_tools(content):

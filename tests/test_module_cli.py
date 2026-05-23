@@ -39,6 +39,7 @@ def test_module_list_json_entry_shape(tmp_path):
     assert "name" in entry
     assert "description" in entry
     assert "active" in entry
+    assert "source" in entry
 
 
 def test_module_list_json_marks_active_correctly(tmp_path):

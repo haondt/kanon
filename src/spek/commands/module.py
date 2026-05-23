@@ -8,14 +8,26 @@ from questionary import Choice
 from pathlib import Path
 
 from spek.core.config import SpekConfig, CONFIG_FILE
-from spek.core.modules import list_modules
+from spek.core.modules import list_modules, parse_module_ref, resolve_sources
 from spek.core.render import parse_frontmatter
 from spek.core.repo import spek_repo_path
+from spek.core.settings import load_global_settings
 
 
-def _resolve_description(name: str, modules_dir: Path, specs_dir: Path) -> str:
-    for base_dir in (modules_dir, specs_dir):
-        p_base = base_dir.joinpath(*name.split("/"))
+def _resolve_description(name: str, modules_dir: Path, sources: dict[str, Path]) -> str:
+    ns, bare = parse_module_ref(name)
+    storage_key = f"{ns}/{bare}"
+    for base_dir in (modules_dir,):
+        p_base = base_dir.joinpath(*storage_key.split("/"))
+        for suffix in (".md", ".yaml"):
+            p = p_base.with_suffix(suffix)
+            if p.exists():
+                fm, _ = parse_frontmatter(p.read_text())
+                if fm.spek.description:
+                    return fm.spek.description
+    specs_dir = sources.get(ns)
+    if specs_dir:
+        p_base = specs_dir.joinpath(*bare.split("/"))
         for suffix in (".md", ".yaml"):
             p = p_base.with_suffix(suffix)
             if p.exists():
@@ -23,6 +35,27 @@ def _resolve_description(name: str, modules_dir: Path, specs_dir: Path) -> str:
                 if fm.spek.description:
                     return fm.spek.description
     return ""
+
+
+def _build_sources(root: Path, config: SpekConfig, repo_path: Path) -> dict[str, Path]:
+    global_settings = load_global_settings()
+    return resolve_sources(
+        repo_path,
+        {k: v for k, v in global_settings.sources.items()},
+        {k: v for k, v in config.sources.items()},
+    )
+
+
+def _all_available(sources: dict[str, Path]) -> list[tuple[str, str]]:
+    """Return (qualified_name, namespace) pairs for all available modules across all sources."""
+    result: list[tuple[str, str]] = []
+    for ns, specs_dir in sources.items():
+        if not specs_dir.exists():
+            continue
+        for bare in list_modules(specs_dir):
+            qualified = bare if ns == "spek" else f"{ns}::{bare}"
+            result.append((qualified, ns))
+    return sorted(result, key=lambda x: x[0])
 
 
 @click.group()
@@ -48,17 +81,17 @@ def _do_picker(project_root: str, run_sync: bool) -> None:
     config = SpekConfig.load(config_path)
     repo_path = spek_repo_path()
     modules_dir = root / ".spek" / "modules"
-    specs_dir = repo_path / "specs"
-    available = list_modules(repo_path)
+    sources = _build_sources(root, config, repo_path)
 
+    available = _all_available(sources)
     selected_set = set(config.modules)
     choices = [
         Choice(
             title=name,
             checked=(name in selected_set),
-            description=_resolve_description(name, modules_dir, specs_dir),
+            description=_resolve_description(name, modules_dir, sources),
         )
-        for name in available
+        for name, _ns in available
     ]
 
     result = questionary.checkbox(
@@ -92,32 +125,42 @@ def module_list(project_root: str, as_json: bool) -> None:
     config_path = root / CONFIG_FILE
 
     selected_set: set[str] = set()
+    config: SpekConfig | None = None
     if config_path.exists():
         config = SpekConfig.load(config_path)
         selected_set = set(config.modules)
 
     repo_path = spek_repo_path()
     modules_dir = root / ".spek" / "modules"
-    specs_dir = repo_path / "specs"
-    available = list_modules(repo_path)
+    global_settings = load_global_settings()
+    if config is not None:
+        sources = resolve_sources(repo_path, dict(global_settings.sources), dict(config.sources))
+    else:
+        sources = resolve_sources(repo_path, dict(global_settings.sources), {})
+    available = _all_available(sources)
 
     if as_json:
         results = [
             {
                 "name": name,
-                "description": _resolve_description(name, modules_dir, specs_dir),
+                "description": _resolve_description(name, modules_dir, sources),
                 "active": name in selected_set,
+                "source": ns,
             }
-            for name in available
+            for name, ns in available
         ]
         click.echo(json_mod.dumps(results))
         return
 
-    width = max(len(m) for m in available)
-    for name in available:
-        desc = _resolve_description(name, modules_dir, specs_dir)
+    if not available:
+        return
+
+    width = max(len(name) for name, _ in available)
+    for name, ns in available:
+        desc = _resolve_description(name, modules_dir, sources)
         marker = "✓" if name in selected_set else " "
-        click.echo(f"  [{marker}] {name:<{width}}  {desc}")
+        label = f"[{ns}] " if ns != "spek" else ""
+        click.echo(f"  [{marker}] {name:<{width}}  {label}{desc}")
 
 
 @module.command("set")
@@ -132,14 +175,15 @@ def module_set(modules: tuple[str, ...], project_root: str, run_sync: bool) -> N
         click.echo("No spek.yaml found. Run 'spek init' first.")
         raise SystemExit(1)
 
+    config = SpekConfig.load(config_path)
     repo_path = spek_repo_path()
-    available = set(list_modules(repo_path))
-    unknown = [m for m in modules if m not in available]
+    sources = _build_sources(root, config, repo_path)
+    available_names = {name for name, _ in _all_available(sources)}
+    unknown = [m for m in modules if m not in available_names]
     if unknown:
         click.echo(f"Unknown module(s): {', '.join(unknown)}")
         raise SystemExit(1)
 
-    config = SpekConfig.load(config_path)
     config.modules = list(modules)
     config.save(config_path)
     click.echo(f"Saved {len(modules)} module(s) to spek.yaml.")

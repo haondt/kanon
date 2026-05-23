@@ -44,10 +44,11 @@ src/spek/
 
 ## Core modules (`src/spek/core/`)
 
-- `config.py` — `SpekConfig` Pydantic model; `load()`/`save()` against `.spek/spek.yaml`
+- `config.py` — `SpekConfig` Pydantic model; `load()`/`save()` against `.spek/spek.yaml`; `sources: dict[str, SourceSpec] = {}`; `SPEK_NAMESPACE = "spek"` constant
+- `settings.py` — `SourceSpec(BaseModel)` (`path: str`, `url`/`ref` reserved); `GlobalSettings(BaseModel)` (`sources: dict[str, SourceSpec]`); `load_global_settings()` reads `~/.spek/settings.yaml`, returns empty model if missing
 - `yaml_utils.py` — all YAML I/O: `load_yaml(path, model?)`, `save_yaml(data, path)`; also exports `FRONTMATTER_RE` (shared frontmatter regex)
-- `render.py` — reads local module copies, strips frontmatter, writes AI tool output files; `ModuleFrontmatter` parses `spek.description/output/name/args/integrations/preapproved_tools/template`; `output` and `template` are `Literal`-typed (`Literal["rule","skill"]` and `Literal["jinja"] | None`); when `template: jinja`, body is rendered through `_apply_jinja(body, context)` (Jinja2 `StrictUndefined`, `keep_trailing_newline=True`) with `modules` and `integrations` as sets before rule/skill branching; for `output: skill` + claude, writes `<name>/SKILL.md` with generated YAML frontmatter (`description`, `argument-hint`, plus any keys from `integrations.claude` except `hooks`); `preapproved_tools` from spec frontmatter are merged into `allowed-tools` in the skill frontmatter; when `context: fork`, appends STRUCTURE.md preload commands to `allowed-tools` and injects a `## Project structure` shell-expansion block into the skill body; `collect_hooks(content, ai_tool)` extracts hook declarations from frontmatter; `collect_preapproved_tools(content)` extracts rule-module `preapproved_tools`; `render_settings(hooks_by_event, project_root, ai_tool, preapproved_tools?)` writes `.claude/settings.json` with `permissions.allow` + hooks
-- `modules.py` — `list_modules(repo_path)` enumerates all spec files
+- `render.py` — reads local module copies, strips frontmatter, writes AI tool output files; `ModuleFrontmatter` parses `spek.description/output/name/args/integrations/preapproved_tools/template`; `output` and `template` are `Literal`-typed (`Literal["rule","skill"]` and `Literal["jinja"] | None`); when `template: jinja`, body is rendered through `_apply_jinja(body, context)` (Jinja2 `StrictUndefined`, `keep_trailing_newline=True`) with `modules` and `integrations` as sets before rule/skill branching; for `output: skill` + claude, writes `<name>/SKILL.md` with generated YAML frontmatter (`description`, `argument-hint`, plus any keys from `integrations.claude` except `hooks`); skills require an explicit `spek.name` — `ValueError` raised at render time if absent; `preapproved_tools` from spec frontmatter are merged into `allowed-tools` in the skill frontmatter; when `context: fork`, appends STRUCTURE.md preload commands to `allowed-tools` and injects a `## Project structure` shell-expansion block into the skill body; `collect_hooks(content, ai_tool)` extracts hook declarations from frontmatter; `collect_preapproved_tools(content)` extracts rule-module `preapproved_tools`; `render_settings(hooks_by_event, project_root, ai_tool, preapproved_tools?)` writes `.claude/settings.json` with `permissions.allow` + hooks
+- `modules.py` — `list_modules(specs_dir)` enumerates all spec files in a given directory; `parse_module_ref(name)` splits on `::`, defaults namespace to `"spek"`; `resolve_sources(repo_path, global_sources, project_sources)` merges global + project (project wins), adds `"spek" → repo_path / "specs"` as fallback when `repo_path` is not None
 - `profiles.py` — `resolve_profile()` recursive resolution with deduplication; `ProfileSpec` model
 - `references.py` — `search_references(repo_path, terms, project_root?)` keyword search; `read_reference(repo_path, name, project_root?)` retrieves content; local refs in `.spek/local/references/` shadow upstream on name collision; `ReferenceResult` model
 - `utils.py` — `deep_merge(d1, d2, conflicts?)` — recursive dict merge with three conflict modes (`new`/`old`/`err`); list deduplication safe for unhashable types
@@ -56,21 +57,23 @@ src/spek/
 ## Data flow
 
 ```
-spek init   → writes .spek/spek.yaml (modules, stances, integrations)
-spek sync   → copies spec files from upstream into .spek/modules/ and .spek/stances/
-            → calls render.py to emit .claude/rules/ and .claude/skills/<name>/SKILL.md
+spek init   → writes .spek/spek.yaml (modules, stances, integrations, sources)
+spek sync   → resolves sources: merges ~/.spek/settings.yaml + config.sources; adds "spek" → upstream repo/specs
+            → copies spec files from each namespace into .spek/modules/{ns}/{bare}.md
+            → calls render.py to emit .claude/rules/{ns}/{bare}.md and .claude/skills/{ns}/{bare}/SKILL.md
             → accumulates hook declarations from all modules; writes .claude/settings.json if any hooks are declared
 ```
 
 ## spek module subcommands
 
 - `spek module edit` — interactive checkbox picker (was bare `spek module`; no longer invoked without subcommand)
-- `spek module list [--json]` — lists all available modules; `--json` outputs `[{name, description, active}]` for AI consumption
+- `spek module list [--json]` — lists all available modules across all namespaces; `--json` outputs `[{name, description, active, source}]` for AI consumption (`source` is the namespace name)
 - `spek module set [--sync] <module>...` — non-interactive full replacement of the module list; validates names; intended for AI agents
 
 ## Key concepts
 
-- **module** — a single markdown spec file; path relative to `specs/` (e.g. `git/commit-base`)
+- **module** — a single markdown spec file; plain path (e.g. `git/commit-base`) defaults to the `spek` namespace; external modules use `ns::bare/path` syntax (e.g. `mywork::python/style`)
+- **namespace** — a named source directory declared in `~/.spek/settings.yaml` or `spek.yaml.sources`; `"spek"` always resolves to the installed repo's `specs/` unless overridden
 - **stance** — a YAML file listing modules; inert until activated via `/spek-stance`
 - **profile** — a YAML file listing modules and stances; resolved recursively at `spek init` or `spek profile apply`
 - **active vs inert** — a module in `spek.yaml.modules` → written to AI rules; a module only referenced by a stance → copied to `.spek/modules/` only, not emitted until the stance is activated
@@ -78,6 +81,8 @@ spek sync   → copies spec files from upstream into .spek/modules/ and .spek/st
 ## Non-obvious
 
 - Output type (`rule` vs `skill`) is declared in spec file frontmatter; frontmatter is stripped before writing output
+- Rule and skill output paths are namespace-prefixed: `.claude/rules/{ns}/{bare}.md` and `.claude/skills/{ns}/{bare}/SKILL.md`; `spek.name` override is still respected and produces a flat name as before
+- Skills require an explicit `spek.name` in frontmatter — `render_module` raises `ValueError` if absent, preventing path-like qualified names from appearing as the Claude skill name
 - `skill` output for Claude is written as `.claude/skills/<name>/SKILL.md` with a YAML frontmatter block (`description`, `argument-hint`, and any `integrations.claude` keys passed verbatim except `hooks`); Windsurf `skill` output remains a flat `.md` in `.windsurf/rules/`
 - Hook declarations in `integrations.claude.hooks` frontmatter accumulate across all modules and are written to `.claude/settings.json` by `render_settings`; the file is fully spek-managed (overwritten each sync, deleted by `spek destroy`) — user-managed overrides belong in `.claude/settings.local.json`
 - Whether a module is always-active or stance-only is determined entirely by its presence in `spek.yaml.modules`, not by anything in the file itself
