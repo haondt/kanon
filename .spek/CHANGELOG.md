@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-05-22 (session: spek-reconcile skill + render/utils fixes)
+
+Added `specs/workflow/spek-reconcile.md` — a new skill for catching up SESSION.md after the human does implementation work directly (manual coding, raw prompts, or detours). The skill reads `SESSION.md` and `git diff HEAD`, infers which plan steps are complete, marks them done, adds a brief observation note, and prompts the user to run `/spek-review`. Registered in `.spek/spek.yaml`; synced to `.claude/skills/spek-reconcile/SKILL.md`.
+
+As a side effect of the review/fix cycle, several bugs and style issues in `src/spek/core/` were addressed. A new `src/spek/core/utils.py` was extracted with a `deep_merge` helper (three conflict modes: `new`/`old`/`err`; recursive dict merge; list deduplication safe for unhashable types). `render.py` was fixed so that `allowed-tools` from `integrations.claude` is merged into the existing `preapproved_tools`-populated list rather than silently overwriting it; three PEP 8 blank-line violations were also corrected. `tests/test_utils.py` was added with 9 direct unit tests for `deep_merge` covering all conflict modes, type-mismatch behavior, list deduplication, and nested dict recursion. `tests/test_render.py` gained an assertion for `includeGitInstructions` in the permissions-only settings path. Test suite: 89 tests passing.
+
 ## 2026-05-22 (session: render.py skill enhancements and workflow spec refinements)
 
 Extended `render.py` and workflow specs to give fork-context skills richer tool access and context.

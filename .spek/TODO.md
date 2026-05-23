@@ -48,3 +48,7 @@ Currently spek only syncs modules from its own repo, which limits it to a single
 ## Cleanup
 
 - `specs/workflow/cleanup.md` — standalone spec for identifying and removing dead code: unused functions, stale TODOs, commented-out blocks, unreferenced files, speculative code that was never used. Complements the retro step but can be invoked independently.
+
+## Spec library maintenance
+
+- Audit all files under `specs/` against the current spec authoring conventions (`spek ref read spek/specs`): trim overly long or ambiguous specs, tighten language, ensure format and frontmatter are consistent.

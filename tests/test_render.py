@@ -65,6 +65,7 @@ def test_render_settings_writes_permissions(tmp_path):
     assert settings.exists()
     data = json.loads(settings.read_text())
     assert data["permissions"] == {"allow": ["Bash(spek ref *)", "Skill(my-skill)"]}
+    assert data["includeGitInstructions"] == False
 
 
 def test_render_settings_no_hooks_no_tools_skips_file(tmp_path):

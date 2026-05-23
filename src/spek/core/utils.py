@@ -1,21 +1,16 @@
+from __future__ import annotations
+
 from typing import Any
-# deep merge two dictionaries of basic types
-# when merging primitives, the one from d2 is preferred
+
+
 def deep_merge(d1: dict[str, Any], d2: dict[str, Any], conflicts: str = "new", _path: str = ""):
     if conflicts not in ["new", "old", "err"]:
         raise ValueError("Unexpected conflict resolution:" + conflicts)
     def merge_list(l1: list[Any], l2: list[Any]):
-        added = set()
         l: list[Any] = []
-        def add_to_l(la: list[Any]):
-            nonlocal added
-            nonlocal l
-            for v in la:
-                if v not in added:
-                    added.add(v)
-                    l.append(v)
-        add_to_l(l1)
-        add_to_l(l2)
+        for v in l1 + l2:
+            if v not in l:
+                l.append(v)
         return l
     result = d1.copy()
     for k, v in d2.items():

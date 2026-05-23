@@ -44,7 +44,6 @@ class ModuleFrontmatter(BaseModel):
     spek: _SpekMeta = _SpekMeta()
 
 
-
 def parse_frontmatter(content: str) -> tuple[ModuleFrontmatter, str]:
     match = FRONTMATTER_RE.match(content)
     if not match:
@@ -142,8 +141,12 @@ def render_module(content: str, module: str, ai_tool: str, project_root: Path) -
             existing = fm.get("allowed-tools", [])
             fm["allowed-tools"] = existing + [t for t in meta.spek.preapproved_tools if t not in existing]
         if meta.spek.integrations:
-            claude_meta = {k: v for k, v in meta.spek.integrations.get("claude", {}).items() if k != "hooks"}
+            claude_meta = {k: v for k, v in meta.spek.integrations.get("claude", {}).items() if k not in ("hooks", "allowed-tools")}
             fm.update(claude_meta)
+            extra_tools = meta.spek.integrations.get("claude", {}).get("allowed-tools", [])
+            if extra_tools:
+                existing = fm.get("allowed-tools", [])
+                fm["allowed-tools"] = existing + [t for t in extra_tools if t not in existing]
             if claude_meta.get("context") == "fork":
                 existing = fm.get("allowed-tools", [])
                 injected = ["Bash(test .spek/STRUCTURE.md)", "Bash(cat .spek/STRUCTURE.md)"]

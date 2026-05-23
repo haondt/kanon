@@ -50,6 +50,7 @@ src/spek/
 - `modules.py` — `list_modules(repo_path)` enumerates all spec files
 - `profiles.py` — `resolve_profile()` recursive resolution with deduplication; `ProfileSpec` model
 - `references.py` — `search_references(repo_path, terms, project_root?)` keyword search; `read_reference(repo_path, name, project_root?)` retrieves content; local refs in `.spek/local/references/` shadow upstream on name collision; `ReferenceResult` model
+- `utils.py` — `deep_merge(d1, d2, conflicts?)` — recursive dict merge with three conflict modes (`new`/`old`/`err`); list deduplication safe for unhashable types
 - `repo.py` — locates the upstream spek repo (`spek_repo_path`); auto-discovers the local project root (`local_project_path`); reads HEAD SHA
 
 ## Data flow
