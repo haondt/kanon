@@ -17,7 +17,7 @@ AI_TOOL_OUTPUT_DIRS: dict[str, dict[str, str]] = {
     },
     "windsurf": {
         "rule": ".windsurf/rules",
-        "skill": ".windsurf/skills",
+        "workflow": ".windsurf/workflows",
     },
 }
 
@@ -129,6 +129,18 @@ def output_dir_for(project_root: Path, ai_tool: str, out_type: str) -> Path:
     return project_root / rel
 
 
+def render_windsurf_structure_rule(project_root: Path) -> Path:
+    """Generate the Windsurf rule that injects STRUCTURE.md context."""
+    out_dir = project_root / ".windsurf" / "rules"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    out_path = out_dir / "windsurf-read-structure-md.md"
+    
+    fm = {"trigger": "always_on"}
+    body = "## Project structure\n\nThe first action in every conversation is reading @.spek/STRUCTURE.md. Do nothing else until this is complete. This applies to the very first message and all subsequent messages."
+    out_path.write_text(f"---\n{dump_yaml(fm)}\n---\n{body}")
+    return out_path
+
+
 def render_module(
     content: str,
     module: str,
@@ -154,7 +166,19 @@ def render_module(
     out_dir = output_dir_for(project_root, ai_tool, out_type)
     stem = meta.spek.name if meta.spek.name else module
 
-    if out_type == "skill" and ai_tool == "claude":
+    if out_type == "skill":
+        # Windsurf uses workflows instead of skills
+        if ai_tool == "windsurf":
+            out_type = "workflow"
+            out_dir = output_dir_for(project_root, ai_tool, out_type)
+            out_path = out_dir / Path(stem).with_suffix(".md")
+            out_path.parent.mkdir(parents=True, exist_ok=True)
+            fm: dict[str, Any] = {}
+            if meta.spek.description:
+                fm["description"] = meta.spek.description
+            out_path.write_text(f"---\n{dump_yaml(fm)}\n---\n{body}")
+            return out_path
+
         skill_dir = out_dir / Path(stem)
         skill_dir.mkdir(parents=True, exist_ok=True)
         fm: dict[str, Any] = {}
@@ -162,18 +186,21 @@ def render_module(
         if meta.spek.description:
             fm["description"] = meta.spek.description
         if meta.spek.args:
-            fm["argument-hint"] = meta.spek.args
+            if ai_tool == "claude":
+                fm["argument-hint"] = meta.spek.args
+            else:
+                fm["args"] = meta.spek.args
         if meta.spek.preapproved_tools:
             existing = fm.get("allowed-tools", [])
             fm["allowed-tools"] = existing + [t for t in meta.spek.preapproved_tools if t not in existing]
         if meta.spek.integrations:
-            claude_meta = {k: v for k, v in meta.spek.integrations.get("claude", {}).items() if k not in ("hooks", "allowed-tools")}
-            fm.update(claude_meta)
-            extra_tools = meta.spek.integrations.get("claude", {}).get("allowed-tools", [])
+            tool_meta = {k: v for k, v in meta.spek.integrations.get(ai_tool, {}).items() if k not in ("hooks", "allowed-tools")}
+            fm.update(tool_meta)
+            extra_tools = meta.spek.integrations.get(ai_tool, {}).get("allowed-tools", [])
             if extra_tools:
                 existing = fm.get("allowed-tools", [])
                 fm["allowed-tools"] = existing + [t for t in extra_tools if t not in existing]
-            if claude_meta.get("context") == "fork":
+            if tool_meta.get("context") == "fork":
                 existing = fm.get("allowed-tools", [])
                 injected = ["Bash(test .spek/STRUCTURE.md)", "Bash(cat .spek/STRUCTURE.md)"]
                 fm["allowed-tools"] = existing + [t for t in injected if t not in existing]
@@ -182,7 +209,24 @@ def render_module(
         out_path.write_text(f"---\n{dump_yaml(fm)}\n---\n{body}")
         return out_path
 
-    out_path = out_dir / Path(stem).with_suffix(".md")
-    out_path.parent.mkdir(parents=True, exist_ok=True)
-    out_path.write_text(body)
+    if ai_tool == "windsurf" and out_type == "rule":
+        # Flatten directory structure for Windsurf rules (no subdirectory support)
+        # Replace path separators with double dashes to avoid collisions
+        flattened_stem = stem.replace("/", "--")
+        out_path = out_dir / Path(flattened_stem).with_suffix(".md")
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        
+        # Windsurf rules require trigger field in frontmatter
+        fm: dict[str, Any] = {"trigger": "always_on"}
+        # Allow override via integrations.windsurf.trigger
+        if meta.spek.integrations:
+            windsurf_meta = meta.spek.integrations.get("windsurf", {})
+            if "trigger" in windsurf_meta:
+                fm["trigger"] = windsurf_meta["trigger"]
+        out_path.write_text(f"---\n{dump_yaml(fm)}\n---\n{body}")
+    else:
+        out_path = out_dir / Path(stem).with_suffix(".md")
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        out_path.write_text(body)
+    
     return out_path

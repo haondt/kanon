@@ -8,7 +8,7 @@ import pytest
 
 import jinja2
 
-from spek.core.render import collect_hooks, collect_preapproved_tools, render_module, render_settings
+from spek.core.render import collect_hooks, collect_preapproved_tools, render_module, render_settings, render_windsurf_structure_rule
 
 
 def _hooks_content(*entries: dict) -> str:
@@ -139,11 +139,13 @@ def test_render_module_fork_skill_appends_preload_command(tmp_path):
     assert "Bash(cat .spek/STRUCTURE.md)" in skill_md
 
 
-def test_render_module_windsurf_fork_skill_no_preload(tmp_path):
+def test_render_module_windsurf_fork_skill_gets_preload(tmp_path):
     content = _fork_skill_content("windsurf")
     render_module(content, "workflow/my-skill", "windsurf", tmp_path)
-    skill_md = (tmp_path / ".windsurf/skills/my-skill.md").read_text()
-    assert "!`test -f" not in skill_md
+    skill_md = (tmp_path / ".windsurf/skills/my-skill/SKILL.md").read_text()
+    assert "## Project structure\n\n!`test -f .spek/STRUCTURE.md && cat .spek/STRUCTURE.md`" in skill_md
+    assert "Bash(test .spek/STRUCTURE.md)" in skill_md
+    assert "Bash(cat .spek/STRUCTURE.md)" in skill_md
 
 
 def test_render_module_skill_merges_preapproved_and_integration_allowed_tools(tmp_path):
@@ -222,6 +224,37 @@ def test_render_module_skill_without_name_raises(tmp_path):
         render_module(content, "workflow/unnamed", "claude", tmp_path)
 
 
+def test_render_module_windsurf_rule_has_trigger_always_on(tmp_path):
+    content = dedent("""\
+        ---
+        spek: {}
+        ---
+        This is a Windsurf rule.
+        """)
+    out = render_module(content, "test/windsurf-rule", "windsurf", tmp_path)
+    content = out.read_text()
+    assert "---" in content
+    assert "trigger: always_on" in content
+    assert "This is a Windsurf rule." in content
+
+
+def test_render_module_windsurf_rule_trigger_override(tmp_path):
+    content = dedent("""\
+        ---
+        spek:
+          integrations:
+            windsurf:
+              trigger: manual
+        ---
+        This is a Windsurf rule with manual trigger.
+        """)
+    out = render_module(content, "test/windsurf-manual", "windsurf", tmp_path)
+    content = out.read_text()
+    assert "---" in content
+    assert "trigger: manual" in content
+    assert "trigger: always_on" not in content
+
+
 def test_render_module_jinja_with_skill_output(tmp_path):
     content = dedent("""\
         ---
@@ -236,3 +269,13 @@ def test_render_module_jinja_with_skill_output(tmp_path):
     out = render_module(content, "test/jinja-skill", "claude", tmp_path, modules=["python/style"])
     assert out == tmp_path / ".claude/skills/jinja-skill/SKILL.md"
     assert "python present" in out.read_text()
+
+
+def test_render_windsurf_structure_rule(tmp_path):
+    out = render_windsurf_structure_rule(tmp_path)
+    assert out == tmp_path / ".windsurf" / "rules" / "spek" / "project-structure.md"
+    content = out.read_text()
+    assert "---" in content
+    assert "trigger: always_on" in content
+    assert "## Project structure" in content
+    assert "CRITICAL: At a session start, you MUST read @.spek/STRUCTURE.md before doing anything else." in content

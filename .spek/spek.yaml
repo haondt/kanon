@@ -3,6 +3,7 @@ meta:
   spek_sha: a4e94343229780298a8d54ef0e280ecdd1a3d717
   integrations:
   - claude
+  - windsurf
   profile: python/cli
 modules:
 - ai/analysis/find-problems

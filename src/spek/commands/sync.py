@@ -174,7 +174,7 @@ def do_sync(root: Path, pull: bool = False) -> None:
             config.save(config_path)
 
     # ── Phase 5: generate AI tool output ──────────────────────────────────────
-    from spek.core.render import AI_TOOL_OUTPUT_DIRS, AI_TOOL_SETTINGS_FILES, collect_hooks, collect_preapproved_tools, render_module, render_settings
+    from spek.core.render import AI_TOOL_OUTPUT_DIRS, AI_TOOL_SETTINGS_FILES, collect_hooks, collect_preapproved_tools, render_module, render_settings, render_windsurf_structure_rule
 
     to_render: list[tuple[str, Path]] = []
     for mod in config.modules:
@@ -223,6 +223,9 @@ def do_sync(root: Path, pull: bool = False) -> None:
                 if tool not in seen_tools:
                     seen_tools.add(tool)
                     preapproved_tools.append(tool)
+        if integration == "windsurf":
+            structure_rule_path = render_windsurf_structure_rule(root)
+            click.echo(f"  project-structure → {structure_rule_path.relative_to(root)}")
         render_settings(hooks_by_event, root, integration, preapproved_tools)
 
     click.echo("Done.")

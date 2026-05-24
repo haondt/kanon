@@ -22,6 +22,19 @@ spek sync
 
 Commit `.spek/spek.yaml`, `.spek/modules/`, and `.spek/stances/` — your project's spec config is now self-contained.
 
+## AI tool configuration
+
+### Windsurf
+
+To allow the AI to run spek commands without confirmation, add the following to Windsurf's allowlist:
+
+- `spek ref *`
+- `spek session *`
+- `spek todo *`
+- `spek module list`
+
+This enables the AI to auto-execute these spek commands during workflow skills without requiring approval for each invocation.
+
 ## Overview
 
 spek maintains a library of spec modules — markdown files covering coding conventions, git behavior, AI behavioral rules, and more. Projects declare which modules they want in `.spek/spek.yaml`; `spek sync` copies them into committed local files and generates AI tool integrations. The same source modules produce `.claude/rules/` for Claude Code, `.windsurf/rules/` for Windsurf, and so on — one config, multiple tools.
