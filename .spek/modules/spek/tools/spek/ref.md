@@ -5,6 +5,6 @@ spek:
 
 # spek ref
 
-- `spek ref search [-n N] [--match-any] <term>...` — keyword search; all terms must match by default; start with 1-2 terms; `name` in results is the value to pass to `read`
+- `spek ref search [-n N] [--match-all] <term>...` — keyword search; any term matching returns a result by default; use `--match-all` to require all terms; start with 1-2 terms; `name` in results is the value to pass to `read`
 - `spek ref read <name>` — retrieve a single entry by name
 - Add `--json` to either command for machine-readable output (`search` → `[{name, description, keywords}]`; `read` → `{name, content}`)

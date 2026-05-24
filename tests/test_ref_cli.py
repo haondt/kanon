@@ -139,7 +139,7 @@ def test_read_json_output(tmp_path):
 def test_search_multi_term_and(tmp_path):
     make_references(tmp_path, {"frontend/bulma/navbar": NAVBAR_CONTENT})
     with patch("spek.commands.ref.spek_repo_path", return_value=tmp_path):
-        result = CliRunner().invoke(cli, ["ref", "search", "bulma", "navbar"])
+        result = CliRunner().invoke(cli, ["ref", "search", "--match-all", "bulma", "navbar"])
     assert result.exit_code == 0
     assert "frontend/bulma/navbar" in result.output
 
@@ -147,15 +147,15 @@ def test_search_multi_term_and(tmp_path):
 def test_search_multi_term_and_no_match(tmp_path):
     make_references(tmp_path, {"frontend/bulma/navbar": NAVBAR_CONTENT})
     with patch("spek.commands.ref.spek_repo_path", return_value=tmp_path):
-        result = CliRunner().invoke(cli, ["ref", "search", "bulma", "form"])
+        result = CliRunner().invoke(cli, ["ref", "search", "--match-all", "bulma", "form"])
     assert result.exit_code == 0
     assert "No references found" in result.output
 
 
-def test_search_multi_term_match_any(tmp_path):
+def test_search_multi_term_or_default(tmp_path):
     make_references(tmp_path, {"frontend/bulma/navbar": NAVBAR_CONTENT})
     with patch("spek.commands.ref.spek_repo_path", return_value=tmp_path):
-        result = CliRunner().invoke(cli, ["ref", "search", "navbar", "form", "--match-any"])
+        result = CliRunner().invoke(cli, ["ref", "search", "navbar", "form"])
     assert result.exit_code == 0
     assert "frontend/bulma/navbar" in result.output
 
@@ -166,7 +166,7 @@ def test_search_ranking(tmp_path):
         "frontend/bulma/form": FORM_CONTENT,
     })
     with patch("spek.commands.ref.spek_repo_path", return_value=tmp_path):
-        result = CliRunner().invoke(cli, ["ref", "search", "--json", "bulma", "navbar", "--match-any"])
+        result = CliRunner().invoke(cli, ["ref", "search", "--json", "bulma", "navbar"])
     assert result.exit_code == 0
     data = json.loads(result.output)
     names = [r["name"] for r in data]
@@ -222,7 +222,7 @@ def test_search_merges_local_and_upstream(tmp_path):
     make_local_references(project, {"components/button": LOCAL_REF_CONTENT})
     with patch("spek.commands.ref.spek_repo_path", return_value=tmp_path), \
          patch("spek.commands.ref.local_project_path", return_value=project):
-        result = CliRunner().invoke(cli, ["ref", "search", "--json", "bulma", "--match-any"])
+        result = CliRunner().invoke(cli, ["ref", "search", "--json", "bulma"])
     assert result.exit_code == 0
     data = json.loads(result.output)
     names = [r["name"] for r in data]

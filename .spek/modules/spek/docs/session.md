@@ -5,7 +5,7 @@ spek:
 
 # Session schema
 
-`.spek/session.yaml` is the backing file for the current session. It is gitignored and deleted at retro.
+`.spek/session.yaml` is the backing file for the current session. It is deleted at retro.
 
 ## Fields
 

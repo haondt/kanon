@@ -2,93 +2,85 @@ sections:
   testing:
     name: Testing
     items:
-    - Consolidate and reduce the test suite to keep it manageable, accepting slightly
-      reduced coverage.
+    - |-
+      Consolidate and reduce the test suite to keep it manageable, accepting slightly reduced coverage.
   containerization:
     name: Containerization
     items:
-    - Add specs/docker/dockerfile.md — Dockerfile best practices (layer ordering,
-      cache efficiency, non-root user, minimal base images).
+    - |-
+      Add specs/docker/dockerfile.md — Dockerfile best practices (layer ordering, cache efficiency, non-root user, minimal base images).
     - Add specs/docker/compose.md — docker-compose / compose file conventions.
-    - Add specs/docker/podman.md — podman-specific conventions and differences from
-      Docker.
+    - |-
+      Add specs/docker/podman.md — podman-specific conventions and differences from Docker.
     - 'Add containerization profiles: containers/docker, containers/podman.'
   persistence:
     name: Persistence
     items:
-    - Add specs/persistence/base.md — tool-agnostic persistence conventions (migrations,
-      connection lifecycle, no raw queries in business logic).
+    - |-
+      Add specs/persistence/base.md — tool-agnostic persistence conventions (migrations, connection lifecycle, no raw queries in business logic).
     - 'Add persistence profiles: persistence/sql, persistence/redis.'
   configuration:
     name: Configuration
     items:
-    - Add specs/config/python.md — Pydantic settings, single instantiation point;
-      decide whether to fold or keep separate from specs/python/config.md.
-    - Add specs/config/dotnet.md — appsettings.json structure, secrets management,
-      IOptions<T> pattern.
+    - |-
+      Add specs/config/python.md — Pydantic settings, single instantiation point; decide whether to fold or keep separate from specs/python/config.md.
+    - |-
+      Add specs/config/dotnet.md — appsettings.json structure, secrets management, IOptions<T> pattern.
   ai-stances:
     name: AI stances
     items:
-    - Have /spek-plan and /spek-build read the active stance from session.yaml and
-      adjust behavior accordingly (e.g. collaborative stance → more trade-offs surfaced
-      in plan).
-    - 'Add additional stances: performance.yaml, security.yaml, mentor.yaml (explain
-      everything, teach as you go).'
+    - |-
+      Have /spek-plan and /spek-build read the active stance from session.yaml and adjust behavior accordingly (e.g. collaborative stance → more trade-offs surfaced in plan).
+    - |-
+      Add additional stances: performance.yaml, security.yaml, mentor.yaml (explain everything, teach as you go).
   conventions:
     name: File naming conventions
     items:
-    - Add specs/conventions/naming.md — file and directory naming conventions (kebab-case,
-      snake_case, .yaml vs .yml, src/ layout).
-    - Add specs/conventions/python-structure.md — package vs module, src/ layout,
-      entry points.
-    - Add specs/conventions/project-structure.md — repo root conventions, monorepo
-      guidance, dotfile conventions.
+    - |-
+      Add specs/conventions/naming.md — file and directory naming conventions (kebab-case, snake_case, .yaml vs .yml, src/ layout).
+    - |-
+      Add specs/conventions/python-structure.md — package vs module, src/ layout, entry points.
+    - |-
+      Add specs/conventions/project-structure.md — repo root conventions, monorepo guidance, dotfile conventions.
   refactoring:
     name: Refactoring
     items:
-    - Add specs/refactoring/base.md — when to refactor, refactor as a separate commit,
-      test coverage before refactoring.
-    - Add specs/refactoring/python.md — Python extraction patterns, naming, avoiding
-      over-abstraction.
+    - |-
+      Add specs/refactoring/base.md — when to refactor, refactor as a separate commit, test coverage before refactoring.
+    - |-
+      Add specs/refactoring/python.md — Python extraction patterns, naming, avoiding over-abstraction.
   external-sources:
     name: External spec sources
     items:
-    - Add ~/.spek/settings.yaml global config declaring a list of module sources (local
-      directories initially, eventually remote).
-    - Replace flat module path string with a richer format supporting an optional
-      source (repo URL + ref) alongside the path.
-    - Implement spek sync --pull to fetch modules from their declared source; modules
-      without a source continue to resolve against the built-in repo.
-    - Decide how spek init / spek profile apply should work when profiles live in
-      an external source.
+    - |-
+      Add ~/.spek/settings.yaml global config declaring a list of module sources (local directories initially, eventually remote).
+    - |-
+      Replace flat module path string with a richer format supporting an optional source (repo URL + ref) alongside the path.
+    - |-
+      Implement spek sync --pull to fetch modules from their declared source; modules without a source continue to resolve against the built-in repo.
+    - |-
+      Decide how spek init / spek profile apply should work when profiles live in an external source.
   frontend:
     name: Frontend patterns
     items:
-    - Add specs/systems/basic-crud.md with full CRUD pattern conventions and matching
-      reference entries for frontend/backend/htmx variants; use Jinja templating for
-      conditional htmx content.
+    - |-
+      Add specs/systems/basic-crud.md with full CRUD pattern conventions and matching reference entries for frontend/backend/htmx variants; use Jinja templating for conditional htmx content.
   spek-audit:
     name: spek-audit
     items:
-    - 'Add /spek-audit skill: AI pass writes findings to .spek/audit.yaml, triage
-      phase walks findings one-by-one with resolution options, retro phase closes
-      and deletes audit file.'
+    - |-
+      Add /spek-audit skill: AI pass checking repository against specs writes findings to .spek/audit.yaml, triage phase walks findings one-by-one with resolution options, retro phase closes and deletes audit file.
   spek-split:
     name: Plan splitting
     items:
-    - 'Add /spek-split skill: decompose a large plan into sub-plans stored in .spek/plans/<group>/,
-      with index.yaml tracking group goal and per-plan status.'
-    - 'Add ## Group convention to session.yaml for linking sub-plans back to their
-      group; extend retro to mark sub-plan entries done in index.yaml.'
-    - 'Loading a sub-plan: user manually moves a plan file to session.yaml; no new
-      skill needed.'
-  spek-ref:
-    name: spek ref
-    items:
-    - 'Invert --match-any flag on spek ref search: make any-keyword matching the default
-      and add --match-all / --all to require all terms.'
+    - |-
+      Add /spek-split skill: decompose a large plan into sub-plans stored in .spek/plans/<group>/, with index.yaml tracking group goal and per-plan status.
+    - |-
+      Add ## Group convention to session.yaml for linking sub-plans back to their group; extend retro to mark sub-plan entries done in index.yaml.
+    - |-
+      Loading a sub-plan: user manually moves a plan file to session.yaml; no new skill needed.
   cleanup:
     name: Cleanup
     items:
-    - Add specs/workflow/cleanup.md — standalone spec for identifying and removing
-      dead code, stale TODOs, commented-out blocks, and unreferenced files.
+    - |-
+      Add specs/workflow/cleanup.md — standalone spec for identifying and removing dead code, stale TODOs, commented-out blocks, and unreferenced files.

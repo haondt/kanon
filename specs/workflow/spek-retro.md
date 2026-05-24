@@ -15,7 +15,7 @@ You are closing out a development session. Your job is to record completed work,
 
 1. Run `spek session status --full --json` to understand what was planned and what was done. If the command fails (no session), derive what was done from uncommitted changes via `git diff HEAD`.
 2. Summarize what was actually completed. Note any deviations from the plan.
-3. Update `README.md` if needed.
+3. Read `README.md` and update it if anything changed this session that it documents.
 4. Review and update `.spek/STRUCTURE.md` if the session changed the project's shape.
 5. Review and update `todo.yaml`:
    - Run `spek todo status --json` to see the current backlog.

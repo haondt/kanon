@@ -16,12 +16,12 @@ def ref():
 @ref.command("search")
 @click.argument("terms", nargs=-1, required=True)
 @click.option("--json", "as_json", is_flag=True, help="Output results as JSON.")
-@click.option("--match-any", "match_any", is_flag=True, help="Match entries containing any term (default: all terms must match).")
+@click.option("--match-all", "match_all", is_flag=True, help="Require all terms to match (default: any term matches).")
 @click.option("-n", "limit", type=int, default=10, help="Maximum results to return. 0 for unlimited.")
-def ref_search(terms: tuple[str, ...], as_json: bool, match_any: bool, limit: int) -> None:
+def ref_search(terms: tuple[str, ...], as_json: bool, match_all: bool, limit: int) -> None:
     """Search reference entries by keyword."""
     repo_path = spek_repo_path()
-    results = search_references(repo_path, list(terms), match_all=not match_any, project_root=local_project_path())
+    results = search_references(repo_path, list(terms), match_all=match_all, project_root=local_project_path())
     results = results[:limit] if limit > 0 else results
 
     if as_json:

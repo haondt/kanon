@@ -28,7 +28,7 @@ Use the session workflow below, driven by skills (invoked with `/`). Each step i
 
 | File | Committed | Purpose |
 |---|---|---|
-| `.spek/session.yaml` | No (gitignored) | In-progress goal, plan, review, and build notes |
+| `.spek/session.yaml` | Yes | In-progress goal, plan, review, and build notes |
 | `.spek/todo.yaml` | Yes | Project backlog |
 | `.spek/STRUCTURE.md` | Yes | Living map of the codebase |
 

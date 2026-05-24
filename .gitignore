@@ -1,4 +1,3 @@
-.spek/session.yaml
 .claude/
 __pycache__/
 *.py[cod]
