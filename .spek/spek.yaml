@@ -1,6 +1,6 @@
 meta:
   spek_version: 0.0.0
-  spek_sha: 9d4aa6b7570703a86c2655fa09e67c059c5bf657
+  spek_sha: 1c369cc64d0661ba6806ce0b8a810afb3d7218ff
   integrations:
   - claude
   profile: python/cli
@@ -13,7 +13,6 @@ modules:
 - ai/style/stay-in-scope
 - build/just
 - code/hygiene
-- docs/changelog
 - docs/readme
 - docs/session
 - docs/structure
@@ -29,23 +28,23 @@ modules:
 - python/testing/base
 - python/testing/pytest
 - python/venv
-- tools/spek/ref
-- tools/spek/module
 - systems/base
+- tools/spek/module
+- tools/spek/ref
 - workflow/base
 - workflow/spek-amend
-- workflow/spek-detour
 - workflow/spek-build
+- workflow/spek-detour
+- workflow/spek-fix
+- workflow/spek-onboard
 - workflow/spek-plan
+- workflow/spek-reconcile
 - workflow/spek-retro
 - workflow/spek-review
-- workflow/spek-fix
-- workflow/spek-stance
 - workflow/spek-sketch
+- workflow/spek-stance
 - workflow/spek-think
 - workflow/spek-todo
-- workflow/spek-onboard
-- workflow/spek-reconcile
 stances:
 - autonomous
 - collaborative

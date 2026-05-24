@@ -1,17 +1,38 @@
 ---
 spek:
-  description: "SESSION.md structure and conventions"
+  description: "session.yaml schema and CLI reference"
 ---
 
-# SESSION.md conventions
+# Session schema
 
-- `.spek/SESSION.md` is a living scratchpad for the current session; it is gitignored and cleared at retro
-- Include only sections that are relevant — do not create empty headings
-- `## Goal` — one paragraph or tight bullet list describing what the session is trying to accomplish
-- `## Plan` — step-by-step plan as agreed during `/spek-plan`; mark steps done additively by appending ` — done`
-- `## Stance` — active stance name and its module list (written by `/spek-stance`)
-- `## Notes` — assumptions made, technical decisions taken, deviations from the plan; the raw material for the CHANGELOG entry
-- `## Review` — multi-pass review log; each `/spek-review` run appends `### Review Pass N`, each `/spek-fix` run appends `### Fix Pass N`
-- `## Amendments` — one-line record of each change to the goal or plan made via `/spek-amend`
-- `## Detours` — one-line record of each out-of-scope edit made via `/spek-detour`
-- Keep it honest: reflect actual progress, not intended progress; record decisions as they happen, not after the fact
+`.spek/session.yaml` is the backing file for the current session. It is gitignored and deleted at retro.
+
+## Fields
+
+| Field | Type | Description |
+|---|---|---|
+| `goal` | string | What the session is trying to accomplish |
+| `plan.steps` | dict[key → step] | Step objects with `text` (string) and `done` (bool) |
+| `plan.notes` | dict[key → string] | Stable-keyed plan-time notes (keys: `pn1`, `pn2`, …) |
+| `stance` | string \| null | Active stance name |
+| `build.notes` | dict[key → string] | Stable-keyed build-time notes (keys: `bn1`, `bn2`, …) |
+| `review` | dict[pass-key → pass] | Review passes; each pass has `status` and `findings` dict |
+| `review[p].status` | `Literal['open','approved']` | Pass-level approval marker; `'open'` until all findings are closed |
+| `review[p].findings` | dict[key → finding] | Finding objects with `type`, `severity`, `text`, `status`, and optional `fix_note` |
+| `amendments` | list[string] | One-line records of goal or plan changes |
+| `detours` | list[string] | One-line records of out-of-scope edits |
+| `_meta.next_key` | dict[ns → int] | Tracks next available key per namespace; never decremented |
+
+Finding `status` values: `open` | `closed` | `reopened`
+
+`FindingType` values: `bug` | `grammar` | `spec` | `question` | `dead_code` | `plan` | `security` | `test`
+
+`FindingSeverity` values: `critical` | `major` | `minor` | `nit`
+
+Key namespaces: `pn` (plan notes), `bn` (build notes), `f` (findings, global across passes), `p` (review passes)
+
+## CLI
+
+All `spek session` and `spek todo` commands accept `--json`. Read commands include a `hash` field. Write commands include `before` and `after` hashes.
+
+See `spek session --help` and `spek todo --help` for the full command list.

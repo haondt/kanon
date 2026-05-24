@@ -48,7 +48,7 @@ The workflow skills enforce a structured session lifecycle. Each step is a check
 | `/spek-build` | Execute the agreed plan |
 | `/spek-review` | (Optional) review the implementation for problems before closing the session |
 | `/spek-fix` | (Optional) evaluate and fix findings surfaced by `/spek-review` |
-| `/spek-retro` | Log completed work to `CHANGELOG.md`; clear `SESSION.md` |
+| `/spek-retro` | Repo housekeeping (update `README.md`, todos, `STRUCTURE.md`); clear `SESSION.md` |
 
 **Extras**
 
