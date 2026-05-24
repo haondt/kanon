@@ -1,6 +1,6 @@
 meta:
   spek_version: 0.0.0
-  spek_sha: 7de07d63079c833f6cfec58ee258af0a7b00e755
+  spek_sha: c6feaca10e60b9c90c6b250347a68a4b194529dc
   integrations:
   - claude
   - windsurf

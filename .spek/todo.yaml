@@ -84,3 +84,8 @@ sections:
     items:
     - |-
       Add specs/workflow/cleanup.md — standalone spec for identifying and removing dead code, stale TODOs, commented-out blocks, and unreferenced files.
+  ai-tools:
+    name: AI tool support
+    items:
+    - |-
+      Add Codex support: spec modules, profile, and any workflow/skill adjustments needed for OpenAI Codex as an AI assistant target.
