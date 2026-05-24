@@ -6,6 +6,7 @@ import click
 
 from spek.core.session import Finding, FindingSeverity, FindingType, ReviewPass, next_finding_key, next_pass_key
 from ._helpers import _load, _save_and_emit_hashes
+from spek.commands._utils import read_text_arg
 
 
 @click.group("review")
@@ -51,7 +52,7 @@ def review_add_finding(pass_key: str, type: str, severity: str, text: str, proje
         click.echo(f"Review pass {pass_key!r} not found.", err=True)
         raise SystemExit(1)
     fkey = next_finding_key(state)
-    rpass.findings[fkey] = Finding(type=FindingType(type), severity=FindingSeverity(severity), text=text)
+    rpass.findings[fkey] = Finding(type=FindingType(type), severity=FindingSeverity(severity), text=read_text_arg(text).strip())
     count = len(rpass.findings)
     _save_and_emit_hashes(state, root, as_json, {"finding_key": fkey, "count": count})
 
@@ -132,7 +133,7 @@ def review_set_fix_note(pass_key: str, key: str, text: str, project_root: str, a
     if finding is None:
         click.echo(f"Finding {key!r} not found in pass {pass_key!r}.", err=True)
         raise SystemExit(1)
-    finding.fix_note = text.strip()
+    finding.fix_note = read_text_arg(text).strip()
     _save_and_emit_hashes(state, root, as_json, {"finding_key": key})
 
 

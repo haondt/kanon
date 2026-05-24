@@ -5,6 +5,7 @@ import json as json_mod
 import click
 
 from ._helpers import _load, _save_and_emit_hashes
+from spek.commands._utils import read_text_arg
 
 
 @click.group("detour")
@@ -19,7 +20,7 @@ def session_detour() -> None:
 def detour_add(text: str, project_root: str, as_json: bool) -> None:
     """Record a detour."""
     state, _, root = _load(project_root)
-    state.detours.append(text.strip())
+    state.detours.append(read_text_arg(text).strip())
     _save_and_emit_hashes(state, root, as_json)
 
 

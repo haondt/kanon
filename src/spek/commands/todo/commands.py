@@ -7,6 +7,7 @@ import click
 
 from spek.core.todo import lint_todo
 from ._helpers import _load
+from spek.commands._utils import read_text_arg
 
 
 @click.command("status")
@@ -85,7 +86,7 @@ def todo_add(text: str, section: str, project_root: str, as_json: bool) -> None:
     if section not in state.sections:
         click.echo(f"Section {section!r} not found. Use 'spek todo section add' to create it.", err=True)
         raise SystemExit(1)
-    state.sections[section].items.append(text.strip())
+    state.sections[section].items.append(read_text_arg(text).strip())
     _save_and_emit(state, root, as_json)
 
 
@@ -98,6 +99,7 @@ def todo_remove(text: str, section: str, project_root: str, as_json: bool) -> No
     """Remove an item from a section (exact match). Removes section if empty."""
     from ._helpers import _save_and_emit
     state, _, root = _load(project_root)
+    text = read_text_arg(text).strip()
     if section not in state.sections:
         click.echo(f"Section {section!r} not found.", err=True)
         raise SystemExit(1)

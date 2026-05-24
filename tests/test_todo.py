@@ -209,3 +209,31 @@ def test_todo_lint_clean(tmp_path):
 def test_todo_no_file_exits_with_error(tmp_path):
     result = invoke("status", project_root=tmp_path)
     assert result.exit_code != 0
+
+
+# ── stdin tests ───────────────────────────────────────────────────────────────
+
+
+def test_todo_add_stdin_stores_item(tmp_path):
+    _bootstrap(tmp_path)
+    result = CliRunner().invoke(
+        cli,
+        ["todo", "add", "-", "--section", "cat", "--project-root", str(tmp_path)],
+        input="item from stdin\n",
+    )
+    assert result.exit_code == 0, result.output
+    state, _ = load_todo(tmp_path)
+    assert "item from stdin" in state.sections["cat"].items
+
+
+def test_todo_remove_stdin_removes_item(tmp_path):
+    _bootstrap(tmp_path)
+    invoke("add", "item to remove", "--section", "cat", project_root=tmp_path)
+    result = CliRunner().invoke(
+        cli,
+        ["todo", "remove", "-", "--section", "cat", "--project-root", str(tmp_path)],
+        input="item to remove\n",
+    )
+    assert result.exit_code == 0, result.output
+    state, _ = load_todo(tmp_path)
+    assert "cat" not in state.sections

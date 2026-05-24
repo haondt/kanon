@@ -5,6 +5,7 @@ import json as json_mod
 import click
 
 from ._helpers import _load, _save_and_emit_hashes
+from spek.commands._utils import read_text_arg
 
 
 @click.group("amend")
@@ -19,7 +20,7 @@ def session_amend() -> None:
 def amend_goal(text: str, project_root: str, as_json: bool) -> None:
     """Overwrite the session goal."""
     state, _, root = _load(project_root)
-    state.goal = text.strip()
+    state.goal = read_text_arg(text).strip()
     _save_and_emit_hashes(state, root, as_json)
 
 
@@ -39,7 +40,7 @@ def amend_plan_step(key: str, text: str, project_root: str, as_json: bool) -> No
     if key not in state.plan.steps:
         click.echo(f"Step {key!r} not found.", err=True)
         raise SystemExit(1)
-    state.plan.steps[key].text = text.strip()
+    state.plan.steps[key].text = read_text_arg(text).strip()
     _save_and_emit_hashes(state, root, as_json, {"key": key})
 
 
@@ -54,7 +55,7 @@ def amend_plan_note(key: str, text: str, project_root: str, as_json: bool) -> No
     if key not in state.plan.notes:
         click.echo(f"Plan note {key!r} not found.", err=True)
         raise SystemExit(1)
-    state.plan.notes[key] = text.strip()
+    state.plan.notes[key] = read_text_arg(text).strip()
     _save_and_emit_hashes(state, root, as_json, {"key": key})
 
 
@@ -79,7 +80,7 @@ def amend_plan_unnote(key: str, project_root: str, as_json: bool) -> None:
 def amend_add_note(text: str, project_root: str, as_json: bool) -> None:
     """Append an amendment note."""
     state, _, root = _load(project_root)
-    state.amendments.append(text.strip())
+    state.amendments.append(read_text_arg(text).strip())
     _save_and_emit_hashes(state, root, as_json)
 
 

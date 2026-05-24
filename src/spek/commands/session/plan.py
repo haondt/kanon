@@ -4,6 +4,7 @@ import click
 
 from spek.core.session import PlanStep, next_plan_note_key
 from ._helpers import _load, _save_and_emit_hashes
+from spek.commands._utils import read_text_arg
 
 
 @click.group("plan")
@@ -57,7 +58,7 @@ def plan_add_step(key: str, text: str, project_root: str, as_json: bool) -> None
     if key in state.plan.steps:
         click.echo(f"Step {key!r} already exists.", err=True)
         raise SystemExit(1)
-    state.plan.steps[key] = PlanStep(text=text)
+    state.plan.steps[key] = PlanStep(text=read_text_arg(text).strip())
     _save_and_emit_hashes(state, root, as_json, {"key": key})
 
 
@@ -99,7 +100,7 @@ def plan_note(text: str, project_root: str, as_json: bool) -> None:
     """Append a note to the plan."""
     state, _, root = _load(project_root)
     key = next_plan_note_key(state)
-    state.plan.notes[key] = text.strip()
+    state.plan.notes[key] = read_text_arg(text).strip()
     _save_and_emit_hashes(state, root, as_json, {"key": key})
 
 

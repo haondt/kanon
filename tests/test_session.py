@@ -465,3 +465,27 @@ def test_session_clear_fails_if_no_file(tmp_path):
 def test_session_no_file_exits_with_error(tmp_path):
     result = invoke("goal", project_root=tmp_path)
     assert result.exit_code != 0
+
+
+# ── stdin tests ───────────────────────────────────────────────────────────────
+
+
+def test_session_start_stdin_stores_goal(tmp_path):
+    result = CliRunner().invoke(
+        cli, ["session", "start", "-", "--project-root", str(tmp_path)], input="piped goal\n"
+    )
+    assert result.exit_code == 0, result.output
+    state, _ = load_session(tmp_path)
+    assert state.goal == "piped goal"
+
+
+def test_session_plan_add_step_stdin_stores_text(tmp_path):
+    invoke("start", "Goal", project_root=tmp_path)
+    result = CliRunner().invoke(
+        cli,
+        ["session", "plan", "add-step", "s1", "-", "--project-root", str(tmp_path)],
+        input="step from stdin\n",
+    )
+    assert result.exit_code == 0, result.output
+    state, _ = load_session(tmp_path)
+    assert state.plan.steps["s1"].text == "step from stdin"

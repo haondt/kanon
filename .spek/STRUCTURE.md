@@ -37,7 +37,7 @@ stances/         # YAML files — each lists module paths; activated via /spek-s
 profiles/        # YAML files — named module+stance bundles; base/ and python/
 src/spek/
   cli.py         # Click entrypoint; registers all command groups
-  commands/      # one file per subcommand: init, sync, profile, local, module, destroy, ref; session/ and todo/ are packages
+  commands/      # one file per subcommand: init, sync, profile, local, module, destroy, ref; session/ and todo/ are packages; _utils.py holds shared helpers (read_text_arg for stdin support)
   core/          # pure logic, no CLI dependency
 .spek/           # spek's own session/project files (dogfooding)
 ```

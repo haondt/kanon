@@ -12,6 +12,7 @@ from spek.core.session import (
     lint_session,
 )
 from ._helpers import _load, _root
+from spek.commands._utils import read_text_arg
 
 
 @click.command("start")
@@ -22,7 +23,7 @@ def session_start(goal: str, project_root: str, as_json: bool) -> None:
     """Create a new session with the given goal."""
     root = _root(project_root)
     try:
-        state, h = create_session(goal, root)
+        state, h = create_session(read_text_arg(goal), root)
     except FileExistsError as e:
         click.echo(str(e), err=True)
         raise SystemExit(1)
