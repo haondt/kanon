@@ -6,7 +6,7 @@ import click
 
 from spek.core.session import next_build_note_key
 from ._helpers import _load, _save_and_emit_hashes
-from spek.commands._utils import read_text_arg
+from spek.commands._utils import read_text_arg_json
 
 
 @click.group("build")
@@ -18,11 +18,12 @@ def session_build() -> None:
 @click.argument("text")
 @click.option("--project-root", default=".", type=click.Path(file_okay=False))
 @click.option("--json", "as_json", is_flag=True)
-def build_note(text: str, project_root: str, as_json: bool) -> None:
+@click.option("--input-json", "input_json", is_flag=True, help="Parse TEXT argument as JSON string")
+def build_note(text: str, project_root: str, as_json: bool, input_json: bool) -> None:
     """Append a build note."""
     state, _, root = _load(project_root)
     key = next_build_note_key(state)
-    state.build.notes[key] = read_text_arg(text).strip()
+    state.build.notes[key] = read_text_arg_json(text, input_json).strip()
     _save_and_emit_hashes(state, root, as_json, {"key": key})
 
 

@@ -7,7 +7,7 @@ import click
 
 from spek.core.todo import lint_todo
 from ._helpers import _load
-from spek.commands._utils import read_text_arg
+from spek.commands._utils import read_text_arg_json
 
 
 @click.command("status")
@@ -79,14 +79,15 @@ def todo_search(terms: tuple[str, ...], section: str | None, project_root: str, 
 @click.option("--section", required=True, help="Section key.")
 @click.option("--project-root", default=".", type=click.Path(file_okay=False))
 @click.option("--json", "as_json", is_flag=True)
-def todo_add(text: str, section: str, project_root: str, as_json: bool) -> None:
+@click.option("--input-json", "input_json", is_flag=True, help="Parse TEXT argument as JSON string")
+def todo_add(text: str, section: str, project_root: str, as_json: bool, input_json: bool) -> None:
     """Add an item to a section."""
     from ._helpers import _save_and_emit
     state, _, root = _load(project_root)
     if section not in state.sections:
         click.echo(f"Section {section!r} not found. Use 'spek todo section add' to create it.", err=True)
         raise SystemExit(1)
-    state.sections[section].items.append(read_text_arg(text).strip())
+    state.sections[section].items.append(read_text_arg_json(text, input_json).strip())
     _save_and_emit(state, root, as_json)
 
 
@@ -95,11 +96,12 @@ def todo_add(text: str, section: str, project_root: str, as_json: bool) -> None:
 @click.option("--section", required=True, help="Section key.")
 @click.option("--project-root", default=".", type=click.Path(file_okay=False))
 @click.option("--json", "as_json", is_flag=True)
-def todo_remove(text: str, section: str, project_root: str, as_json: bool) -> None:
+@click.option("--input-json", "input_json", is_flag=True, help="Parse TEXT argument as JSON string")
+def todo_remove(text: str, section: str, project_root: str, as_json: bool, input_json: bool) -> None:
     """Remove an item from a section (exact match). Removes section if empty."""
     from ._helpers import _save_and_emit
     state, _, root = _load(project_root)
-    text = read_text_arg(text).strip()
+    text = read_text_arg_json(text, input_json).strip()
     if section not in state.sections:
         click.echo(f"Section {section!r} not found.", err=True)
         raise SystemExit(1)

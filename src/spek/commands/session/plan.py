@@ -4,7 +4,7 @@ import click
 
 from spek.core.session import PlanStep, next_plan_note_key
 from ._helpers import _load, _save_and_emit_hashes
-from spek.commands._utils import read_text_arg
+from spek.commands._utils import read_text_arg_json
 
 
 @click.group("plan")
@@ -18,7 +18,7 @@ def session_plan() -> None:
 @click.option("--json", "as_json", is_flag=True)
 def plan_status(key: str | None, project_root: str, as_json: bool) -> None:
     """Show plan status."""
-    import json as json_mod
+    import json
     state, h, _ = _load(project_root)
     if key:
         step = state.plan.steps.get(key)
@@ -26,14 +26,14 @@ def plan_status(key: str | None, project_root: str, as_json: bool) -> None:
             click.echo(f"Step {key!r} not found.", err=True)
             raise SystemExit(1)
         if as_json:
-            click.echo(json_mod.dumps({"hash": h, "key": key, **step.model_dump()}))
+            click.echo(json.dumps({"hash": h, "key": key, **step.model_dump()}))
         else:
             mark = "✓" if step.done else " "
             click.echo(f"[{mark}] {key}: {step.text}")
         return
 
     if as_json:
-        click.echo(json_mod.dumps({
+        click.echo(json.dumps({
             "hash": h,
             "steps": {k: v.model_dump() for k, v in state.plan.steps.items()},
             "notes": dict(state.plan.notes),
@@ -52,13 +52,14 @@ def plan_status(key: str | None, project_root: str, as_json: bool) -> None:
 @click.argument("text")
 @click.option("--project-root", default=".", type=click.Path(file_okay=False))
 @click.option("--json", "as_json", is_flag=True)
-def plan_add_step(key: str, text: str, project_root: str, as_json: bool) -> None:
+@click.option("--input-json", "input_json", is_flag=True, help="Parse TEXT argument as JSON string")
+def plan_add_step(key: str, text: str, project_root: str, as_json: bool, input_json: bool) -> None:
     """Add a plan step."""
     state, _, root = _load(project_root)
     if key in state.plan.steps:
         click.echo(f"Step {key!r} already exists.", err=True)
         raise SystemExit(1)
-    state.plan.steps[key] = PlanStep(text=read_text_arg(text).strip())
+    state.plan.steps[key] = PlanStep(text=read_text_arg_json(text, input_json).strip())
     _save_and_emit_hashes(state, root, as_json, {"key": key})
 
 
@@ -96,11 +97,12 @@ def plan_uncheck(key: str, project_root: str, as_json: bool) -> None:
 @click.argument("text")
 @click.option("--project-root", default=".", type=click.Path(file_okay=False))
 @click.option("--json", "as_json", is_flag=True)
-def plan_note(text: str, project_root: str, as_json: bool) -> None:
+@click.option("--input-json", "input_json", is_flag=True, help="Parse TEXT argument as JSON string")
+def plan_note(text: str, project_root: str, as_json: bool, input_json: bool) -> None:
     """Append a note to the plan."""
     state, _, root = _load(project_root)
     key = next_plan_note_key(state)
-    state.plan.notes[key] = read_text_arg(text).strip()
+    state.plan.notes[key] = read_text_arg_json(text, input_json).strip()
     _save_and_emit_hashes(state, root, as_json, {"key": key})
 
 

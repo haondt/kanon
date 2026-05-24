@@ -1,6 +1,6 @@
 meta:
   spek_version: 0.0.0
-  spek_sha: a4e94343229780298a8d54ef0e280ecdd1a3d717
+  spek_sha: 7de07d63079c833f6cfec58ee258af0a7b00e755
   integrations:
   - claude
   - windsurf
@@ -15,9 +15,7 @@ modules:
 - build/just
 - code/hygiene
 - docs/readme
-- docs/session
 - docs/structure
-- docs/todo
 - git/branch-base
 - git/commit-base
 - git/commit-long
@@ -32,6 +30,8 @@ modules:
 - systems/base
 - tools/spek/module
 - tools/spek/ref
+- tools/spek/session
+- tools/spek/todo
 - workflow/base
 - workflow/spek-amend
 - workflow/spek-build

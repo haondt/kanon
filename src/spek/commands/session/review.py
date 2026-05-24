@@ -6,7 +6,7 @@ import click
 
 from spek.core.session import Finding, FindingSeverity, FindingType, ReviewPass, next_finding_key, next_pass_key
 from ._helpers import _load, _save_and_emit_hashes
-from spek.commands._utils import read_text_arg
+from spek.commands._utils import read_text_arg_json
 
 
 @click.group("review")
@@ -44,7 +44,8 @@ def review_start(project_root: str, as_json: bool) -> None:
 @click.argument("text")
 @click.option("--project-root", default=".", type=click.Path(file_okay=False))
 @click.option("--json", "as_json", is_flag=True)
-def review_add_finding(pass_key: str, type: str, severity: str, text: str, project_root: str, as_json: bool) -> None:
+@click.option("--input-json", "input_json", is_flag=True, help="Parse TEXT argument as JSON string")
+def review_add_finding(pass_key: str, type: str, severity: str, text: str, project_root: str, as_json: bool, input_json: bool) -> None:
     """Add a finding to a review pass."""
     state, _, root = _load(project_root)
     rpass = state.review.get(pass_key)
@@ -52,7 +53,7 @@ def review_add_finding(pass_key: str, type: str, severity: str, text: str, proje
         click.echo(f"Review pass {pass_key!r} not found.", err=True)
         raise SystemExit(1)
     fkey = next_finding_key(state)
-    rpass.findings[fkey] = Finding(type=FindingType(type), severity=FindingSeverity(severity), text=read_text_arg(text).strip())
+    rpass.findings[fkey] = Finding(type=FindingType(type), severity=FindingSeverity(severity), text=read_text_arg_json(text, input_json).strip())
     count = len(rpass.findings)
     _save_and_emit_hashes(state, root, as_json, {"finding_key": fkey, "count": count})
 
@@ -122,7 +123,8 @@ def review_reopen_finding(pass_key: str, key: str, project_root: str, as_json: b
 @click.argument("text")
 @click.option("--project-root", default=".", type=click.Path(file_okay=False))
 @click.option("--json", "as_json", is_flag=True)
-def review_set_fix_note(pass_key: str, key: str, text: str, project_root: str, as_json: bool) -> None:
+@click.option("--input-json", "input_json", is_flag=True, help="Parse TEXT argument as JSON string")
+def review_set_fix_note(pass_key: str, key: str, text: str, project_root: str, as_json: bool, input_json: bool) -> None:
     """Set the fix note for a finding."""
     state, _, root = _load(project_root)
     rpass = state.review.get(pass_key)
@@ -133,7 +135,7 @@ def review_set_fix_note(pass_key: str, key: str, text: str, project_root: str, a
     if finding is None:
         click.echo(f"Finding {key!r} not found in pass {pass_key!r}.", err=True)
         raise SystemExit(1)
-    finding.fix_note = read_text_arg(text).strip()
+    finding.fix_note = read_text_arg_json(text, input_json).strip()
     _save_and_emit_hashes(state, root, as_json, {"finding_key": key})
 
 

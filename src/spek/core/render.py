@@ -129,14 +129,39 @@ def output_dir_for(project_root: Path, ai_tool: str, out_type: str) -> Path:
     return project_root / rel
 
 
-def render_windsurf_structure_rule(project_root: Path) -> Path:
-    """Generate the Windsurf rule that injects STRUCTURE.md context."""
-    out_dir = project_root / ".windsurf" / "rules"
+# Tool-specific system rules: extra rules required for specific AI tool integrations
+_TOOL_SPECIFIC_RULES = {
+    "windsurf": {
+        "filename": "spek--windsurf-rules.md",
+        "frontmatter": {"trigger": "always_on"},
+        "body": "## Project structure\n\nCRITICAL: The first action in every conversation is reading @.spek/STRUCTURE.md. Do not respond to the user, write any files or plan any actions until this is complete.\n\nWhen running shell commands, prefer using the bash tool over interactive shell execution for better syntax highlighting in the chat window.",
+    },
+    # Add other tools here, e.g.:
+    # "codex": {
+    #     "filename": "spek--codex-rules.md",
+    #     # frontmatter is optional; omit if the tool doesn't use it
+    #     "frontmatter": {"some_key": "value"},
+    #     "body": "...",
+    # },
+}
+
+
+def render_tool_specific_rules(ai_tool: str, project_root: Path) -> Path | None:
+    """Generate tool-specific system rules for an AI tool integration.
+
+    These are extra rules required for specific AI tools beyond what's generated from spec modules.
+    Returns None if the tool has no specific rules defined.
+    """
+    if ai_tool not in _TOOL_SPECIFIC_RULES:
+        return None
+
+    rules = _TOOL_SPECIFIC_RULES[ai_tool]
+    out_dir = project_root / f".{ai_tool}" / "rules"
     out_dir.mkdir(parents=True, exist_ok=True)
-    out_path = out_dir / "windsurf-read-structure-md.md"
-    
-    fm = {"trigger": "always_on"}
-    body = "## Project structure\n\nThe first action in every conversation is reading @.spek/STRUCTURE.md. Do nothing else until this is complete. This applies to the very first message and all subsequent messages."
+    out_path = out_dir / rules["filename"]
+
+    fm = rules.get("frontmatter", {})
+    body = rules["body"]
     out_path.write_text(f"---\n{dump_yaml(fm)}\n---\n{body}")
     return out_path
 

@@ -2,3 +2,5 @@ description: "CLI tools available to the AI during implementation"
 modules:
   - tools/spek/ref
   - tools/spek/module
+  - tools/spek/todo
+  - tools/spek/session

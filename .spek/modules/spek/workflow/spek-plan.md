@@ -18,5 +18,5 @@ Produce a concrete plan, get approval, write it to `session.yaml`, and stop. Do 
    - If no session exists: `spek session start "<goal>"`
    - Add each step: `spek session plan add-step <key> "<text>"` (use descriptive keys, e.g. `models`, `session-cli`, `tests`)
    - Add any important notes: `spek session plan note "<text>"`
-   - The plan must be self-contained: executable without referring back to this conversation.
+   - The plan must be self-contained: executable without referring back to this conversation. Use markdown formatting for the plan steps and notes to create a detailed and comprehensive plan.
 7. **Stop.** Prompt the user to run `/spek-build`. Do not write code, edit files, or take any other action.

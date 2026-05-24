@@ -5,7 +5,7 @@ import json as json_mod
 import click
 
 from ._helpers import _load, _save_and_emit_hashes
-from spek.commands._utils import read_text_arg
+from spek.commands._utils import read_text_arg_json
 
 
 @click.group("amend")
@@ -17,10 +17,11 @@ def session_amend() -> None:
 @click.argument("text")
 @click.option("--project-root", default=".", type=click.Path(file_okay=False))
 @click.option("--json", "as_json", is_flag=True)
-def amend_goal(text: str, project_root: str, as_json: bool) -> None:
+@click.option("--input-json", "input_json", is_flag=True, help="Parse TEXT argument as JSON string")
+def amend_goal(text: str, project_root: str, as_json: bool, input_json: bool) -> None:
     """Overwrite the session goal."""
     state, _, root = _load(project_root)
-    state.goal = read_text_arg(text).strip()
+    state.goal = read_text_arg_json(text, input_json).strip()
     _save_and_emit_hashes(state, root, as_json)
 
 
@@ -34,13 +35,14 @@ def amend_plan() -> None:
 @click.argument("text")
 @click.option("--project-root", default=".", type=click.Path(file_okay=False))
 @click.option("--json", "as_json", is_flag=True)
-def amend_plan_step(key: str, text: str, project_root: str, as_json: bool) -> None:
+@click.option("--input-json", "input_json", is_flag=True, help="Parse TEXT argument as JSON string")
+def amend_plan_step(key: str, text: str, project_root: str, as_json: bool, input_json: bool) -> None:
     """Overwrite a plan step's text."""
     state, _, root = _load(project_root)
     if key not in state.plan.steps:
         click.echo(f"Step {key!r} not found.", err=True)
         raise SystemExit(1)
-    state.plan.steps[key].text = read_text_arg(text).strip()
+    state.plan.steps[key].text = read_text_arg_json(text, input_json).strip()
     _save_and_emit_hashes(state, root, as_json, {"key": key})
 
 
@@ -49,13 +51,14 @@ def amend_plan_step(key: str, text: str, project_root: str, as_json: bool) -> No
 @click.argument("text")
 @click.option("--project-root", default=".", type=click.Path(file_okay=False))
 @click.option("--json", "as_json", is_flag=True)
-def amend_plan_note(key: str, text: str, project_root: str, as_json: bool) -> None:
+@click.option("--input-json", "input_json", is_flag=True, help="Parse TEXT argument as JSON string")
+def amend_plan_note(key: str, text: str, project_root: str, as_json: bool, input_json: bool) -> None:
     """Edit an existing plan note."""
     state, _, root = _load(project_root)
     if key not in state.plan.notes:
         click.echo(f"Plan note {key!r} not found.", err=True)
         raise SystemExit(1)
-    state.plan.notes[key] = read_text_arg(text).strip()
+    state.plan.notes[key] = read_text_arg_json(text, input_json).strip()
     _save_and_emit_hashes(state, root, as_json, {"key": key})
 
 
@@ -77,10 +80,11 @@ def amend_plan_unnote(key: str, project_root: str, as_json: bool) -> None:
 @click.argument("text")
 @click.option("--project-root", default=".", type=click.Path(file_okay=False))
 @click.option("--json", "as_json", is_flag=True)
-def amend_add_note(text: str, project_root: str, as_json: bool) -> None:
+@click.option("--input-json", "input_json", is_flag=True, help="Parse TEXT argument as JSON string")
+def amend_add_note(text: str, project_root: str, as_json: bool, input_json: bool) -> None:
     """Append an amendment note."""
     state, _, root = _load(project_root)
-    state.amendments.append(read_text_arg(text).strip())
+    state.amendments.append(read_text_arg_json(text, input_json).strip())
     _save_and_emit_hashes(state, root, as_json)
 
 
