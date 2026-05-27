@@ -4,7 +4,7 @@ import json as json_mod
 
 import click
 
-from ._helpers import _load, _save_and_emit_hashes
+from ._helpers import load_session_or_exit, save_session_and_emit_hashes
 
 
 @click.group("stance")
@@ -14,31 +14,31 @@ def session_stance() -> None:
 
 @session_stance.command("set")
 @click.argument("name")
-@click.option("--project-root", default=".", type=click.Path(file_okay=False))
+
 @click.option("--json", "as_json", is_flag=True)
-def stance_set(name: str, project_root: str, as_json: bool) -> None:
+def stance_set(name: str, as_json: bool) -> None:
     """Set the active stance."""
-    state, _, root = _load(project_root)
+    state, _ = load_session_or_exit()
     state.stance = name.strip()
-    _save_and_emit_hashes(state, root, as_json, {"stance": state.stance})
+    save_session_and_emit_hashes(state, as_json, {"stance": state.stance})
 
 
 @session_stance.command("clear")
-@click.option("--project-root", default=".", type=click.Path(file_okay=False))
+
 @click.option("--json", "as_json", is_flag=True)
-def stance_clear(project_root: str, as_json: bool) -> None:
+def stance_clear(as_json: bool) -> None:
     """Clear the active stance."""
-    state, _, root = _load(project_root)
+    state, _ = load_session_or_exit()
     state.stance = None
-    _save_and_emit_hashes(state, root, as_json)
+    save_session_and_emit_hashes(state, as_json)
 
 
 @session_stance.command("status")
-@click.option("--project-root", default=".", type=click.Path(file_okay=False))
+
 @click.option("--json", "as_json", is_flag=True)
-def stance_status(project_root: str, as_json: bool) -> None:
+def stance_status(as_json: bool) -> None:
     """Show the current stance."""
-    state, h, _ = _load(project_root)
+    state, h = load_session_or_exit()
     if as_json:
         click.echo(json_mod.dumps({"hash": h, "stance": state.stance}))
     else:

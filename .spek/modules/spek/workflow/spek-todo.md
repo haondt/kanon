@@ -1,8 +1,14 @@
 ---
 spek:
-  description: Add an item to the project backlog in todo.yaml
   output: skill
   name: spek-todo
+  description: Add an item to the project backlog in todo.yaml
+  skill:
+    model_invokable: true
+    human_invokable: true
+    needs_context: true
+  needs_context: true
+  preapproved_tools: []
 ---
 You are adding an item to the project backlog. Be autonomous: infer what to write, where to put it, and how much detail to include — ask the user only if the intent is genuinely ambiguous.
 

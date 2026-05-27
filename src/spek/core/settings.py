@@ -1,23 +1,42 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import ClassVar
+
 from pydantic import BaseModel
 
-from spek.core.yaml_utils import load_yaml
-
-
-class SourceSpec(BaseModel):
-    path: str
-    url: str | None = None
-    ref: str | None = None
+from spek.core.yaml_utils import load_yaml, save_yaml
+from spek.core.config import SpekEnv
 
 
 class GlobalSettings(BaseModel):
-    sources: dict[str, SourceSpec] = {}
+    _current: ClassVar[GlobalSettings | None] = None
+    _path: ClassVar[Path | None] = None
 
+    sources: dict[str, str] = {}
 
-def load_global_settings() -> GlobalSettings:
-    settings_path = Path.home() / ".spek" / "settings.yaml"
-    if not settings_path.exists():
-        return GlobalSettings()
-    return load_yaml(settings_path, GlobalSettings)
+    @classmethod
+    def reset(cls) -> None:
+        cls._current = None
+        cls._path = None
+
+    @classmethod
+    def initialize(cls) -> GlobalSettings:
+        path = SpekEnv.instance().settings_path
+        cls._path = path
+        if not path.exists():
+            cls._current = cls()
+        else:
+            cls._current = load_yaml(path, cls)
+        return cls._current
+
+    @classmethod
+    def instance(cls) -> GlobalSettings:
+        if cls._current is None:
+            return cls.initialize()
+        return cls._current
+
+    def save(self) -> None:
+        path = GlobalSettings._path or SpekEnv.instance().settings_path
+        path.parent.mkdir(parents=True, exist_ok=True)
+        save_yaml(self, path)

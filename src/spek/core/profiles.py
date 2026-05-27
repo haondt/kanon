@@ -1,66 +1,60 @@
 from __future__ import annotations
 
-from pathlib import Path
+from dataclasses import dataclass
+from functools import cached_property
+from typing import Callable, override, Any
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
-from spek.core.yaml_utils import load_yaml
+from spek.core.config import SourcedResource
+from spek.core.yaml_utils import parse_yaml
 
+class ShallowProfile(BaseModel):
+    description: str = Field(default_factory=str)
+    extends: list[str] = Field(default_factory=list)
+    modules: list[str] = Field(default_factory=list)
+    stances: list[str] = Field(default_factory=list)
 
-class ProfileSpec(BaseModel):
-    description: str = ""
-    extends: list[str] = []
-    modules: list[str] = []
-    stances: list[str] = []
+    @override
+    def model_post_init(self, context: Any, /) -> None:
+        self.modules = SourcedResource.sanitize(self.modules)
+        self.stances = SourcedResource.sanitize(self.stances)
+        self.extends = SourcedResource.sanitize(self.extends)
+        return super().model_post_init(context)
+    @classmethod
+    def load(cls,  content: str) -> ShallowProfile:
+        data = parse_yaml(content)
+        return ShallowProfile.model_validate(data)
 
+@dataclass
+class ProfileSpec:
+    description: str
+    modules_set: set[str]
+    stances_set: set[str]
 
-def resolve_profile(
-    name: str,
-    profiles_dir: Path,
-    _seen: frozenset[str] = frozenset(),
-) -> tuple[list[str], list[str]]:
-    """Recursively resolve a profile to (modules, stances) lists.
-
-    Lists from extended profiles come first; the current profile appends after.
-    Raises ValueError on circular dependencies.
-    """
-    if name in _seen:
-        raise ValueError(f"Circular profile dependency: {name}")
-
-    profile_file = profiles_dir / (name + ".yaml")
-    if not profile_file.exists():
-        raise FileNotFoundError(f"Profile '{name}' not found at {profile_file}")
-
-    spec = load_yaml(profile_file, ProfileSpec)
-    seen = _seen | {name}
-    modules: list[str] = []
-    stances: list[str] = []
-
-    for parent in spec.extends:
-        parent_modules, parent_stances = resolve_profile(parent, profiles_dir, seen)
-        for m in parent_modules:
-            if m not in modules:
-                modules.append(m)
-        for s in parent_stances:
-            if s not in stances:
-                stances.append(s)
-
-    for m in spec.modules:
-        if m not in modules:
-            modules.append(m)
-
-    for s in spec.stances:
-        if s not in stances:
-            stances.append(s)
-
-    return modules, stances
+    @cached_property
+    def modules(self) -> list[str]:
+        return SourcedResource.sanitize(self.modules_set)
+    @cached_property
+    def stances(self) -> list[str]:
+        return SourcedResource.sanitize(self.stances_set)
 
 
-def list_profiles(profiles_dir: Path) -> dict[str, str]:
-    """Return {profile_name: description} for all profiles, sorted."""
-    if not profiles_dir.exists():
-        return {}
-    return {
-        str(f.relative_to(profiles_dir).with_suffix("")): load_yaml(f, ProfileSpec).description
-        for f in sorted(profiles_dir.rglob("*.yaml"))
-    }
+    @classmethod
+    def load(cls,  content: str, content_factory: Callable[[str], str],  seen: frozenset[str]) -> ProfileSpec:
+        spec = ShallowProfile.load(content)
+        final_spec = ProfileSpec(
+            description=spec.description,
+            modules_set=set(spec.modules),
+            stances_set=set(spec.stances)
+        )
+
+        for parent_ref in spec.extends:
+            if parent_ref in seen:
+                raise ValueError(f"Circular profile dependency: {parent_ref}")
+            parent_content = content_factory(parent_ref)
+            parent = ProfileSpec.load(parent_content, content_factory, seen | {parent_ref})
+            final_spec.modules_set = final_spec.modules_set | parent.modules_set
+            final_spec.stances_set = final_spec.stances_set | parent.stances_set
+
+        return final_spec

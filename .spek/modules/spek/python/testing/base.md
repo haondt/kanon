@@ -1,6 +1,13 @@
 ---
 spek:
-  description: "Test layout and assertion conventions"
+  output: rule
+  description: Test layout and assertion conventions
+  skill:
+    model_invokable: true
+    human_invokable: true
+    needs_context: true
+  needs_context: true
+  preapproved_tools: []
 ---
 
 # Python testing conventions

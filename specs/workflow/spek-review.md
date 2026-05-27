@@ -6,10 +6,9 @@ spek:
   preapproved_tools:
     - Bash(git diff *)
     - Bash(git log *)
-  integrations:
-    claude:
-      disable-model-invocation: true
-      context: fork
+  skill:
+    model_invokable: false
+    needs_context: false
 ---
 You are reviewing a completed implementation before the session is closed. Your job is to find problems — not to narrate what was done. Number your findings.
 

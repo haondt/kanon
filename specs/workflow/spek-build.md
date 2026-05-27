@@ -3,10 +3,9 @@ spek:
   description: Execute the implementation plan recorded in session.yaml
   output: skill
   name: spek-build
-  integrations:
-    claude:
-      disable-model-invocation: true
-      context: fork
+  skill:
+    model_invokable: false
+    needs_context: false
 ---
 You are in the implementation phase. Your job is to execute the agreed plan faithfully.
 

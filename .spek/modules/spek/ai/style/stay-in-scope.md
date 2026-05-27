@@ -1,6 +1,13 @@
 ---
 spek:
-  description: "Implement only what was requested"
+  output: rule
+  description: Implement only what was requested
+  skill:
+    model_invokable: true
+    human_invokable: true
+    needs_context: true
+  needs_context: true
+  preapproved_tools: []
 ---
 
 # AI scope discipline

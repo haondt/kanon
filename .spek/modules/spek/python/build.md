@@ -1,6 +1,13 @@
 ---
 spek:
-  description: "Build tool recipe conventions"
+  output: rule
+  description: Build tool recipe conventions
+  skill:
+    model_invokable: true
+    human_invokable: true
+    needs_context: true
+  needs_context: true
+  preapproved_tools: []
 ---
 
 # Python build tool conventions

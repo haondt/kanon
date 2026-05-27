@@ -1,6 +1,13 @@
 ---
 spek:
-  description: "just task runner conventions"
+  output: rule
+  description: just task runner conventions
+  skill:
+    model_invokable: true
+    human_invokable: true
+    needs_context: true
+  needs_context: true
+  preapproved_tools: []
 ---
 
 # just conventions

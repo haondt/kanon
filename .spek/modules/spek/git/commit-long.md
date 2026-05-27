@@ -1,6 +1,13 @@
 ---
 spek:
-  description: "Commit body: explain why, not what"
+  output: rule
+  description: 'Commit body: explain why, not what'
+  skill:
+    model_invokable: true
+    human_invokable: true
+    needs_context: true
+  needs_context: true
+  preapproved_tools: []
 ---
 
 # Git commit style (with body)

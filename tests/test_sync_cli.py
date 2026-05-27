@@ -32,7 +32,8 @@ def test_sync_writes_rule(tmp_path):
         "git/commit-style": "Write concise commit messages.",
     })
 
-    result = CliRunner().invoke(cli, ["sync", "--project-root", str(tmp_path)])
+    result = CliRunner().invoke(cli, ["--project-root", str(tmp_path), "sync"
+    ])
 
     assert result.exit_code == 0, result.output
     rule = tmp_path / ".claude" / "rules" / "spek" / "git" / "commit-style.md"
@@ -45,14 +46,16 @@ def test_sync_strips_frontmatter(tmp_path):
         "workflow/base": "---\nspek:\n  output: rule\n---\nFollow the workflow.\n",
     })
 
-    CliRunner().invoke(cli, ["sync", "--project-root", str(tmp_path)])
+    CliRunner().invoke(cli, ["--project-root", str(tmp_path), "sync"
+    ])
 
     rule = tmp_path / ".claude" / "rules" / "spek" / "workflow" / "base.md"
     assert rule.read_text() == "Follow the workflow.\n"
 
 
 def test_sync_no_config_exits(tmp_path):
-    result = CliRunner().invoke(cli, ["sync", "--project-root", str(tmp_path)])
+    result = CliRunner().invoke(cli, ["--project-root", str(tmp_path), "sync"
+    ])
     assert result.exit_code != 0
     assert "spek init" in result.output
 
@@ -70,10 +73,11 @@ def test_sync_stance_modules_not_rendered(tmp_path):
     (spek_dir / "modules" / "spek" / "git" / "commit-style.md").write_text("Write good commits.")
     (spek_dir / "modules" / "spek" / "ai").mkdir(parents=True)
     (spek_dir / "modules" / "spek" / "ai" / "assume-and-proceed.md").write_text("Assume and proceed.")
-    (spek_dir / "stances").mkdir()
-    (spek_dir / "stances" / "focused.yaml").write_text(yaml.dump({"modules": ["ai/assume-and-proceed"]}))
+    (spek_dir / "stances" / "spek").mkdir(parents=True)
+    (spek_dir / "stances" / "spek" / "focused.yaml").write_text(yaml.dump({"modules": ["ai/assume-and-proceed"]}))
 
-    result = CliRunner().invoke(cli, ["sync", "--project-root", str(tmp_path)])
+    result = CliRunner().invoke(cli, ["--project-root", str(tmp_path), "sync"
+    ])
 
     assert result.exit_code == 0, result.output
     assert (tmp_path / ".claude" / "rules" / "spek" / "git" / "commit-style.md").exists()
@@ -85,7 +89,8 @@ def test_sync_routes_command_to_skill(tmp_path):
         "workflow/spek-sketch": "---\nspek:\n  output: skill\n  name: spek-sketch\n  description: Turn a vague idea into a goal\n---\nSketch the goal.\n",
     })
 
-    CliRunner().invoke(cli, ["sync", "--project-root", str(tmp_path)])
+    CliRunner().invoke(cli, ["--project-root", str(tmp_path), "sync"
+    ])
 
     assert not (tmp_path / ".claude" / "rules" / "spek" / "workflow" / "spek-sketch.md").exists()
     assert not (tmp_path / ".claude" / "commands").exists()
@@ -101,7 +106,8 @@ def test_sync_skill_name_override(tmp_path):
         "workflow/spek-sketch": "---\nspek:\n  output: skill\n  name: spek-sketch\n  description: Turn a vague idea into a goal\n---\nSketch the goal.\n",
     })
 
-    CliRunner().invoke(cli, ["sync", "--project-root", str(tmp_path)])
+    CliRunner().invoke(cli, ["--project-root", str(tmp_path), "sync"
+    ])
 
     assert not (tmp_path / ".claude" / "skills" / "spek" / "workflow" / "spek-sketch").exists()
     skill = tmp_path / ".claude" / "skills" / "spek-sketch" / "SKILL.md"
@@ -115,18 +121,18 @@ def test_sync_skill_frontmatter(tmp_path):
         "  output: skill",
         "  name: spek-stance",
         "  description: Switch behavioral stance",
-        "  args: '[stance-name]'",
-        "  integrations:",
-        "    claude:",
-        "      disable-model-invocation: true",
-        "      context: fork",
+        "  skill:",
+        "    args: '[stance-name]'",
+        "    model_invokable: false",
+        "    needs_context: false",
         "---",
         "Stance body.",
         "",
     ])
     make_project(tmp_path, ["workflow/spek-stance"], {"workflow/spek-stance": content})
 
-    CliRunner().invoke(cli, ["sync", "--project-root", str(tmp_path)])
+    CliRunner().invoke(cli, ["--project-root", str(tmp_path), "sync"
+    ])
 
     skill = tmp_path / ".claude" / "skills" / "spek-stance" / "SKILL.md"
     assert skill.exists()
@@ -157,110 +163,23 @@ def test_sync_windsurf_command_still_flat(tmp_path):
     dest.parent.mkdir(parents=True)
     dest.write_text("---\nspek:\n  output: skill\n  name: spek-sketch\n---\nSketch the goal.\n")
 
-    CliRunner().invoke(cli, ["sync", "--project-root", str(tmp_path)])
+    CliRunner().invoke(cli, ["--project-root", str(tmp_path), "sync"
+    ])
 
-    skill = tmp_path / ".windsurf" / "skills" / "spek-sketch" / "SKILL.md"
-    assert skill.exists()
-    content = skill.read_text()
+    workflow = tmp_path / ".windsurf" / "workflows" / "spek-sketch.md"
+    assert workflow.exists()
+    content = workflow.read_text()
     assert "---" in content
-    assert "name: spek-sketch" in content
     assert "Sketch the goal." in content
 
-
-def test_sync_writes_settings_for_hooks_module(tmp_path):
-    content = "\n".join([
-        "---",
-        "spek:",
-        "  integrations:",
-        "    claude:",
-        "      hooks:",
-        "        SessionStart:",
-        "          - matcher: startup",
-        "            command: echo hello",
-        "---",
-        "Rule body.",
-    ])
-    make_project(tmp_path, ["workflow/base"], {"workflow/base": content})
-
-    result = CliRunner().invoke(cli, ["sync", "--project-root", str(tmp_path)])
-
-    assert result.exit_code == 0, result.output
-    settings = tmp_path / ".claude" / "settings.json"
-    assert settings.exists()
-    data = json.loads(settings.read_text())
-    group = data["hooks"]["SessionStart"][0]
-    assert group["matcher"] == "startup"
-    assert group["hooks"][0]["command"] == "echo hello"
-
-
-def test_sync_no_settings_when_no_hooks(tmp_path):
-    make_project(tmp_path, ["workflow/base"], {"workflow/base": "Just a rule."})
-
-    result = CliRunner().invoke(cli, ["sync", "--project-root", str(tmp_path)])
-
-    assert result.exit_code == 0, result.output
-    assert not (tmp_path / ".claude" / "settings.json").exists()
-
-
-def test_sync_accumulates_hooks_across_modules(tmp_path):
-    module_a = "\n".join([
-        "---",
-        "spek:",
-        "  integrations:",
-        "    claude:",
-        "      hooks:",
-        "        SessionStart:",
-        "          - matcher: startup",
-        "            command: echo module-a",
-        "---",
-        "Body A.",
-    ])
-    module_b = "\n".join([
-        "---",
-        "spek:",
-        "  integrations:",
-        "    claude:",
-        "      hooks:",
-        "        SessionStart:",
-        "          - matcher: clear",
-        "            command: echo module-b",
-        "---",
-        "Body B.",
-    ])
-    make_project(tmp_path, ["workflow/a", "workflow/b"], {
-        "workflow/a": module_a,
-        "workflow/b": module_b,
-    })
-
-    result = CliRunner().invoke(cli, ["sync", "--project-root", str(tmp_path)])
-
-    assert result.exit_code == 0, result.output
-    data = json.loads((tmp_path / ".claude" / "settings.json").read_text())
-    groups = data["hooks"]["SessionStart"]
-    matchers = [g["matcher"] for g in groups]
-    assert "startup" in matchers
-    assert "clear" in matchers
-
-
-def test_sync_deletes_stale_settings_on_rehook(tmp_path):
-    stale = tmp_path / ".claude" / "settings.json"
-    stale.parent.mkdir(parents=True)
-    stale.write_text('{"hooks": {"OldEvent": []}}')
-
-    make_project(tmp_path, ["workflow/base"], {"workflow/base": "Just a rule."})
-
-    result = CliRunner().invoke(cli, ["sync", "--project-root", str(tmp_path)])
-
-    assert result.exit_code == 0, result.output
-    assert not stale.exists()
 
 
 def test_sync_pull_external_namespace(tmp_path):
     """--pull copies external-namespace modules from their configured source."""
     ext_specs = tmp_path / "mywork-specs"
     ext_specs.mkdir()
-    (ext_specs / "python").mkdir()
-    (ext_specs / "python" / "style.md").write_text("External style rule.")
+    (ext_specs / "specs" / "python").mkdir(parents=True)
+    (ext_specs / "specs" / "python" / "style.md").write_text("External style rule.")
 
     project = tmp_path / "project"
     project.mkdir()
@@ -269,12 +188,13 @@ def test_sync_pull_external_namespace(tmp_path):
     (spek_dir / "spek.yaml").write_text(yaml.dump({
         "meta": {"spek_version": "0.0.0", "spek_sha": "abc1234", "integrations": ["claude"]},
         "modules": ["mywork::python/style"],
-        "sources": {"mywork": {"path": str(ext_specs)}},
+        "sources": {"mywork": f"local::{ext_specs}"},
     }))
     (spek_dir / "modules").mkdir()
     (spek_dir / "stances").mkdir()
 
-    result = CliRunner().invoke(cli, ["sync", "--pull", "--project-root", str(project)])
+    result = CliRunner().invoke(cli, ["--project-root", str(project), "sync", "--pull"
+    ])
 
     assert result.exit_code == 0, result.output
     assert (spek_dir / "modules" / "mywork" / "python" / "style.md").exists()
@@ -289,18 +209,19 @@ def test_sync_external_namespace_produces_nested_output(tmp_path):
     # External source directory
     ext_dir = tmp_path / "mywork-specs"
     ext_dir.mkdir()
-    (ext_dir / "python").mkdir()
-    (ext_dir / "python" / "style.md").write_text("Use type hints.")
+    (ext_dir / "specs" / "python").mkdir(parents=True)
+    (ext_dir / "specs" / "python" / "style.md").write_text("Use type hints.")
 
     (spek_dir / "spek.yaml").write_text(yaml.dump({
         "meta": {"spek_version": "0.0.0", "spek_sha": "abc1234", "integrations": ["claude"]},
         "modules": ["mywork::python/style"],
-        "sources": {"mywork": {"path": str(ext_dir)}},
+        "sources": {"mywork": f"local::{ext_dir}"},
     }))
     (spek_dir / "modules").mkdir()
     (spek_dir / "stances").mkdir()
 
-    result = CliRunner().invoke(cli, ["sync", "--project-root", str(tmp_path)])
+    result = CliRunner().invoke(cli, ["--project-root", str(tmp_path), "sync"
+    ])
 
     assert result.exit_code == 0, result.output
     rule = tmp_path / ".claude" / "rules" / "mywork" / "python" / "style.md"

@@ -1,6 +1,13 @@
 ---
 spek:
-  description: "Always use ./.venv, never global Python"
+  output: rule
+  description: Always use ./.venv, never global Python
+  skill:
+    model_invokable: true
+    human_invokable: true
+    needs_context: true
+  needs_context: true
+  preapproved_tools: []
 ---
 
 # Python virtual environment

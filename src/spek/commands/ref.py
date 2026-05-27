@@ -1,11 +1,13 @@
 from __future__ import annotations
 
-import json as json_mod
-
 import click
+import json
 
-from spek.core.repo import local_project_path, spek_repo_path
-from spek.core.references import read_reference, search_references
+from spek.core import references
+from spek.core.config import PROJECT_SOURCE, SourcedResource, SpekConfig
+from spek.core.local import search_project_refs
+from spek.core.references import NormalizedTerms, Reference
+from spek.core.sources import resolve_sources
 
 
 @click.group()
@@ -20,12 +22,25 @@ def ref():
 @click.option("-n", "limit", type=int, default=10, help="Maximum results to return. 0 for unlimited.")
 def ref_search(terms: tuple[str, ...], as_json: bool, match_all: bool, limit: int) -> None:
     """Search reference entries by keyword."""
-    repo_path = spek_repo_path()
-    results = search_references(repo_path, list(terms), match_all=match_all, project_root=local_project_path())
+    sources = resolve_sources()
+    normalized_terms = NormalizedTerms(list(terms))
+    results: list[tuple[int, str, Reference]] = []
+
+    for source_name, source in sources.items():
+        for result in source.search_references(normalized_terms, limit, match_all):
+            results.append((result.score(normalized_terms), SourcedResource(source_name, result.path).as_string, result))
+
+    results.sort(key=lambda x: x[0], reverse=True)
     results = results[:limit] if limit > 0 else results
 
     if as_json:
-        click.echo(json_mod.dumps([r.model_dump(exclude_none=True) for r in results]))
+        click.echo(json.dumps([
+            {
+                "name": s,
+                "description": r.frontmatter.spek.description,
+                "keywords": r.frontmatter.spek.keywords
+            }
+            for _, s, r in results]))
         return
 
     if not results:
@@ -33,9 +48,9 @@ def ref_search(terms: tuple[str, ...], as_json: bool, match_all: bool, limit: in
         return
 
     for r in results:
-        kw = ", ".join(r.keywords)
-        desc = r.description or ""
-        click.echo(f"{r.name}  {desc}  [{kw}]")
+        kw = ", ".join(r[2].frontmatter.spek.keywords)
+        desc = r[2].frontmatter.spek.description or ""
+        click.echo(f"{r[1]}  {desc}  [{kw}]")
 
 
 @ref.command("read")
@@ -43,15 +58,22 @@ def ref_search(terms: tuple[str, ...], as_json: bool, match_all: bool, limit: in
 @click.option("--json", "as_json", is_flag=True, help="Output result as JSON.")
 def ref_read(name: str, as_json: bool) -> None:
     """Read a reference entry by name."""
-    repo_path = spek_repo_path()
-    try:
-        result = read_reference(repo_path, name, project_root=local_project_path())
-    except FileNotFoundError as e:
-        click.echo(str(e), err=True)
+    sources = resolve_sources()
+    res = SourcedResource.parse(name)
+    source = sources.get(res.source)
+    if source is None:
+        click.echo(f"Could not resolve source {res.source}")
         raise SystemExit(1)
+    reference = source.hydrate_reference(res.path)
 
     if as_json:
-        click.echo(result.model_dump_json(exclude_none=True))
+        json_data = {
+            "name": res.as_string,
+            "description": reference.frontmatter.spek.description,
+            "keywords": reference.frontmatter.spek.keywords,
+            "content": reference.content,
+        }
+        click.echo(json.dumps(json_data))
         return
 
-    click.echo(result.content, nl=False)
+    click.echo(reference.content, nl=False)

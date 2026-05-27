@@ -1,6 +1,13 @@
 ---
 spek:
-  description: "Surface risks; get sign-off on big changes"
+  output: rule
+  description: Surface risks; get sign-off on big changes
+  skill:
+    model_invokable: true
+    human_invokable: true
+    needs_context: true
+  needs_context: true
+  preapproved_tools: []
 ---
 
 # Confirm before acting

@@ -1,11 +1,14 @@
 ---
 spek:
-  description: Make a quick out-of-scope edit without going through the full workflow
   output: skill
   name: spek-detour
-  integrations:
-    claude:
-      disable-model-invocation: true
+  description: Make a quick out-of-scope edit without going through the full workflow
+  skill:
+    model_invokable: false
+    human_invokable: true
+    needs_context: true
+  needs_context: true
+  preapproved_tools: []
 ---
 You are making a quick out-of-scope edit that bypasses the normal spek workflow. Do it immediately — no planning, no retro.
 

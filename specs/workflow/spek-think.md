@@ -3,9 +3,8 @@ spek:
   description: Enter exploratory mode to discuss ideas without building
   output: skill
   name: spek-think
-  integrations:
-    claude:
-      disable-model-invocation: true
+  skill:
+    model_invokable: false
 ---
 You are entering think mode. The user wants to explore ideas — not build anything.
 

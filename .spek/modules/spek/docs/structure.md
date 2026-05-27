@@ -1,6 +1,13 @@
 ---
 spek:
-  description: "STRUCTURE.md maintenance guidelines"
+  output: rule
+  description: STRUCTURE.md maintenance guidelines
+  skill:
+    model_invokable: true
+    human_invokable: true
+    needs_context: true
+  needs_context: true
+  preapproved_tools: []
 ---
 
 # STRUCTURE.md conventions

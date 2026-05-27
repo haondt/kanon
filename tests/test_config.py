@@ -8,24 +8,31 @@ def _minimal_config() -> SpekConfig:
     )
 
 
+def _setup(tmp_path):
+    spek_dir = tmp_path / ".spek"
+    spek_dir.mkdir()
+    SpekConfig.initialize(tmp_path)
+    return spek_dir
+
+
 def test_config_roundtrip(tmp_path):
-    path = tmp_path / "spek.yaml"
+    spek_dir = _setup(tmp_path)
     config = _minimal_config()
-    config.save(path)
-    loaded = SpekConfig.load(path)
+    config.save()
+    loaded = SpekConfig.load(spek_dir / "spek.yaml")
     assert loaded == config
 
 
-def test_config_save_omits_empty_lists(tmp_path):
-    path = tmp_path / "spek.yaml"
-    _minimal_config().save(path)
-    text = path.read_text()
-    assert "stances" not in text
-    assert "local_modules" not in text
-    assert "local_stances" not in text
+def test_config_save_empty_lists(tmp_path):
+    spek_dir = _setup(tmp_path)
+    _minimal_config().save()
+    loaded = SpekConfig.load(spek_dir / "spek.yaml")
+    assert loaded.stances == []
+    assert loaded.local_modules == []
+    assert loaded.local_stances == []
 
 
 def test_config_save_omits_null_profile(tmp_path):
-    path = tmp_path / "spek.yaml"
-    _minimal_config().save(path)
-    assert "profile" not in path.read_text()
+    spek_dir = _setup(tmp_path)
+    _minimal_config().save()
+    assert "profile" not in (spek_dir / "spek.yaml").read_text()

@@ -1,6 +1,13 @@
 ---
 spek:
-  description: "uv-specific dependency management"
+  output: rule
+  description: uv-specific dependency management
+  skill:
+    model_invokable: true
+    human_invokable: true
+    needs_context: true
+  needs_context: true
+  preapproved_tools: []
 ---
 
 # Python dependency management — uv

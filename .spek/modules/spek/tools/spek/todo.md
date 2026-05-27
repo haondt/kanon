@@ -1,6 +1,13 @@
 ---
 spek:
-  description: "spek todo CLI reference"
+  output: rule
+  description: spek todo CLI reference
+  skill:
+    model_invokable: true
+    human_invokable: true
+    needs_context: true
+  needs_context: true
+  preapproved_tools: []
 ---
 
 # spek todo CLI

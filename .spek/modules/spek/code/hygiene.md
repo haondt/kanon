@@ -1,6 +1,13 @@
 ---
 spek:
-  description: "No commented-out code or debug artifacts"
+  output: rule
+  description: No commented-out code or debug artifacts
+  skill:
+    model_invokable: true
+    human_invokable: true
+    needs_context: true
+  needs_context: true
+  preapproved_tools: []
 ---
 
 # Code hygiene

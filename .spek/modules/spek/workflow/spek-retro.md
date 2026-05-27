@@ -1,15 +1,16 @@
 ---
 spek:
-  description: "Close the session: review todo.yaml and delete session.yaml"
   output: skill
   name: spek-retro
+  description: 'Close the session: review todo.yaml and delete session.yaml'
+  skill:
+    model_invokable: false
+    human_invokable: true
+    needs_context: false
+  needs_context: true
   preapproved_tools:
-    - Bash(git diff *)
-    - Bash(git log *)
-  integrations:
-    claude:
-      disable-model-invocation: true
-      context: fork
+  - Bash(git diff *)
+  - Bash(git log *)
 ---
 You are closing out a development session. Your job is to record completed work, update docs, and reset session state.
 

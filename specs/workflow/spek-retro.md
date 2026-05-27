@@ -6,10 +6,9 @@ spek:
   preapproved_tools:
     - Bash(git diff *)
     - Bash(git log *)
-  integrations:
-    claude:
-      disable-model-invocation: true
-      context: fork
+  skill:
+    model_invokable: false
+    needs_context: false
 ---
 You are closing out a development session. Your job is to record completed work, update docs, and reset session state.
 

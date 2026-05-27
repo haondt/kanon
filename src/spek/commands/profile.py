@@ -1,11 +1,10 @@
 from __future__ import annotations
 
 import click
-from pathlib import Path
 
-from spek.core.profiles import resolve_profile, list_profiles
-from spek.core.repo import spek_repo_path
-from spek.core.config import SpekConfig, CONFIG_FILE
+from spek.commands._utils import load_config_or_exit
+from spek.core.config import SourcedResource, SpekConfig
+from spek.core.sources import resolve_sources
 
 
 @click.group()
@@ -16,61 +15,60 @@ def profile() -> None:
 @profile.command("list")
 def profile_list() -> None:
     """List all available profiles."""
-    repo_path = spek_repo_path()
-    profiles = list_profiles(repo_path / "profiles")
+    load_config_or_exit()
+    sources = resolve_sources()
+    profile_refs: list[SourcedResource] = []
+    for source_name, source in sources.items():
+        for path in source.list_profiles():
+            profile_refs.append(SourcedResource(source_name, path))
+    profile_refs = sorted(profile_refs, key=lambda f: f.as_fully_qualified_string)
+    profiles = { r.as_string: sources[r.source].shallow_hydrate_profile(r.path) for r in profile_refs }
+
     if not profiles:
         click.echo("No profiles found.")
         return
-    width = max(len(k) for k in profiles)
-    for name, description in profiles.items():
-        click.echo(f"  {name:<{width}}  {description}")
+    width = max(len(k) for k in profiles.keys())
+    for k, v in profiles.items():
+        click.echo(f"  {k:<{width}}  {v.description}")
 
 
 @profile.command("apply")
 @click.argument("name", required=False)
-@click.option("--project-root", default=".", type=click.Path(exists=True, file_okay=False),
-              help="Root of the target project (default: current directory).")
 @click.option("--sync", "run_sync", is_flag=True,
               help="Run spek sync after applying the profile.")
-def profile_apply(name: str | None, project_root: str, run_sync: bool) -> None:
+def profile_apply(name: str | None, run_sync: bool) -> None:
     """Re-resolve a profile and update modules in spek.yaml.
 
     Uses the profile recorded in spek.yaml if NAME is omitted.
     local_modules are preserved unchanged.
     """
-    root = Path(project_root).resolve()
-    lock_path = root / CONFIG_FILE
+    config = load_config_or_exit()
+    profile_ref = name or config.meta.profile
 
-    if not lock_path.exists():
-        click.echo("No spek.yaml found. Run 'spek init' first.")
-        raise SystemExit(1)
-
-    lock = SpekConfig.load(lock_path)
-    profile_name = name or lock.meta.profile
-
-    if not profile_name:
+    if not profile_ref:
         click.echo("No profile recorded in spek.yaml and no NAME given.")
         raise SystemExit(1)
 
-    repo_path = spek_repo_path()
-    profiles_dir = repo_path / "profiles"
+    sources = resolve_sources()
 
     try:
-        modules, stances = resolve_profile(profile_name, profiles_dir)
+        profile_ref = SourcedResource.parse(profile_ref)
+        profile = sources[profile_ref.source].hydrate_profile(profile_ref.path)
     except FileNotFoundError as e:
         click.echo(str(e))
         raise SystemExit(1)
     except ValueError as e:
         click.echo(str(e))
         raise SystemExit(1)
-    lock.modules = modules
-    lock.stances = stances
-    lock.meta.profile = profile_name
-    lock.save(lock_path)
-    click.echo(f"Applied profile '{profile_name}': {len(modules)} module(s), {len(stances)} stance(s) written to spek.yaml.")
+
+    config.modules = profile.modules
+    config.stances = profile.stances
+    config.meta.profile = profile_ref.as_string
+    config.save()
+    click.echo(f"Applied profile '{profile_ref}': {len(config.modules)} module(s), {len(config.stances)} stance(s) written to spek.yaml.")
 
     if run_sync:
         from spek.commands.sync import do_sync
-        do_sync(root)
+        do_sync()
     else:
         click.echo("Run 'spek sync' to update AI tool output.")

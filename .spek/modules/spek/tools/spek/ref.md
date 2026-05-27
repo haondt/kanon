@@ -1,6 +1,14 @@
 ---
 spek:
-  description: "Commands for searching and reading from the spek reference library — on-demand docs, patterns, and examples indexed by keyword"
+  output: rule
+  description: |-
+    Commands for searching and reading from the spek reference library — on-demand docs, patterns, and examples indexed by keyword
+  skill:
+    model_invokable: true
+    human_invokable: true
+    needs_context: true
+  needs_context: true
+  preapproved_tools: []
 ---
 
 # spek ref

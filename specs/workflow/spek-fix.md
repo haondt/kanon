@@ -3,9 +3,8 @@ spek:
   description: Address all findings from the most recent review pass
   output: skill
   name: spek-fix
-  integrations:
-    claude:
-      disable-model-invocation: true
+  skill:
+    model_invokable: false
 ---
 You are addressing findings from the most recent review pass. Your job is to implement fixes for every finding.
 

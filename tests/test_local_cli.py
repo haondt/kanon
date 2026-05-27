@@ -18,10 +18,10 @@ def make_config(root, **extra):
 def test_local_module_creates_file(tmp_path):
     make_config(tmp_path)
 
-    result = CliRunner().invoke(cli, ["local", "module", "my-rules", "--project-root", str(tmp_path)])
+    result = CliRunner().invoke(cli, ["--project-root", str(tmp_path), "local", "module", "my-rules"])
 
     assert result.exit_code == 0, result.output
-    module_file = tmp_path / ".spek" / "local" / "modules" / "my-rules.md"
+    module_file = tmp_path / ".spek" / "project" / "modules" / "my-rules.md"
     assert module_file.exists()
     config = SpekConfig.load(tmp_path / ".spek" / "spek.yaml")
     assert "my-rules" in config.local_modules
@@ -30,16 +30,16 @@ def test_local_module_creates_file(tmp_path):
 def test_local_module_duplicate_exits(tmp_path):
     make_config(tmp_path)
     runner = CliRunner()
-    runner.invoke(cli, ["local", "module", "my-rules", "--project-root", str(tmp_path)])
+    runner.invoke(cli, ["--project-root", str(tmp_path), "local", "module", "my-rules"])
 
-    result = runner.invoke(cli, ["local", "module", "my-rules", "--project-root", str(tmp_path)])
+    result = runner.invoke(cli, ["--project-root", str(tmp_path), "local", "module", "my-rules"])
 
     assert result.exit_code != 0
     assert "already exists" in result.output
 
 
 def test_local_module_no_config_exits(tmp_path):
-    result = CliRunner().invoke(cli, ["local", "module", "my-rules", "--project-root", str(tmp_path)])
+    result = CliRunner().invoke(cli, ["--project-root", str(tmp_path), "local", "module", "my-rules"])
     assert result.exit_code != 0
     assert "spek init" in result.output
 
@@ -47,10 +47,10 @@ def test_local_module_no_config_exits(tmp_path):
 def test_local_module_creates_file_in_subdirectory(tmp_path):
     make_config(tmp_path)
 
-    result = CliRunner().invoke(cli, ["local", "module", "subdir/my-rules", "--project-root", str(tmp_path)])
+    result = CliRunner().invoke(cli, ["--project-root", str(tmp_path), "local", "module", "subdir/my-rules"])
 
     assert result.exit_code == 0, result.output
-    module_file = tmp_path / ".spek" / "local" / "modules" / "subdir" / "my-rules.md"
+    module_file = tmp_path / ".spek" / "project" / "modules" / "subdir" / "my-rules.md"
     assert module_file.exists()
     config = SpekConfig.load(tmp_path / ".spek" / "spek.yaml")
     assert "subdir/my-rules" in config.local_modules
@@ -59,21 +59,21 @@ def test_local_module_creates_file_in_subdirectory(tmp_path):
 def test_local_stance_creates_file(tmp_path):
     make_config(tmp_path)
 
-    result = CliRunner().invoke(cli, ["local", "stance", "my-stance", "--project-root", str(tmp_path)])
+    result = CliRunner().invoke(cli, ["--project-root", str(tmp_path), "local", "stance", "my-stance"])
 
     assert result.exit_code == 0, result.output
-    stance_file = tmp_path / ".spek" / "local" / "stances" / "my-stance.yaml"
+    stance_file = tmp_path / ".spek" / "project" / "stances" / "my-stance.yaml"
     assert stance_file.exists()
     config = SpekConfig.load(tmp_path / ".spek" / "spek.yaml")
-    assert ".spek/local/stances/my-stance.yaml" in config.local_stances
+    assert "project/stances/my-stance.yaml" in config.local_stances
 
 
 def test_local_stance_duplicate_exits(tmp_path):
     make_config(tmp_path)
     runner = CliRunner()
-    runner.invoke(cli, ["local", "stance", "my-stance", "--project-root", str(tmp_path)])
+    runner.invoke(cli, ["--project-root", str(tmp_path), "local", "stance", "my-stance"])
 
-    result = runner.invoke(cli, ["local", "stance", "my-stance", "--project-root", str(tmp_path)])
+    result = runner.invoke(cli, ["--project-root", str(tmp_path), "local", "stance", "my-stance"])
 
     assert result.exit_code != 0
     assert "already exists" in result.output

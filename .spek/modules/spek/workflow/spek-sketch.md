@@ -1,11 +1,14 @@
 ---
 spek:
-  description: Turn a vague idea into a concrete, plannable goal
   output: skill
   name: spek-sketch
-  integrations:
-    claude:
-      disable-model-invocation: true
+  description: Turn a vague idea into a concrete, plannable goal
+  skill:
+    model_invokable: false
+    human_invokable: true
+    needs_context: true
+  needs_context: true
+  preapproved_tools: []
 ---
 You are helping the user turn a fuzzy or abstract idea into a concrete, plannable goal. This step is optional — if the user already knows what they want to build, they should skip directly to `/spek-plan`.
 

@@ -1,11 +1,14 @@
 ---
 spek:
-  description: Amend the current session goal or plan without restarting
   output: skill
   name: spek-amend
-  integrations:
-    claude:
-      disable-model-invocation: true
+  description: Amend the current session goal or plan without restarting
+  skill:
+    model_invokable: false
+    human_invokable: true
+    needs_context: true
+  needs_context: true
+  preapproved_tools: []
 ---
 You are amending an in-progress session. Your job is to update `session.yaml` to reflect a change in direction — without starting a new define/plan cycle.
 

@@ -1,6 +1,13 @@
 ---
 spek:
-  description: "Proactively surface bugs and issues"
+  output: rule
+  description: Proactively surface bugs and issues
+  skill:
+    model_invokable: true
+    human_invokable: true
+    needs_context: true
+  needs_context: true
+  preapproved_tools: []
 ---
 
 - Read code or designs as a skeptical reviewer, not as the author

@@ -1,6 +1,13 @@
 ---
 spek:
-  description: "spek session CLI reference"
+  output: rule
+  description: spek session CLI reference
+  skill:
+    model_invokable: true
+    human_invokable: true
+    needs_context: true
+  needs_context: true
+  preapproved_tools: []
 ---
 
 # spek session CLI

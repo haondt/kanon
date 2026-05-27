@@ -4,6 +4,8 @@ sections:
     items:
     - |-
       Consolidate and reduce the test suite to keep it manageable, accepting slightly reduced coverage.
+    - |-
+      Add test for module_set with duplicate module name; module_set lacks the deduplication that module_add and module_remove have and this inconsistency is untested
   containerization:
     name: Containerization
     items:
@@ -49,17 +51,23 @@ sections:
       Add specs/refactoring/base.md — when to refactor, refactor as a separate commit, test coverage before refactoring.
     - |-
       Add specs/refactoring/python.md — Python extraction patterns, naming, avoiding over-abstraction.
+    - |-
+      Refactor SessionState to follow the same singleton pattern as SpekConfig: add initialize(), instance()/current(), and get() classmethods so session state can be accessed without passing it through every call.
   external-sources:
     name: External spec sources
     items:
     - |-
-      Add ~/.spek/settings.yaml global config declaring a list of module sources (local directories initially, eventually remote).
-    - |-
-      Replace flat module path string with a richer format supporting an optional source (repo URL + ref) alongside the path.
-    - |-
-      Implement spek sync --pull to fetch modules from their declared source; modules without a source continue to resolve against the built-in repo.
+      Implement remote source fetching: wire gh:: and gl:: paths in SourceSpec to spek sync --pull so modules are cloned/fetched from their declared remote before resolving; local sources already work.
     - |-
       Decide how spek init / spek profile apply should work when profiles live in an external source.
+    - |-
+      Update `spek ref search` and `spek ref read` to search and retrieve reference entries from all configured sources, not just the local library.
+    - |-
+      Block or warn when  is given a reserved namespace name ( or ); these are built-in namespaces and overwriting them should require .
+    - |-
+      Block or warn when `spek source add` is given a reserved namespace name (`spek` or `project`); these are built-in namespaces and overwriting them should require `--force`.
+    - |-
+      Design canonical source identifiers: each source has a stable identity (e.g. its URL or registered name) separate from the user's local alias, so profiles can reference cross-source modules without knowing how the user named the source locally.
   frontend:
     name: Frontend patterns
     items:
@@ -70,6 +78,8 @@ sections:
     items:
     - |-
       Add /spek-audit skill: AI pass checking repository against specs writes findings to .spek/audit.yaml, triage phase walks findings one-by-one with resolution options, retro phase closes and deletes audit file.
+    - |-
+      Add /spek-why skill: given a specific AI decision the user questions, explain the rule or gap that drove it (without reverting the change), then suggest a concrete spec edit or new spek module to prevent it in future sessions.
   spek-split:
     name: Plan splitting
     items:
@@ -84,6 +94,12 @@ sections:
     items:
     - |-
       Add specs/workflow/cleanup.md — standalone spec for identifying and removing dead code, stale TODOs, commented-out blocks, and unreferenced files.
+    - |-
+      module_set does not deduplicate: passing the same module name twice writes it twice into config.modules and reports incorrect count; add dict.fromkeys deduplication to module_set as done for module_add and module_remove
+    - |-
+      spek check gives misleading 'Module does not resolve in any source' error when the module's source is remote (gh::/gl::) and unfetchable; improve message to indicate the source type is the root cause
+    - |-
+      Replace all uses of 'import json as json_mod' with plain 'import json'; the alias was added to avoid shadowing a parameter named 'json', but all affected commands use 'as_json' for that parameter instead.
   ai-tools:
     name: AI tool support
     items:

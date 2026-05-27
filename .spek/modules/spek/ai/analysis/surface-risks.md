@@ -1,6 +1,13 @@
 ---
 spek:
-  description: "Flag risks and unintended consequences"
+  output: rule
+  description: Flag risks and unintended consequences
+  skill:
+    model_invokable: true
+    human_invokable: true
+    needs_context: true
+  needs_context: true
+  preapproved_tools: []
 ---
 
 - Surface hidden costs: maintenance burden, complexity, operational overhead

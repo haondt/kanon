@@ -1,57 +1,52 @@
 from __future__ import annotations
 
-import json as json_mod
+import json
 from typing import Any
 
 import click
 
 from spek.core.session import (
-    SESSION_FILE,
     create_session,
     delete_session,
     lint_session,
 )
-from ._helpers import _load, _root
+from ._helpers import load_session_or_exit
 from spek.commands._utils import read_text_arg
 
 
 @click.command("start")
 @click.argument("goal")
-@click.option("--project-root", default=".", type=click.Path(file_okay=False))
 @click.option("--json", "as_json", is_flag=True)
-def session_start(goal: str, project_root: str, as_json: bool) -> None:
+def session_start(goal: str, as_json: bool) -> None:
     """Create a new session with the given goal."""
-    root = _root(project_root)
     try:
-        state, h = create_session(read_text_arg(goal), root)
+        state, h = create_session(read_text_arg(goal))
     except FileExistsError as e:
         click.echo(str(e), err=True)
         raise SystemExit(1)
     if as_json:
-        click.echo(json_mod.dumps({"hash": h, "goal": state.goal}))
+        click.echo(json.dumps({"hash": h, "goal": state.goal}))
     else:
         click.echo(f"Session started. hash: {h}")
 
 
 @click.command("goal")
-@click.option("--project-root", default=".", type=click.Path(file_okay=False))
 @click.option("--json", "as_json", is_flag=True)
-def session_goal(project_root: str, as_json: bool) -> None:
+def session_goal(as_json: bool) -> None:
     """Read the current session goal."""
-    state, h, _ = _load(project_root)
+    state, h = load_session_or_exit()
     if as_json:
-        click.echo(json_mod.dumps({"hash": h, "goal": state.goal}))
+        click.echo(json.dumps({"hash": h, "goal": state.goal}))
     else:
         click.echo(state.goal)
 
 
 @click.command("status")
 @click.option("--full", is_flag=True)
-@click.option("--project-root", default=".", type=click.Path(file_okay=False))
 @click.option("--json", "as_json", is_flag=True)
-def session_status(full: bool, project_root: str, as_json: bool) -> None:
+def session_status(full: bool, as_json: bool) -> None:
     """Show session summary."""
-    state, h, _ = _load(project_root)
+    state, h = load_session_or_exit()
 
     steps_total = len(state.plan.steps)
     steps_done = sum(1 for s in state.plan.steps.values() if s.done)
@@ -90,7 +85,7 @@ def session_status(full: bool, project_root: str, as_json: bool) -> None:
             }
             payload["amendments"] = list(state.amendments)
             payload["detours"] = list(state.detours)
-        click.echo(json_mod.dumps(payload))
+        click.echo(json.dumps(payload))
         return
 
     click.echo(f"goal: {state.goal}")
@@ -133,14 +128,13 @@ def session_status(full: bool, project_root: str, as_json: bool) -> None:
 
 
 @click.command("lint")
-@click.option("--project-root", default=".", type=click.Path(file_okay=False))
 @click.option("--json", "as_json", is_flag=True)
-def session_lint(project_root: str, as_json: bool) -> None:
+def session_lint(as_json: bool) -> None:
     """Lint the session file."""
-    state, h, _ = _load(project_root)
+    state, h = load_session_or_exit()
     issues = lint_session(state)
     if as_json:
-        click.echo(json_mod.dumps({"hash": h, "issues": issues}))
+        click.echo(json.dumps({"hash": h, "issues": issues}))
     else:
         if issues:
             for issue in issues:
@@ -150,17 +144,14 @@ def session_lint(project_root: str, as_json: bool) -> None:
 
 
 @click.command("clear")
-@click.option("--project-root", default=".", type=click.Path(file_okay=False))
 @click.option("--json", "as_json", is_flag=True)
-def session_clear(project_root: str, as_json: bool) -> None:
+def session_clear(as_json: bool) -> None:
     """Delete the session file."""
-    root = _root(project_root)
     try:
-        delete_session(root)
+        delete_session()
     except FileNotFoundError:
-        click.echo(f"{SESSION_FILE} not found.", err=True)
-        raise SystemExit(1)
+        pass
     if as_json:
-        click.echo(json_mod.dumps({"cleared": True}))
+        click.echo(json.dumps({"cleared": True}))
     else:
         click.echo("Session cleared.")

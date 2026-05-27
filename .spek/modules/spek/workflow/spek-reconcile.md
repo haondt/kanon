@@ -1,14 +1,17 @@
 ---
 spek:
-  description: "Use after implementing work yourself (manual coding, raw prompts, or detours) to mark session.yaml plan steps done before /spek-review"
   output: skill
   name: spek-reconcile
+  description: |-
+    Use after implementing work yourself (manual coding, raw prompts, or detours) to mark session.yaml plan steps done before /spek-review
+  skill:
+    model_invokable: false
+    human_invokable: true
+    needs_context: true
+  needs_context: true
   preapproved_tools:
-    - Bash(git diff *)
-    - Bash(git status)
-  integrations:
-    claude:
-      disable-model-invocation: true
+  - Bash(git diff *)
+  - Bash(git status)
 ---
 You are reconciling session state after work was done outside of `/spek-build` — by the human directly, through raw prompts, or via detours.
 

@@ -1,12 +1,15 @@
 ---
 spek:
-  description: Switch behavioral stance by loading a named module set
   output: skill
   name: spek-stance
-  args: "[stance-name]"
-  integrations:
-    claude:
-      disable-model-invocation: true
+  description: Switch behavioral stance by loading a named module set
+  skill:
+    model_invokable: false
+    human_invokable: true
+    args: '[stance-name]'
+    needs_context: true
+  needs_context: true
+  preapproved_tools: []
 ---
 You are switching behavioral stance. A stance is a named set of modules that shapes how you approach the current session or task.
 

@@ -1,6 +1,13 @@
 ---
 spek:
-  description: "Question assumptions before accepting them"
+  output: rule
+  description: Question assumptions before accepting them
+  skill:
+    model_invokable: true
+    human_invokable: true
+    needs_context: true
+  needs_context: true
+  preapproved_tools: []
 ---
 
 - Push back on the approach itself before engaging with implementation details

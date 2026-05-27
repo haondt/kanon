@@ -1,17 +1,15 @@
 from __future__ import annotations
 
 import hashlib
-import io
 from enum import Enum
-from pathlib import Path
 from typing import Any, Literal
 
-import yaml
 from pydantic import BaseModel, field_validator
 
-from spek.core.yaml_utils import _make_dumper
+from spek.core.config import SpekConfig
+from spek.core.yaml_utils import dump_yaml, parse_yaml
 
-SESSION_FILE = ".spek/session.yaml"
+SESSION_FILE = "session.yaml"
 
 
 # ── models ────────────────────────────────────────────────────────────────────
@@ -126,53 +124,44 @@ class SessionState(BaseModel):
 
 # ── persistence ───────────────────────────────────────────────────────────────
 
-def _dump(state: SessionState) -> str:
-    buf = io.StringIO()
-    yaml.dump(state.to_dict(), buf, Dumper=_make_dumper(FindingType, FindingSeverity), default_flow_style=False, sort_keys=False,
-              allow_unicode=True)
-    return buf.getvalue()
-
-
 def _hash(text: str) -> str:
     return hashlib.sha256(text.encode()).hexdigest()[:16]
 
 
-def load_session(project_root: Path) -> tuple[SessionState, str]:
+def load_session() -> tuple[SessionState, str]:
     """Load session.yaml; return (state, file_hash). Raises FileNotFoundError if absent."""
-    path = project_root / SESSION_FILE
+    path = SpekConfig.root() / SESSION_FILE
     text = path.read_text()
-    raw: dict[str, Any] = yaml.safe_load(text) or {}
-    state = SessionState.from_dict(raw)
+    state = SessionState.from_dict(parse_yaml(text))
     return state, _hash(text)
 
-
-def save_session(state: SessionState, project_root: Path) -> tuple[str, str]:
+def save_session(state: SessionState) -> tuple[str, str]:
     """Save session.yaml; return (before_hash, after_hash)."""
-    path = project_root / SESSION_FILE
+    path = SpekConfig.root() / SESSION_FILE
     path.parent.mkdir(parents=True, exist_ok=True)
     before_text = path.read_text() if path.exists() else ""
     before = _hash(before_text)
-    text = _dump(state)
+    text = dump_yaml(state.to_dict())
     path.write_text(text)
     after = _hash(text)
     return before, after
 
 
-def create_session(goal: str, project_root: Path) -> tuple[SessionState, str]:
+def create_session(goal: str) -> tuple[SessionState, str]:
     """Create session.yaml with goal. Raises FileExistsError if it already exists."""
-    path = project_root / SESSION_FILE
+    path = SpekConfig.root() / SESSION_FILE
     if path.exists():
         raise FileExistsError(f"{SESSION_FILE} already exists. Use 'spek session clear' first.")
     path.parent.mkdir(parents=True, exist_ok=True)
     state = SessionState(goal=goal)
-    text = _dump(state)
+    text = dump_yaml(state.to_dict())
     path.write_text(text)
     return state, _hash(text)
 
 
-def delete_session(project_root: Path) -> None:
+def delete_session() -> None:
     """Delete session.yaml. Raises FileNotFoundError if absent."""
-    path = project_root / SESSION_FILE
+    path = SpekConfig.root() / SESSION_FILE
     path.unlink()
 
 

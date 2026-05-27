@@ -1,6 +1,13 @@
 ---
 spek:
-  description: "Infer intent; ask only when blocked"
+  output: rule
+  description: Infer intent; ask only when blocked
+  skill:
+    model_invokable: true
+    human_invokable: true
+    needs_context: true
+  needs_context: true
+  preapproved_tools: []
 ---
 
 - Make reasonable assumptions without asking; state them briefly as you go

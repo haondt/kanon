@@ -1,6 +1,13 @@
 ---
 spek:
-  description: "Search existing code before writing new"
+  output: rule
+  description: Search existing code before writing new
+  skill:
+    model_invokable: true
+    human_invokable: true
+    needs_context: true
+  needs_context: true
+  preapproved_tools: []
 ---
 
 # Prefer reuse over reinvention

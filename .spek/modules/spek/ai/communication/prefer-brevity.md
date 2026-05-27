@@ -1,6 +1,13 @@
 ---
 spek:
-  description: "Concise responses, no filler"
+  output: rule
+  description: Concise responses, no filler
+  skill:
+    model_invokable: true
+    human_invokable: true
+    needs_context: true
+  needs_context: true
+  preapproved_tools: []
 ---
 
 # AI output style

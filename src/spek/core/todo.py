@@ -1,23 +1,20 @@
 from __future__ import annotations
 
 import hashlib
-import io
-from pathlib import Path
-from typing import Any
 
-import yaml
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, Field, field_validator
 
-from spek.core.yaml_utils import _make_dumper
+from spek.core.config import SpekConfig
+from spek.core.yaml_utils import dump_yaml, parse_yaml
 
-TODO_FILE = ".spek/todo.yaml"
+TODO_FILE = "todo.yaml"
 
 
 # ── models ────────────────────────────────────────────────────────────────────
 
 class TodoSection(BaseModel):
     name: str
-    items: list[str] = []
+    items: list[str] = Field(default_factory=list)
 
     @field_validator("name", mode="before")
     @classmethod
@@ -31,51 +28,43 @@ class TodoSection(BaseModel):
 
 
 class TodoState(BaseModel):
-    sections: dict[str, TodoSection] = {}
+    sections: dict[str, TodoSection] = Field(default_factory=dict)
 
 
 # ── persistence ───────────────────────────────────────────────────────────────
-
-def _dump(state: TodoState) -> str:
-    d = state.model_dump(exclude_defaults=True)
-    buf = io.StringIO()
-    yaml.dump(d, buf, Dumper=_make_dumper(), default_flow_style=False, sort_keys=False, allow_unicode=True)
-    return buf.getvalue()
-
 
 def _hash(text: str) -> str:
     return hashlib.sha256(text.encode()).hexdigest()[:16]
 
 
-def load_todo(project_root: Path) -> tuple[TodoState, str]:
+def load_todo() -> tuple[TodoState, str]:
     """Load todo.yaml; return (state, file_hash). Raises FileNotFoundError if absent."""
-    path = project_root / TODO_FILE
+    path = SpekConfig.root() / TODO_FILE
     text = path.read_text()
-    raw: dict[str, Any] = yaml.safe_load(text) or {}
-    state = TodoState.model_validate(raw)
+    state = TodoState.model_validate(parse_yaml(text))
     return state, _hash(text)
 
 
-def save_todo(state: TodoState, project_root: Path) -> tuple[str, str]:
+def save_todo(state: TodoState) -> tuple[str, str]:
     """Save todo.yaml; return (before_hash, after_hash)."""
-    path = project_root / TODO_FILE
+    path = SpekConfig.root() / TODO_FILE
     path.parent.mkdir(parents=True, exist_ok=True)
     before_text = path.read_text() if path.exists() else ""
     before = _hash(before_text)
-    text = _dump(state)
+    text = dump_yaml(state)
     path.write_text(text)
     after = _hash(text)
     return before, after
 
 
-def create_todo(project_root: Path) -> tuple[TodoState, str]:
+def create_todo() -> tuple[TodoState, str]:
     """Create an empty todo.yaml. Raises FileExistsError if it already exists."""
-    path = project_root / TODO_FILE
+    path = SpekConfig.root() / TODO_FILE
     if path.exists():
         raise FileExistsError(f"{TODO_FILE} already exists.")
     path.parent.mkdir(parents=True, exist_ok=True)
     state = TodoState()
-    text = _dump(state)
+    text = dump_yaml(state)
     path.write_text(text)
     return state, _hash(text)
 

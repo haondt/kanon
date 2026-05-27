@@ -1,6 +1,13 @@
 ---
 spek:
-  description: "README structure and content guidelines"
+  output: rule
+  description: README structure and content guidelines
+  skill:
+    model_invokable: true
+    human_invokable: true
+    needs_context: true
+  needs_context: true
+  preapproved_tools: []
 ---
 
 # README conventions

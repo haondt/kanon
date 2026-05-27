@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from pathlib import Path
+
 
 def deep_merge(d1: dict[str, Any], d2: dict[str, Any], conflicts: str = "new", _path: str = ""):
     if conflicts not in ["new", "old", "err"]:
@@ -36,3 +38,9 @@ def deep_merge(d1: dict[str, Any], d2: dict[str, Any], conflicts: str = "new", _
             raise KeyError(f"Multiple entries found for key: {_path}.{k}")
     return result
 
+def resolve_path(path: str | Path | None) -> Path:
+    if path == None:
+        path = "."
+    if isinstance(path, str):
+        path = Path(path)
+    return path.resolve()

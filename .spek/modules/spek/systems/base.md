@@ -1,11 +1,17 @@
 ---
 spek:
-  description: "Use the spek reference library before implementing from scratch"
+  output: rule
+  description: Use the spek reference library before implementing from scratch
+  skill:
+    model_invokable: true
+    human_invokable: true
+    needs_context: true
+  needs_context: true
   preapproved_tools:
-    - Bash(spek ref *)
-    - Bash(spek session *)
-    - Bash(spek todo *)
-    - Bash(spek module list)
+  - Bash(spek ref *)
+  - Bash(spek session *)
+  - Bash(spek todo *)
+  - Bash(spek module list)
 ---
 
 # spek reference library

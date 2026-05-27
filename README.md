@@ -44,6 +44,7 @@ spek maintains a library of spec modules — markdown files covering coding conv
 | Term | Meaning |
 |---|---|
 | **module** | A single markdown spec file; path relative to `specs/` (e.g. `git/commit-base`) |
+| **source** | A named external directory of spec modules, declared in `spek.yaml` or `~/.spek/settings.yaml` and referenced by modules using the `source-name::module/path` syntax |
 | **profile** | A named bundle of modules and stances — useful for consistent bootstrapping across projects of the same type (e.g. `python/cli`) |
 | **stance** | A named set of modules activatable on demand via `/spek-stance`; use when you need the AI to behave differently for a specific task without permanently changing your config |
 | **integration** | The AI tool output files that spek generates from your modules (`claude`, `windsurf`, etc.) |
@@ -85,6 +86,13 @@ spek profile apply [name]       # re-resolve and apply a profile
 spek module edit                # re-select modules interactively
 spek module list                # list all available modules with descriptions
 spek module set <module>...     # non-interactively set modules (full replacement)
+spek module add <module>...     # append modules to the active list
+spek module remove <module>...  # remove modules from the active list
+spek module search <term>...    # keyword search across available modules
+spek source add <name> <path>   # register a named source (local path or gh::/gl:: shorthand)
+spek source remove <name>       # remove a source
+spek source status              # show all sources and their resolution status
+spek check                      # validate that all modules and sources resolve
 spek local module <name>        # create a project-local spec module
 spek local stance <name>        # create a project-local stance
 spek destroy                    # remove all spek-managed files from a project
@@ -93,6 +101,22 @@ spek ref read [--json] <name>                            # read a reference entr
 ```
 
 See `spek --help` or `spek <command> --help` for full options.
+
+### Using external sources
+
+```bash
+# Register a local directory of spec modules under the name "mywork"
+spek source add mywork ~/shared-specs
+
+# Or declare a remote source (fetching not yet supported — declares intent)
+spek source add mywork gh::org/specs@v1.0.0
+
+# Activate a module from that source
+spek module add mywork::python/style
+
+# Sync to apply
+spek sync
+```
 
 <details>
 <summary>spek.yaml format</summary>
@@ -108,6 +132,7 @@ modules:                   # always-active rules/skills
   - git/commit-base
   - python/style
   - workflow/spek-sketch
+  - mywork::python/style   # module from an external source
 stances:                   # omitted if empty
   - autonomous
   - collaborative
@@ -115,7 +140,22 @@ local_modules:             # omitted if empty; short names like regular modules
   - my-conventions
 local_stances:             # omitted if empty
   - .spek/local/stances/my-stance.yaml
+sources:                   # omitted if empty; project-scoped sources
+  mywork:
+    path: /home/user/shared-specs    # local path (expanded to absolute at add time)
+  upstream:
+    path: gh::org/specs              # remote (fetching not yet supported)
 ```
+
+</details>
+
+<details>
+<summary>Environment variables</summary>
+
+| Variable | Default | Description |
+|---|---|---|
+| `SPEK_SETTINGS_PATH` | `~/.spek/settings.yaml` | Override the global settings file path |
+| `SPEK_REPO_PATH` | auto-detected from package location | Override the spek repo root (mainly for development) |
 
 </details>
 

@@ -20,7 +20,7 @@ def make_config(root, profile=None):
 def test_profile_apply_updates_config(tmp_path):
     make_config(tmp_path)
 
-    result = CliRunner().invoke(cli, ["profile", "apply", "base/git", "--project-root", str(tmp_path)])
+    result = CliRunner().invoke(cli, ["--project-root", str(tmp_path), "profile", "apply", "base/git"])
 
     assert result.exit_code == 0, result.output
     config = SpekConfig.load(tmp_path / ".spek" / "spek.yaml")
@@ -31,7 +31,7 @@ def test_profile_apply_updates_config(tmp_path):
 def test_profile_apply_uses_recorded_profile(tmp_path):
     make_config(tmp_path, profile="base/git")
 
-    result = CliRunner().invoke(cli, ["profile", "apply", "--project-root", str(tmp_path)])
+    result = CliRunner().invoke(cli, ["--project-root", str(tmp_path), "profile", "apply"])
 
     assert result.exit_code == 0, result.output
     config = SpekConfig.load(tmp_path / ".spek" / "spek.yaml")
@@ -39,7 +39,7 @@ def test_profile_apply_uses_recorded_profile(tmp_path):
 
 
 def test_profile_apply_no_config_exits(tmp_path):
-    result = CliRunner().invoke(cli, ["profile", "apply", "base/git", "--project-root", str(tmp_path)])
+    result = CliRunner().invoke(cli, ["--project-root", str(tmp_path), "profile", "apply", "base/git"])
     assert result.exit_code != 0
     assert "spek init" in result.output
 
@@ -47,7 +47,7 @@ def test_profile_apply_no_config_exits(tmp_path):
 def test_profile_apply_no_name_no_recorded_profile_exits(tmp_path):
     make_config(tmp_path)
 
-    result = CliRunner().invoke(cli, ["profile", "apply", "--project-root", str(tmp_path)])
+    result = CliRunner().invoke(cli, ["--project-root", str(tmp_path), "profile", "apply"])
 
     assert result.exit_code != 0
     assert "No profile" in result.output

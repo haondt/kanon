@@ -1,6 +1,13 @@
 ---
 spek:
-  description: "General style guidance for python code"
+  output: rule
+  description: General style guidance for python code
+  skill:
+    model_invokable: true
+    human_invokable: true
+    needs_context: true
+  needs_context: true
+  preapproved_tools: []
 ---
 
 # Python style

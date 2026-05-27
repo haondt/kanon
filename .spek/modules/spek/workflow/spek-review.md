@@ -1,15 +1,17 @@
 ---
 spek:
-  description: Review the implementation against the plan and spec before closing the session
   output: skill
   name: spek-review
+  description: Review the implementation against the plan and spec before closing
+    the session
+  skill:
+    model_invokable: false
+    human_invokable: true
+    needs_context: false
+  needs_context: true
   preapproved_tools:
-    - Bash(git diff *)
-    - Bash(git log *)
-  integrations:
-    claude:
-      disable-model-invocation: true
-      context: fork
+  - Bash(git diff *)
+  - Bash(git log *)
 ---
 You are reviewing a completed implementation before the session is closed. Your job is to find problems — not to narrate what was done. Number your findings.
 

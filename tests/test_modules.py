@@ -1,87 +1,119 @@
 from __future__ import annotations
 
 import pytest
+import yaml
 from pathlib import Path
 
-from spek.core.modules import list_modules, parse_module_ref, resolve_sources
-from spek.core.settings import SourceSpec
+from spek.core.config import SpekConfig, SourcedResource, SpekEnv
+from spek.core.settings import GlobalSettings
+from spek.core.sources._local import LocalSource
+from spek.core.sources._resolve import resolve_sources, _resolver
 
 
-def test_parse_module_ref_bare_defaults_to_spek():
-    assert parse_module_ref("git/commit-base") == ("spek", "git/commit-base")
+# ── SourcedResource.parse ─────────────────────────────────────────────────────
 
 
-def test_parse_module_ref_with_namespace():
-    assert parse_module_ref("mywork::python/style") == ("mywork", "python/style")
+def test_parse_bare_defaults_to_spek():
+    sr = SourcedResource.parse("git/commit-base")
+    assert sr.source == "spek"
+    assert sr.path == "git/commit-base"
 
 
-def test_parse_module_ref_namespace_only_bare():
-    assert parse_module_ref("corp::single") == ("corp", "single")
+def test_parse_with_namespace():
+    sr = SourcedResource.parse("mywork::python/style")
+    assert sr.source == "mywork"
+    assert sr.path == "python/style"
 
 
-def test_parse_module_ref_deep_path():
-    assert parse_module_ref("ns::a/b/c") == ("ns", "a/b/c")
+def test_parse_namespace_only_bare():
+    sr = SourcedResource.parse("corp::single")
+    assert sr.source == "corp"
+    assert sr.path == "single"
 
 
-def test_resolve_sources_spek_always_injected(tmp_path):
-    repo_path = tmp_path / "repo"
-    repo_path.mkdir()
-    sources = resolve_sources(repo_path, {}, {})
+def test_parse_deep_path():
+    sr = SourcedResource.parse("ns::a/b/c")
+    assert sr.source == "ns"
+    assert sr.path == "a/b/c"
+
+
+# ── resolve_sources ───────────────────────────────────────────────────────────
+
+
+@pytest.fixture(autouse=True)
+def clear_sources_cache():
+    resolve_sources.cache_clear()
+    yield
+    resolve_sources.cache_clear()
+
+
+def _make_spek_yaml(spek_dir: Path, sources: dict | None = None) -> None:
+    data: dict = {
+        "meta": {"spek_version": "0.0.0", "spek_sha": "abc1234", "integrations": ["claude"]},
+        "modules": [],
+    }
+    if sources:
+        data["sources"] = sources
+    (spek_dir / "spek.yaml").write_text(yaml.dump(data))
+
+
+def test_resolve_sources_spek_always_present(tmp_path):
+    spek_dir = tmp_path / ".spek"
+    spek_dir.mkdir()
+    _make_spek_yaml(spek_dir)
+    SpekConfig.initialize(tmp_path)
+    sources = resolve_sources()
     assert "spek" in sources
-    assert sources["spek"] == repo_path / "specs"
 
 
-def test_resolve_sources_project_wins_over_global(tmp_path):
-    repo_path = tmp_path / "repo"
-    repo_path.mkdir()
-    global_sources = {"mywork": SourceSpec(path="/global/path")}
-    project_sources = {"mywork": SourceSpec(path="/project/path")}
-    sources = resolve_sources(repo_path, global_sources, project_sources)
-    assert sources["mywork"] == Path("/project/path")
+def test_resolve_sources_project_source_when_config_loaded(tmp_path):
+    spek_dir = tmp_path / ".spek"
+    spek_dir.mkdir()
+    _make_spek_yaml(spek_dir)
+    SpekConfig.initialize(tmp_path)
+    sources = resolve_sources()
+    assert "project" in sources
 
 
-def test_resolve_sources_global_included_when_no_project_override(tmp_path):
-    repo_path = tmp_path / "repo"
-    repo_path.mkdir()
-    global_sources = {"corp": SourceSpec(path="/corp/specs")}
-    sources = resolve_sources(repo_path, global_sources, {})
+def test_resolve_sources_project_source_wins_over_global(tmp_path, monkeypatch):
+    global_src = tmp_path / "global-src"
+    global_src.mkdir()
+    project_src = tmp_path / "project-src"
+    project_src.mkdir()
+
+    spek_dir = tmp_path / ".spek"
+    spek_dir.mkdir()
+    _make_spek_yaml(spek_dir, sources={"mywork": str(project_src)})
+    SpekConfig.initialize(tmp_path)
+
+    settings_path = spek_dir / "settings.yaml"
+    settings_path.write_text(yaml.dump({"sources": {"mywork": str(global_src)}}))
+    monkeypatch.setenv("SPEK_SETTINGS_PATH", str(settings_path))
+    SpekEnv.reset()
+
+    sources = resolve_sources()
+    assert sources["mywork"].root == project_src  # type: ignore[attr-defined]
+
+
+def test_resolve_sources_global_included_when_no_project_override(tmp_path, monkeypatch):
+    corp_src = tmp_path / "corp-src"
+    corp_src.mkdir()
+
+    spek_dir = tmp_path / ".spek"
+    spek_dir.mkdir()
+    _make_spek_yaml(spek_dir)
+    SpekConfig.initialize(tmp_path)
+
+    settings_path = spek_dir / "settings.yaml"
+    settings_path.write_text(yaml.dump({"sources": {"corp": str(corp_src)}}))
+    monkeypatch.setenv("SPEK_SETTINGS_PATH", str(settings_path))
+    SpekEnv.reset()
+
+    sources = resolve_sources()
     assert "corp" in sources
-    assert sources["corp"] == Path("/corp/specs")
 
 
-def test_resolve_sources_allows_spek_override_in_global(tmp_path):
-    repo_path = tmp_path / "repo"
-    repo_path.mkdir()
-    sources = resolve_sources(repo_path, {"spek": SourceSpec(path="/custom/specs")}, {})
-    assert sources["spek"] == Path("/custom/specs")
-
-
-def test_resolve_sources_allows_spek_override_in_project(tmp_path):
-    repo_path = tmp_path / "repo"
-    repo_path.mkdir()
-    sources = resolve_sources(repo_path, {}, {"spek": SourceSpec(path="/fork/specs")})
-    assert sources["spek"] == Path("/fork/specs")
-
-
-def test_resolve_sources_project_spek_beats_global_spek(tmp_path):
-    repo_path = tmp_path / "repo"
-    repo_path.mkdir()
-    sources = resolve_sources(
-        repo_path,
-        {"spek": SourceSpec(path="/global/specs")},
-        {"spek": SourceSpec(path="/project/specs")},
-    )
-    assert sources["spek"] == Path("/project/specs")
-
-
-def test_resolve_sources_no_repo_path_omits_spek_when_not_configured():
-    sources = resolve_sources(None, {}, {})
-    assert "spek" not in sources
-
-
-def test_resolve_sources_no_repo_path_uses_configured_spek():
-    sources = resolve_sources(None, {}, {"spek": SourceSpec(path="/my/specs")})
-    assert sources["spek"] == Path("/my/specs")
+# ── LocalSource.list_modules ──────────────────────────────────────────────────
 
 
 def test_list_modules_returns_sorted_names(tmp_path):
@@ -91,14 +123,22 @@ def test_list_modules_returns_sorted_names(tmp_path):
     (specs / "b").mkdir()
     (specs / "a" / "foo.md").write_text("")
     (specs / "b" / "bar.md").write_text("")
-    result = list_modules(specs)
+    source = LocalSource(_resolver=_resolver, root=tmp_path)
+    result = source.list_modules()
     assert result == ["a/foo", "b/bar"]
 
 
-def test_list_modules_deduplicates_md_and_yaml(tmp_path):
+def test_list_modules_ignores_non_md_files(tmp_path):
     specs = tmp_path / "specs"
     specs.mkdir()
     (specs / "x.md").write_text("")
     (specs / "x.yaml").write_text("")
-    result = list_modules(specs)
-    assert result.count("x") == 1
+    source = LocalSource(_resolver=_resolver, root=tmp_path)
+    result = source.list_modules()
+    assert result == ["x"]
+
+
+def test_list_modules_empty_when_no_specs_dir(tmp_path):
+    source = LocalSource(_resolver=_resolver, root=tmp_path)
+    result = source.list_modules()
+    assert result == []

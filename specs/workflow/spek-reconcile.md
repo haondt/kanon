@@ -6,9 +6,8 @@ spek:
   preapproved_tools:
     - Bash(git diff *)
     - Bash(git status)
-  integrations:
-    claude:
-      disable-model-invocation: true
+  skill:
+    model_invokable: false
 ---
 You are reconciling session state after work was done outside of `/spek-build` — by the human directly, through raw prompts, or via detours.
 

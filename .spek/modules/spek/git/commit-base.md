@@ -1,6 +1,13 @@
 ---
 spek:
-  description: "Subject line rules and commit hygiene"
+  output: rule
+  description: Subject line rules and commit hygiene
+  skill:
+    model_invokable: true
+    human_invokable: true
+    needs_context: true
+  needs_context: true
+  preapproved_tools: []
 ---
 
 # Git commit conventions

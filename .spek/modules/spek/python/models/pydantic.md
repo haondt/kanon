@@ -1,6 +1,13 @@
 ---
 spek:
-  description: "Pydantic BaseModel conventions"
+  output: rule
+  description: Pydantic BaseModel conventions
+  skill:
+    model_invokable: true
+    human_invokable: true
+    needs_context: true
+  needs_context: true
+  preapproved_tools: []
 ---
 
 # Python data modeling — Pydantic

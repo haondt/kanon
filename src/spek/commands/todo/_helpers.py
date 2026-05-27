@@ -15,32 +15,19 @@ from spek.core.todo import (
 )
 
 
-def _root(project_root: str) -> Path:
-    return Path(project_root).resolve()
-
-
-def _load(project_root: str) -> tuple[TodoState, str, Path]:
-    root = _root(project_root)
+def load_todo_file(create: bool = False) -> tuple[TodoState, str]:
     try:
-        state, h = load_todo(root)
+        state, h = load_todo()
     except FileNotFoundError:
-        click.echo(f"{TODO_FILE} not found.", err=True)
-        raise SystemExit(1)
-    return state, h, root
+        if create:
+            state, h = create_todo()
+        else:
+            click.echo(f"{TODO_FILE} not found.", err=True)
+            raise SystemExit(1)
+    return state, h
 
-
-def _load_or_create(project_root: str) -> tuple[TodoState, str, Path]:
-    """Load todo.yaml, creating an empty one if it doesn't exist."""
-    root = _root(project_root)
-    try:
-        state, h = load_todo(root)
-    except FileNotFoundError:
-        state, h = create_todo(root)
-    return state, h, root
-
-
-def _save_and_emit(state: TodoState, root: Path, as_json: bool, extra: dict[str, Any] | None = None) -> None:
-    before, after = save_todo(state, root)
+def save_todo_file_and_emit_hashes(state: TodoState, as_json: bool, extra: dict[str, Any] | None = None) -> None:
+    before, after = save_todo(state)
     if as_json:
         payload: dict[str, Any] = {"before": before, "after": after}
         if extra:

@@ -1,6 +1,13 @@
 ---
 spek:
-  description: "Narrate decisions and trade-offs"
+  output: rule
+  description: Narrate decisions and trade-offs
+  skill:
+    model_invokable: true
+    human_invokable: true
+    needs_context: true
+  needs_context: true
+  preapproved_tools: []
 ---
 
 - Explain your reasoning at key decision points, not just the outcome

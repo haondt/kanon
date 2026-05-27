@@ -6,6 +6,7 @@ import pytest
 from click.testing import CliRunner
 
 from spek.cli import cli
+from spek.core.config import SpekConfig
 from spek.core.todo import (
     TodoSection,
     TodoState,
@@ -30,21 +31,23 @@ def test_todo_section_strips_items():
 
 
 def test_todo_roundtrip(tmp_path):
+    SpekConfig.initialize(tmp_path)
     state = TodoState(sections={
         "cat1": TodoSection(name="Category 1", items=["Do thing A", "Do thing B"]),
         "cat2": TodoSection(name="Category 2", items=["Do thing C"]),
     })
-    save_todo(state, tmp_path)
-    loaded, h = load_todo(tmp_path)
+    save_todo(state)
+    loaded, h = load_todo()
     assert loaded.sections["cat1"].name == "Category 1"
     assert loaded.sections["cat1"].items == ["Do thing A", "Do thing B"]
     assert loaded.sections["cat2"].items == ["Do thing C"]
 
 
 def test_create_todo_fails_if_exists(tmp_path):
-    create_todo(tmp_path)
+    SpekConfig.initialize(tmp_path)
+    create_todo()
     with pytest.raises(FileExistsError):
-        create_todo(tmp_path)
+        create_todo()
 
 
 def test_lint_todo_empty_section_name(tmp_path):
@@ -69,7 +72,7 @@ def test_lint_todo_clean():
 
 
 def invoke(*args, project_root):
-    return CliRunner().invoke(cli, ["todo", *args, "--project-root", str(project_root)])
+    return CliRunner().invoke(cli, ["--project-root", str(project_root), "todo", *args])
 
 
 def _bootstrap(tmp_path, section_key="cat", section_name="Category"):
@@ -92,7 +95,7 @@ def test_todo_section_add_allow_exists_is_noop(tmp_path):
     _bootstrap(tmp_path)
     result = invoke("section", "add", "--allow-exists", "cat", "Other", project_root=tmp_path)
     assert result.exit_code == 0
-    state, _ = load_todo(tmp_path)
+    state, _ = load_todo()
     assert state.sections["cat"].name == "Category"
 
 
@@ -114,7 +117,7 @@ def test_todo_add_item(tmp_path):
     _bootstrap(tmp_path)
     result = invoke("add", "Do the thing", "--section", "cat", project_root=tmp_path)
     assert result.exit_code == 0
-    state, _ = load_todo(tmp_path)
+    state, _ = load_todo()
     assert "Do the thing" in state.sections["cat"].items
 
 
@@ -129,7 +132,7 @@ def test_todo_remove_item(tmp_path):
     invoke("add", "Do the thing", "--section", "cat", project_root=tmp_path)
     result = invoke("remove", "Do the thing", "--section", "cat", project_root=tmp_path)
     assert result.exit_code == 0
-    state, _ = load_todo(tmp_path)
+    state, _ = load_todo()
     assert "cat" not in state.sections
 
 
@@ -137,7 +140,7 @@ def test_todo_remove_auto_deletes_empty_section(tmp_path):
     _bootstrap(tmp_path)
     invoke("add", "Only item", "--section", "cat", project_root=tmp_path)
     invoke("remove", "Only item", "--section", "cat", project_root=tmp_path)
-    state, _ = load_todo(tmp_path)
+    state, _ = load_todo()
     assert "cat" not in state.sections
 
 
@@ -159,7 +162,7 @@ def test_todo_status_json(tmp_path):
     _bootstrap(tmp_path)
     invoke("add", "Item one", "--section", "cat", project_root=tmp_path)
     result = CliRunner().invoke(cli, [
-        "todo", "status", "--json", "--project-root", str(tmp_path)
+        "--project-root", str(tmp_path), "todo", "status", "--json",
     ])
     assert result.exit_code == 0
     data = json.loads(result.output)
@@ -191,7 +194,7 @@ def test_todo_search_json(tmp_path):
     _bootstrap(tmp_path)
     invoke("add", "Fix the bug", "--section", "cat", project_root=tmp_path)
     result = CliRunner().invoke(cli, [
-        "todo", "search", "bug", "--json", "--project-root", str(tmp_path)
+        "--project-root", str(tmp_path), "todo", "search", "bug", "--json",
     ])
     assert result.exit_code == 0
     data = json.loads(result.output)
@@ -218,11 +221,11 @@ def test_todo_add_stdin_stores_item(tmp_path):
     _bootstrap(tmp_path)
     result = CliRunner().invoke(
         cli,
-        ["todo", "add", "-", "--section", "cat", "--project-root", str(tmp_path)],
+        ["--project-root", str(tmp_path), "todo", "add", "-", "--section", "cat"],
         input="item from stdin\n",
     )
     assert result.exit_code == 0, result.output
-    state, _ = load_todo(tmp_path)
+    state, _ = load_todo()
     assert "item from stdin" in state.sections["cat"].items
 
 
@@ -231,9 +234,9 @@ def test_todo_remove_stdin_removes_item(tmp_path):
     invoke("add", "item to remove", "--section", "cat", project_root=tmp_path)
     result = CliRunner().invoke(
         cli,
-        ["todo", "remove", "-", "--section", "cat", "--project-root", str(tmp_path)],
+        ["--project-root", str(tmp_path), "todo", "remove", "-", "--section", "cat"],
         input="item to remove\n",
     )
     assert result.exit_code == 0, result.output
-    state, _ = load_todo(tmp_path)
+    state, _ = load_todo()
     assert "cat" not in state.sections

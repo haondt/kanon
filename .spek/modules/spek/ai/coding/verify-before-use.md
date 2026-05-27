@@ -1,6 +1,13 @@
 ---
 spek:
-  description: "Verify APIs exist before calling them"
+  output: rule
+  description: Verify APIs exist before calling them
+  skill:
+    model_invokable: true
+    human_invokable: true
+    needs_context: true
+  needs_context: true
+  preapproved_tools: []
 ---
 
 # AI verification before use

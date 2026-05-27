@@ -1,14 +1,6 @@
 ---
 spek:
   description: "4-step session workflow table"
-  integrations:
-    claude:
-      hooks:
-        SessionStart:
-          - matcher: "startup"
-            command: "bash -c 'test -f .spek/STRUCTURE.md && cat .spek/STRUCTURE.md'"
-          - matcher: "clear"
-            command: "bash -c 'test -f .spek/STRUCTURE.md && cat .spek/STRUCTURE.md'"
 ---
 
 # Dev workflow

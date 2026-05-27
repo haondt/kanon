@@ -1,11 +1,15 @@
 ---
 spek:
-  description: "When starting a task — design the approach, agree on it before writing code, and record the plan in session.yaml"
   output: skill
   name: spek-plan
-  integrations:
-    claude:
-      disable-model-invocation: true
+  description: |-
+    When starting a task — design the approach, agree on it before writing code, and record the plan in session.yaml
+  skill:
+    model_invokable: false
+    human_invokable: true
+    needs_context: true
+  needs_context: true
+  preapproved_tools: []
 ---
 Produce a concrete plan, get approval, write it to `session.yaml`, and stop. Do not write code or edit files at any point during this skill.
 

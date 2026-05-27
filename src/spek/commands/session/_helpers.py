@@ -14,22 +14,17 @@ from spek.core.session import (
 )
 
 
-def _root(project_root: str) -> Path:
-    return Path(project_root).resolve()
-
-
-def _load(project_root: str) -> tuple[SessionState, str, Path]:
-    root = _root(project_root)
+def load_session_or_exit() -> tuple[SessionState, str]:
     try:
-        state, h = load_session(root)
+        state, h = load_session()
     except FileNotFoundError:
         click.echo(f"{SESSION_FILE} not found. Run 'spek session start <goal>' first.", err=True)
         raise SystemExit(1)
-    return state, h, root
+    return state, h
 
 
-def _save_and_emit_hashes(state: SessionState, root: Path, as_json: bool, extra: dict[str, Any] | None = None) -> None:
-    before, after = save_session(state, root)
+def save_session_and_emit_hashes(state: SessionState, as_json: bool, extra: dict[str, Any] | None = None) -> None:
+    before, after = save_session(state)
     if as_json:
         payload: dict[str, Any] = {"before": before, "after": after}
         if extra:
