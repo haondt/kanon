@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import json as json_mod
+import json
 
 import click
 
@@ -20,7 +20,7 @@ def section_status(as_json: bool) -> None:
     """List all sections with item counts."""
     state, h = load_todo_file()
     if as_json:
-        click.echo(json_mod.dumps({
+        click.echo(json.dumps({
             "hash": h,
             "sections": {k: {"name": s.name, "count": len(s.items)} for k, s in state.sections.items()},
         }))
@@ -38,7 +38,7 @@ def section_search(text: str, as_json: bool) -> None:
     state, h = load_todo_file()
     matches = {k: s for k, s in state.sections.items() if text.lower() in s.name.lower()}
     if as_json:
-        click.echo(json_mod.dumps({
+        click.echo(json.dumps({
             "hash": h,
             "sections": {k: {"name": s.name, "count": len(s.items)} for k, s in matches.items()},
         }))
@@ -59,7 +59,7 @@ def section_add(key: str, name: str, allow_exists: bool, as_json: bool) -> None:
     if key in state.sections:
         if allow_exists:
             if as_json:
-                click.echo(json_mod.dumps({"key": key, "existed": True}))
+                click.echo(json.dumps({"key": key, "existed": True}))
             else:
                 click.echo(f"Section {key!r} already exists — no change.")
             return

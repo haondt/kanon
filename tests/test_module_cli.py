@@ -93,6 +93,16 @@ def test_module_set_no_config_exits(tmp_path):
     assert "spek init" in result.output
 
 
+def test_module_set_deduplicates_repeated_modules(tmp_path):
+    make_config(tmp_path)
+    result = CliRunner().invoke(cli, ["--project-root", str(tmp_path), "module", "set", "git/commit-base", "git/commit-base", "python/style"
+    ])
+    assert result.exit_code == 0, result.output
+    config = SpekConfig.load(tmp_path / ".spek" / "spek.yaml")
+    assert config.modules.count("git/commit-base") == 1
+    assert set(config.modules) == {"git/commit-base", "python/style"}
+
+
 def test_module_set_preserves_stances_and_meta(tmp_path):
     spek_dir = tmp_path / ".spek"
     spek_dir.mkdir()

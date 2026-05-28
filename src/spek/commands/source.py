@@ -8,7 +8,7 @@ import click
 from spek.commands._utils import load_config_or_exit
 from spek.core.config import SourceReference, SpekConfig, SpekEnv
 from spek.core.settings import GlobalSettings
-from spek.core.sources import LocalSource, resolve_sources
+from spek.core.sources import LocalSource, hydrate_source_reference, resolve_sources
 
 @click.group()
 def source() -> None:
@@ -34,10 +34,10 @@ def source_add(source_name: str, path: str, global_scope: bool, force: bool) -> 
 
     try:
         value = SourceReference.parse(path)
+        hydrate_source_reference(value)
     except ValueError as e:
         click.echo(str(e))
         raise SystemExit(1)
-
 
     if global_scope:
         settings = GlobalSettings.instance()

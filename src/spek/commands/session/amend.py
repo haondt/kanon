@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import json as json_mod
+import json
 
 import click
 
@@ -94,7 +94,7 @@ def amend_status(as_json: bool) -> None:
     """Show amendments."""
     state, h = load_session_or_exit()
     if as_json:
-        click.echo(json_mod.dumps({"hash": h, "amendments": list(state.amendments)}))
+        click.echo(json.dumps({"hash": h, "amendments": list(state.amendments)}))
     else:
         for a in state.amendments:
             click.echo(f"- {a}")

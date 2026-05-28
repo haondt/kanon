@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import json as json_mod
+import json
 from typing import Any
 
 import click
@@ -29,7 +29,7 @@ def todo_status(text: str | None, section: str | None, as_json: bool) -> None:
         for k, s in sections.items():
             items = s.items if text is None else [i for i in s.items if text.lower() in i.lower()]
             result["sections"][k] = {"name": s.name, "items": items}
-        click.echo(json_mod.dumps(result))
+        click.echo(json.dumps(result))
         return
 
     for k, s in sections.items():
@@ -62,7 +62,7 @@ def todo_search(terms: tuple[str, ...], section: str | None, as_json: bool) -> N
             matched = [i for i in s.items if _matches(i)]
             if matched:
                 result["sections"][k] = {"name": s.name, "items": matched}
-        click.echo(json_mod.dumps(result))
+        click.echo(json.dumps(result))
         return
 
     for k, s in sections.items():
@@ -123,7 +123,7 @@ def todo_lint(as_json: bool) -> None:
     state, h = load_todo_file()
     issues = lint_todo(state)
     if as_json:
-        click.echo(json_mod.dumps({"hash": h, "issues": issues}))
+        click.echo(json.dumps({"hash": h, "issues": issues}))
     else:
         if issues:
             for issue in issues:

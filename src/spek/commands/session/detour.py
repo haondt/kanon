@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import json as json_mod
+import json
 
 import click
 
@@ -31,7 +31,7 @@ def detour_status(as_json: bool) -> None:
     """Show detours."""
     state, h = load_session_or_exit()
     if as_json:
-        click.echo(json_mod.dumps({"hash": h, "detours": list(state.detours)}))
+        click.echo(json.dumps({"hash": h, "detours": list(state.detours)}))
     else:
         for d in state.detours:
             click.echo(f"- {d}")

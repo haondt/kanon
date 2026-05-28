@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import json as json_mod
+import json
 
 import click
 
@@ -48,7 +48,7 @@ def build_status(as_json: bool) -> None:
     """Show build notes."""
     state, h = load_session_or_exit()
     if as_json:
-        click.echo(json_mod.dumps({"hash": h, "notes": dict(state.build.notes)}))
+        click.echo(json.dumps({"hash": h, "notes": dict(state.build.notes)}))
     else:
         for k, n in state.build.notes.items():
             click.echo(f"{k}: {n}")

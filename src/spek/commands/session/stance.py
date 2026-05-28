@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import json as json_mod
+import json
 
 import click
 
@@ -40,6 +40,6 @@ def stance_status(as_json: bool) -> None:
     """Show the current stance."""
     state, h = load_session_or_exit()
     if as_json:
-        click.echo(json_mod.dumps({"hash": h, "stance": state.stance}))
+        click.echo(json.dumps({"hash": h, "stance": state.stance}))
     else:
         click.echo(state.stance or "(none)")

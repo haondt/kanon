@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import json as json_mod
+import json
 from typing import Any
 
 import click
@@ -28,7 +28,7 @@ def save_session_and_emit_hashes(state: SessionState, as_json: bool, extra: dict
         payload: dict[str, Any] = {"before": before, "after": after}
         if extra:
             payload.update(extra)
-        click.echo(json_mod.dumps(payload))
+        click.echo(json.dumps(payload))
     else:
         if extra:
             for k, v in extra.items():
