@@ -46,7 +46,7 @@ def test_source_add_expands_tilde(tmp_path, monkeypatch):
     ])
     assert result.exit_code == 0, result.output
     raw = yaml.safe_load((tmp_path / ".spek" / "spek.yaml").read_text())
-    assert str(tmp_path / "specs") in raw["sources"]["shared"]
+    assert "~/specs" in raw["sources"]["shared"]
 
 
 def test_source_add_github_path_saved_as_is(tmp_path):
@@ -145,3 +145,42 @@ def test_source_status_no_user_sources(tmp_path, monkeypatch):
     assert result.exit_code == 0
     assert "mywork" not in result.output
     assert "corp" not in result.output
+
+
+# ── source add validation (Step 8) ────────────────────────────────────────────
+
+
+def test_source_add_rejects_spek_project_key(tmp_path):
+    make_config(tmp_path)
+    result = CliRunner().invoke(cli, [
+        "--project-root", str(tmp_path),
+        "source", "add", "spek::project", "/some/path",
+    ])
+    assert result.exit_code != 0
+
+
+def test_source_add_rejects_spek_self_key(tmp_path):
+    make_config(tmp_path)
+    result = CliRunner().invoke(cli, [
+        "--project-root", str(tmp_path),
+        "source", "add", "spek::self", "/some/path",
+    ])
+    assert result.exit_code != 0
+
+
+def test_source_add_rejects_gh_prefixed_key(tmp_path):
+    make_config(tmp_path)
+    result = CliRunner().invoke(cli, [
+        "--project-root", str(tmp_path),
+        "source", "add", "gh::mywork", "/some/path",
+    ])
+    assert result.exit_code != 0
+
+
+def test_source_add_allows_spek_spek_key(tmp_path):
+    make_config(tmp_path)
+    result = CliRunner().invoke(cli, [
+        "--project-root", str(tmp_path),
+        "source", "add", "spek::spek", "/some/path",
+    ])
+    assert result.exit_code == 0, result.output

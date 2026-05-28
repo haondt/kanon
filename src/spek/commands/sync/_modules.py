@@ -22,7 +22,11 @@ def sync_modules(all_modules_needed: set[SourcedResource], pull: bool):
         click.echo("No module pulls required.")
 
     for resource in to_pull:
-        module = sources[resource.source].hydrate_module(resource.path)
+        source = sources.get(resource.source)
+        if source is None:
+            click.echo(f"Error: source '{resource.source}' not found for module '{resource.as_string}'")
+            raise SystemExit(1)
+        module = source.hydrate_module(resource.path)
         write_synced_module(resource, module)
         click.echo(f"  module:{resource.as_string} ← upstream")
 

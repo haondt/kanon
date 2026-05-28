@@ -65,7 +65,7 @@ def test_session_roundtrip(tmp_path):
     state.review["p1"] = ReviewPass(findings={"f1": Finding(type=FindingType.bug, severity=FindingSeverity.major, text="A finding")})
     state.amendments.append("Changed scope")
     state.detours.append("Fixed typo")
-    state._meta.next_key = {"pn": 2, "bn": 2, "f": 2, "p": 2}
+    state.meta.next_key = {"pn": 2, "bn": 2, "f": 2, "p": 2}
 
     before, after = save_session(state)
     loaded, h = load_session()
@@ -78,7 +78,7 @@ def test_session_roundtrip(tmp_path):
     assert loaded.review["p1"].findings["f1"].text == "A finding"
     assert loaded.amendments == ["Changed scope"]
     assert loaded.detours == ["Fixed typo"]
-    assert loaded._meta.next_key == {"pn": 2, "bn": 2, "f": 2, "p": 2}
+    assert loaded.meta.next_key == {"pn": 2, "bn": 2, "f": 2, "p": 2}
 
 
 def test_create_session_fails_if_exists(tmp_path):

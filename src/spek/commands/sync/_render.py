@@ -6,7 +6,7 @@ from collections.abc import Sequence
 import click
 
 from spek.commands.sync._synced import read_synced_module
-from spek.core.config import AI_TOOL_OUTPUT_DIRS, AI_TOOL_SETTINGS_FILES, AI_TOOL_SPECIFIC_RULES, SPEK_SOURCE, OutputType, SourcedResource, SpekConfig
+from spek.core.config import AI_TOOL_OUTPUT_DIRS, AI_TOOL_SETTINGS_FILES, AI_TOOL_SPECIFIC_RULES, OutputType, SourceReference, SourcedResource, SpekConfig
 from spek.core.modules import Module
 from spek.core.render import (
     render_module,
@@ -49,7 +49,7 @@ def render_all(to_render: Sequence[SourcedResource] | set[SourcedResource]) -> N
         rules = AI_TOOL_SPECIFIC_RULES.get(integration, [])
         for rule in rules:
             tool_rule_path = render_rule(
-                SourcedResource(SPEK_SOURCE, rule.path),
+                SourcedResource(SourceReference.SPEK_SOURCE_REFERENCE, path=rule.path),
                 rule.frontmatter,
                 rule.content,
                 integration

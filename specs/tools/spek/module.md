@@ -7,8 +7,8 @@ spek:
 
 - `spek module list [--json]` — list all available modules with descriptions and active status; `--json` outputs `[{name, description, active, source}]`; `name` is the value to pass to `set`/`add`
 - `spek module set [--sync] <module>...` — replace the active module list in `spek.yaml` (full replacement); errors on unknown module names
-- `spek module add [--sync] <module>...` — append modules to the active list; errors if module is unknown or already active
-- `spek module remove [--sync] <module>...` — remove modules from the active list; errors if module is not currently active
+- `spek module add [--sync] <module>...` — append modules to the active list; errors if module is unknown; warns if already active
+- `spek module remove [--sync] <module>...` — remove modules from the active list; warns if module is not currently active
 - `spek module search [--source <source-name>] [--json] <term>...` — keyword search across available modules; all terms must match (case-insensitive); matches against name and description; `--source` filters to one source
 - `spek module edit [--sync]` — interactive checkbox picker; saves to `spek.yaml` on confirm
 - `--sync` on `set`/`add`/`remove`/`edit`: runs `spek sync` after saving

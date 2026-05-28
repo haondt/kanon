@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from __future__ import annotations
-
 import yaml
 from click.testing import CliRunner
 from pathlib import Path
@@ -48,7 +46,7 @@ def test_check_reports_remote_source_as_info(tmp_path, monkeypatch):
     result = CliRunner().invoke(cli, ["--project-root", str(tmp_path), "check"])
     assert result.exit_code == 0
     assert "info" in result.output
-    assert "not yet supported" in result.output
+    assert "not yet fetched" in result.output
 
 
 def test_check_no_config_exits(tmp_path):

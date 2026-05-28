@@ -6,14 +6,13 @@ from typing import override
 
 import git
 
-from spek.core.config import SOURCED_MODULES_DIR, SOURCED_PROFILES_DIR, SOURCED_REFS_DIR, SOURCED_STANCES_DIR, SourcedResource
+from spek.core.config import LOCAL_SCHEME, SOURCED_MODULES_DIR, SOURCED_PROFILES_DIR, SOURCED_REFS_DIR, SOURCED_STANCES_DIR, SourceReference
 from spek.core.sources._base import SourceResolver
 from spek.core.sources._filesystem import FilesystemSource
 
-LOCAL_SOURCE_TYPE_ID = "local"
-
 @dataclass
 class LocalSource(FilesystemSource):
+    original_address: str
     root: Path
 
     @property
@@ -38,7 +37,7 @@ class LocalSource(FilesystemSource):
 
     @override
     def serialize(self) -> str:
-        return SourcedResource(LOCAL_SOURCE_TYPE_ID, str(self.root)).as_string
+        return SourceReference(LOCAL_SCHEME, self.original_address).as_string
 
     @override
     def get_sha(self) -> str:
@@ -49,7 +48,7 @@ class LocalSource(FilesystemSource):
             return super().get_sha()
 
     @classmethod
-    def parse(cls, resolver: SourceResolver, path: str) -> LocalSource:
-        resolved = Path(path).expanduser().resolve()
-        return LocalSource(_resolver=resolver, root=resolved)
+    def parse(cls, resolver: SourceResolver, address: str) -> LocalSource:
+        resolved = Path(address).expanduser().resolve()
+        return LocalSource(_resolver=resolver, original_address=address, root=resolved)
 

@@ -24,7 +24,7 @@ def test_local_module_creates_file(tmp_path):
     module_file = tmp_path / ".spek" / "project" / "modules" / "my-rules.md"
     assert module_file.exists()
     config = SpekConfig.load(tmp_path / ".spek" / "spek.yaml")
-    assert "my-rules" in config.local_modules
+    assert "project::my-rules" in config.modules
 
 
 def test_local_module_duplicate_exits(tmp_path):
@@ -53,7 +53,7 @@ def test_local_module_creates_file_in_subdirectory(tmp_path):
     module_file = tmp_path / ".spek" / "project" / "modules" / "subdir" / "my-rules.md"
     assert module_file.exists()
     config = SpekConfig.load(tmp_path / ".spek" / "spek.yaml")
-    assert "subdir/my-rules" in config.local_modules
+    assert "project::subdir/my-rules" in config.modules
 
 
 def test_local_stance_creates_file(tmp_path):
@@ -65,7 +65,7 @@ def test_local_stance_creates_file(tmp_path):
     stance_file = tmp_path / ".spek" / "project" / "stances" / "my-stance.yaml"
     assert stance_file.exists()
     config = SpekConfig.load(tmp_path / ".spek" / "spek.yaml")
-    assert "project/stances/my-stance.yaml" in config.local_stances
+    assert "project::my-stance" in config.stances
 
 
 def test_local_stance_duplicate_exits(tmp_path):

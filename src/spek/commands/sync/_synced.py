@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from spek.core.config import SYNCED_MODULES_DIR, SYNCED_STANCES_DIR, SourcedResource, SpekConfig
+from spek.core.config import SYNCED_MODULES_DIR, SYNCED_STANCES_DIR, SourceReference, SourcedResource, SpekConfig
 from spek.core.modules import Module
 from spek.core.stances import Stance
 
@@ -13,10 +13,10 @@ def _stances_path() -> Path:
     return SpekConfig.root() / SYNCED_STANCES_DIR
 
 def get_synced_module_path(ref: SourcedResource) -> Path:
-    return _modules_path().joinpath(*f"{ref.source}/{ref.path}".split("/")).with_suffix(".md")
+    return _modules_path().joinpath(*f"{ref.source.scheme}/{ref.source.address}/{ref.path}".split("/")).with_suffix(".md")
 
 def get_synced_stance_path(ref: SourcedResource) -> Path:
-    return _stances_path().joinpath(*f"{ref.source}/{ref.path}".split("/")).with_suffix(".yaml")
+    return _stances_path().joinpath(*f"{ref.source.scheme}/{ref.source.address}/{ref.path}".split("/")).with_suffix(".yaml")
 
 def create_synced_stances_dir():
     _stances_path().mkdir(parents=True, exist_ok=True)
@@ -56,7 +56,7 @@ def remove_synced_stance(ref: SourcedResource):
 
 def _rel_to_resource(base: Path, src: Path) -> SourcedResource:
     parts = src.relative_to(base).with_suffix("").parts
-    return SourcedResource(source=parts[0], path="/".join(parts[1:]))
+    return SourcedResource(SourceReference(scheme=parts[0], address=parts[1]), path="/".join(parts[2:]))
 
 def list_synced_modules() -> list[SourcedResource]:
     p = _modules_path()
@@ -64,7 +64,7 @@ def list_synced_modules() -> list[SourcedResource]:
         return []
     return sorted(
         (_rel_to_resource(p, src) for src in p.rglob("*.md")),
-        key=lambda r: (r.source, r.path),
+        key=lambda r: (r.source.scheme, r.source.address, r.path),
     )
 
 def list_synced_stances() -> list[SourcedResource]:
@@ -73,5 +73,5 @@ def list_synced_stances() -> list[SourcedResource]:
         return []
     return sorted(
         (_rel_to_resource(p, src) for src in p.rglob("*.yaml")),
-        key=lambda r: (r.source, r.path),
+        key=lambda r: (r.source.scheme, r.source.address, r.path),
     )

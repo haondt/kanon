@@ -5,7 +5,7 @@ import questionary
 from questionary import Choice
 
 from spek import __version__
-from spek.core.config import SPEK_SOURCE, SpekConfig, SpekMeta, SourcedResource
+from spek.core.config import SourceReference, SpekConfig, SpekMeta, SourcedResource
 from spek.core.config import AI_TOOL_OUTPUT_DIRS
 from spek.core.sources import resolve_sources
 
@@ -37,7 +37,7 @@ def init() -> None:
     chosen_profile: str | None = None
 
     profile_refs = sorted(
-        [SourcedResource(source_name, path) for source_name, source in sources.items() for path in source.list_profiles()],
+        [SourcedResource(source_key, path) for source_key, source in sources.items() for path in source.list_profiles()],
         key=lambda r: r.as_fully_qualified_string,
     )
     profiles = {r.as_string: sources[r.source].shallow_hydrate_profile(r.path) for r in profile_refs}
@@ -59,7 +59,7 @@ def init() -> None:
             click.echo(f"Loaded {len(selected_modules)} modules and {len(selected_stances)} stances from '{profile_choice}'.")
 
     available_modules = sorted(
-        [SourcedResource(source_name, path) for source_name, source in sources.items() for path in source.list_modules()],
+        [SourcedResource(source_key, path) for source_key, source in sources.items() for path in source.list_modules()],
         key=lambda r: r.as_fully_qualified_string,
     )
     module_names = [r.as_string for r in available_modules]
@@ -75,7 +75,7 @@ def init() -> None:
         click.echo("No modules selected. Aborting.")
         raise SystemExit(1)
 
-    sha = sources[SPEK_SOURCE].get_sha()
+    sha = sources[SourceReference.SPEK_SOURCE_REFERENCE].get_sha()
     config = SpekConfig(
         meta=SpekMeta(spek_version=__version__, spek_sha=sha, integrations=integrations, profile=chosen_profile),
         modules=selected_modules,

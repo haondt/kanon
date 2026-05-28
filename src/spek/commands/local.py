@@ -8,7 +8,7 @@ from spek.core.local import create_local_module, create_local_stance, create_pro
 
 @click.group()
 def local() -> None:
-    """Manage project-local spec modules and stances."""
+    """Manage project-local spec modules, stances, and references."""
 
 
 @local.command("module")

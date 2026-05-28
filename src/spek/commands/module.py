@@ -1,20 +1,20 @@
 from __future__ import annotations
 
-import json as json_mod
+import json
 
 import click
 import questionary
 from questionary import Choice
 
 from spek.commands._utils import load_config_or_exit
-from spek.core.config import SPEK_SOURCE, SourcedResource, SpekConfig
+from spek.core.config import SourceReference, SourcedResource, SpekConfig
 from spek.core.sources import resolve_sources
 
 def _all_available() -> list[SourcedResource]:
     result: list[SourcedResource] = []
-    for source_name, source in resolve_sources().items():
+    for source_ref, source in resolve_sources().items():
         for path in source.list_modules():
-            result.append(SourcedResource(source_name, path))
+            result.append(SourcedResource(source_ref, path))
     return sorted(result, key=lambda f: f.as_fully_qualified_string)
 
 @click.group()
@@ -83,11 +83,11 @@ def module_list(as_json: bool) -> None:
                 "name": name,
                 "description": m[1].description,
                 "active": name in selected_set,
-                "source": m[0].source,
+                "source": m[0].source.as_string,
             }
             for name, m in available.items()
         ]
-        click.echo(json_mod.dumps(results))
+        click.echo(json.dumps(results))
         return
 
     if not available:
@@ -97,7 +97,7 @@ def module_list(as_json: bool) -> None:
     for name, m in available.items():
         desc = m[1].description
         marker = "✓" if name in selected_set else " "
-        label = f"[{m[0].source}] " if m[0].source != SPEK_SOURCE else ""
+        label = f"[{m[0].source.as_string}] " if m[0].source != SourceReference.SPEK_SOURCE_REFERENCE else ""
         click.echo(f"  [{marker}] {name:<{width}}  {label}{desc}")
 
 
@@ -198,16 +198,20 @@ def module_search(terms: tuple[str, ...], source_filter: str | None, as_json: bo
     if config is not None:
         active_sanitized = set(SourcedResource.sanitize(config.modules))
 
-    if source_filter and source_filter not in sources:
+    parsed_source_filter: SourceReference | None = None
+    if source_filter:
+        parsed_source_filter = SourceReference.parse(source_filter)
+
+    if parsed_source_filter and parsed_source_filter not in sources:
         click.echo(f"Unknown source: '{source_filter}'")
         raise SystemExit(1)
 
     available = _all_available()
     lower_terms = [t.lower() for t in terms]
 
-    results: list[tuple[str, str, str]] = []
+    results: list[tuple[str, SourceReference, str]] = []
     for ref in available:
-        if source_filter and ref.source != source_filter:
+        if parsed_source_filter and ref.source != parsed_source_filter:
             continue
         desc = sources[ref.source].hydrate_module(ref.path).description or ""
         haystack = f"{ref.as_string} {desc}".lower()
@@ -215,9 +219,9 @@ def module_search(terms: tuple[str, ...], source_filter: str | None, as_json: bo
             results.append((ref.as_string, ref.source, desc))
 
     if as_json:
-        click.echo(json_mod.dumps([
-            {"name": name, "description": desc, "active": name in active_sanitized, "source": source}
-            for name, source, desc in results
+        click.echo(json.dumps([
+            {"name": name, "description": desc, "active": name in active_sanitized, "source": source_key.as_string}
+            for name, source_key, desc in results
         ]))
         return
 
@@ -225,7 +229,7 @@ def module_search(terms: tuple[str, ...], source_filter: str | None, as_json: bo
         return
 
     width = max(len(name) for name, _, _ in results)
-    for name, ns, desc in results:
+    for name, source_key, desc in results:
         marker = "✓" if name in active_sanitized else " "
-        label = f"[{ns}] " if ns != "spek" else ""
+        label = f"[{source_key.as_string}] " if source_key != SourceReference.SPEK_SOURCE_REFERENCE else ""
         click.echo(f"  [{marker}] {name:<{width}}  {label}{desc}")

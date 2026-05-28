@@ -21,8 +21,8 @@ def make_project(root: Path, modules: list[str], module_contents: dict[str, str]
     (spek_dir / "modules").mkdir()
     (spek_dir / "stances").mkdir()
     for name, content in module_contents.items():
-        # All bare module names default to the 'spek' namespace, so store under spek/
-        dest = spek_dir / "modules" / "spek" / Path(name).with_suffix(".md")
+        # All bare module names default to the spek::spek source, so store under spek/spek/
+        dest = spek_dir / "modules" / "spek" / "spek" / Path(name).with_suffix(".md")
         dest.parent.mkdir(parents=True, exist_ok=True)
         dest.write_text(content)
 
@@ -36,7 +36,7 @@ def test_sync_writes_rule(tmp_path):
     ])
 
     assert result.exit_code == 0, result.output
-    rule = tmp_path / ".claude" / "rules" / "spek" / "git" / "commit-style.md"
+    rule = tmp_path / ".claude" / "rules" / "spek" / "spek" / "git" / "commit-style.md"
     assert rule.exists()
     assert rule.read_text() == "Write concise commit messages."
 
@@ -49,7 +49,7 @@ def test_sync_strips_frontmatter(tmp_path):
     CliRunner().invoke(cli, ["--project-root", str(tmp_path), "sync"
     ])
 
-    rule = tmp_path / ".claude" / "rules" / "spek" / "workflow" / "base.md"
+    rule = tmp_path / ".claude" / "rules" / "spek" / "spek" / "workflow" / "base.md"
     assert rule.read_text() == "Follow the workflow.\n"
 
 
@@ -69,19 +69,19 @@ def test_sync_stance_modules_not_rendered(tmp_path):
         "stances": ["focused"],
     }))
     (spek_dir / "modules").mkdir(parents=True)
-    (spek_dir / "modules" / "spek" / "git").mkdir(parents=True)
-    (spek_dir / "modules" / "spek" / "git" / "commit-style.md").write_text("Write good commits.")
-    (spek_dir / "modules" / "spek" / "ai").mkdir(parents=True)
-    (spek_dir / "modules" / "spek" / "ai" / "assume-and-proceed.md").write_text("Assume and proceed.")
-    (spek_dir / "stances" / "spek").mkdir(parents=True)
-    (spek_dir / "stances" / "spek" / "focused.yaml").write_text(yaml.dump({"modules": ["ai/assume-and-proceed"]}))
+    (spek_dir / "modules" / "spek" / "spek" / "git").mkdir(parents=True)
+    (spek_dir / "modules" / "spek" / "spek" / "git" / "commit-style.md").write_text("Write good commits.")
+    (spek_dir / "modules" / "spek" / "spek" / "ai").mkdir(parents=True)
+    (spek_dir / "modules" / "spek" / "spek" / "ai" / "assume-and-proceed.md").write_text("Assume and proceed.")
+    (spek_dir / "stances" / "spek" / "spek").mkdir(parents=True)
+    (spek_dir / "stances" / "spek" / "spek" / "focused.yaml").write_text(yaml.dump({"modules": ["ai/assume-and-proceed"]}))
 
     result = CliRunner().invoke(cli, ["--project-root", str(tmp_path), "sync"
     ])
 
     assert result.exit_code == 0, result.output
-    assert (tmp_path / ".claude" / "rules" / "spek" / "git" / "commit-style.md").exists()
-    assert not (tmp_path / ".claude" / "rules" / "spek" / "ai" / "assume-and-proceed.md").exists()
+    assert (tmp_path / ".claude" / "rules" / "spek" / "spek" / "git" / "commit-style.md").exists()
+    assert not (tmp_path / ".claude" / "rules" / "spek" / "spek" / "ai" / "assume-and-proceed.md").exists()
 
 
 def test_sync_routes_command_to_skill(tmp_path):
@@ -159,7 +159,7 @@ def test_sync_windsurf_command_still_flat(tmp_path):
     }))
     (spek_dir / "modules").mkdir()
     (spek_dir / "stances").mkdir()
-    dest = spek_dir / "modules" / "spek" / "workflow" / "spek-sketch.md"
+    dest = spek_dir / "modules" / "spek" / "spek" / "workflow" / "spek-sketch.md"
     dest.parent.mkdir(parents=True)
     dest.write_text("---\nspek:\n  output: skill\n  name: spek-sketch\n---\nSketch the goal.\n")
 
@@ -197,8 +197,8 @@ def test_sync_pull_external_namespace(tmp_path):
     ])
 
     assert result.exit_code == 0, result.output
-    assert (spek_dir / "modules" / "mywork" / "python" / "style.md").exists()
-    assert (project / ".claude" / "rules" / "mywork" / "python" / "style.md").exists()
+    assert (spek_dir / "modules" / "alias" / "mywork" / "python" / "style.md").exists()
+    assert (project / ".claude" / "rules" / "alias" / "mywork" / "python" / "style.md").exists()
 
 
 def test_sync_external_namespace_produces_nested_output(tmp_path):
@@ -224,6 +224,6 @@ def test_sync_external_namespace_produces_nested_output(tmp_path):
     ])
 
     assert result.exit_code == 0, result.output
-    rule = tmp_path / ".claude" / "rules" / "mywork" / "python" / "style.md"
+    rule = tmp_path / ".claude" / "rules" / "alias" / "mywork" / "python" / "style.md"
     assert rule.exists(), result.output
     assert rule.read_text() == "Use type hints."

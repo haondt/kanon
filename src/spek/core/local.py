@@ -3,7 +3,6 @@ from __future__ import annotations
 from pathlib import Path
 
 from spek.core.config import SpekConfig, PROJECT_MODULES_DIR, PROJECT_REFS_DIR, PROJECT_STANCES_DIR
-from spek.core.references import NormalizedTerms, Reference
 
 MODULE_STUB = "# {name}\n\n"
 STANCE_STUB = """\
@@ -35,8 +34,9 @@ def create_local_module(name: str) -> Path:
     module_path.write_text(MODULE_STUB.format(name=name))
 
     config = SpekConfig.instance()
-    if name not in config.local_modules:
-        config.local_modules.append(name)
+    ref = f"project::{name}"
+    if ref not in config.modules:
+        config.modules.append(ref)
         config.save()
 
     return module_path
@@ -55,43 +55,20 @@ def create_local_stance(name: str) -> Path:
     stance_path.write_text(STANCE_STUB)
 
     config = SpekConfig.instance()
-    relative_path = str(stance_path.relative_to(root))
-    if relative_path not in config.local_stances:
-        config.local_stances.append(relative_path)
+    stance_name = stance_path.stem
+    ref = f"project::{stance_name}"
+    if ref not in config.stances:
+        config.stances.append(ref)
         config.save()
 
     return stance_path
 
 
-def search_project_refs(terms: list[str] | NormalizedTerms, limit: int = 0, match_all: bool = True) -> list[Reference]:
-    if isinstance(terms, list):
-        terms = NormalizedTerms(terms)
-
-    refs_dir = SpekConfig.instance().root() / PROJECT_REFS_DIR
-    if not refs_dir.exists():
-        return []
-
-    scored: list[tuple[int, Reference]] = []
-    for src in sorted(refs_dir.rglob("*.md")):
-        path = str(src.relative_to(refs_dir).with_suffix(""))
-        ref = Reference.load(path, src.read_text())
-        score = ref.score(terms)
-        if match_all and score < len(terms):
-            continue
-        if not match_all and score == 0:
-            continue
-        scored.append((score, ref))
-
-    scored.sort(key=lambda x: x[0], reverse=True)
-    scored = scored[:limit] if limit > 0 else scored
-    return [r for _, r in scored]
-
-
 def create_project_ref(name: str) -> Path:
-    refs_dir = SpekConfig.instance().root() / PROJECT_REFS_DIR
+    refs_dir = SpekConfig.root() / PROJECT_REFS_DIR
     ref_path = refs_dir.joinpath(*name.split("/")).with_suffix(".md")
     if ref_path.exists():
-        raise FileExistsError(f"{ref_path.relative_to(SpekConfig.instance().root())} already exists.")
+        raise FileExistsError(f"{ref_path.relative_to(SpekConfig.root())} already exists.")
 
     ref_path.parent.mkdir(parents=True, exist_ok=True)
     ref_path.write_text(REF_STUB)

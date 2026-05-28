@@ -100,6 +100,10 @@ sections:
       spek check gives misleading 'Module does not resolve in any source' error when the module's source is remote (gh::/gl::) and unfetchable; improve message to indicate the source type is the root cause
     - |-
       Replace all uses of 'import json as json_mod' with plain 'import json'; the alias was added to avoid shadowing a parameter named 'json', but all affected commands use 'as_json' for that parameter instead.
+    - |-
+      `spek source add` does not validate the source path value via `hydrate_source_reference`; an invalid scheme like `bogus::something` is stored without error and only fails at sync/check time — plan step 8 specifies this validation should run at add time (`src/spek/commands/source.py:35-39`)
+    - |-
+      Double blank line between `try/except` block and `if global_scope:` branch inside `source_add` (`src/spek/commands/source.py:40-41`) — PEP 8 uses two blank lines only between top-level definitions, not inside a function body
   ai-tools:
     name: AI tool support
     items:

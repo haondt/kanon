@@ -3,7 +3,7 @@ from __future__ import annotations
 import click
 
 from spek.commands._utils import load_config_or_exit
-from spek.core.config import SourcedResource, SpekConfig
+from spek.core.config import SourcedResource
 from spek.core.sources import resolve_sources
 
 
@@ -18,9 +18,9 @@ def profile_list() -> None:
     load_config_or_exit()
     sources = resolve_sources()
     profile_refs: list[SourcedResource] = []
-    for source_name, source in sources.items():
+    for source_key, source in sources.items():
         for path in source.list_profiles():
-            profile_refs.append(SourcedResource(source_name, path))
+            profile_refs.append(SourcedResource(source_key, path))
     profile_refs = sorted(profile_refs, key=lambda f: f.as_fully_qualified_string)
     profiles = { r.as_string: sources[r.source].shallow_hydrate_profile(r.path) for r in profile_refs }
 
@@ -40,7 +40,6 @@ def profile_apply(name: str | None, run_sync: bool) -> None:
     """Re-resolve a profile and update modules in spek.yaml.
 
     Uses the profile recorded in spek.yaml if NAME is omitted.
-    local_modules are preserved unchanged.
     """
     config = load_config_or_exit()
     profile_ref = name or config.meta.profile

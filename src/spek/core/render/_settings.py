@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from pathlib import Path
 from typing import Any
 
 from spek.core.config import AI_TOOL_SETTINGS_FILES, PROJECT_SPEK_DIR, Integration, SpekConfig

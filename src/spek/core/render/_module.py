@@ -4,12 +4,12 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from functools import cached_property
 from pathlib import Path
-from typing import Any, Callable, Self, override
+from typing import Any, Self, override
 
 import jinja2
 from pydantic import BaseModel, Field
 
-from spek.core.config import AI_TOOL_OUTPUT_DIRS, PROJECT_SPEK_DIR, SPEK_SOURCE, Integration, OutputType, SourcedResource, SpekConfig
+from spek.core.config import AI_TOOL_OUTPUT_DIRS, PROJECT_SPEK_DIR, Integration, OutputType, SourcedResource, SpekConfig
 from spek.core.modules import Module
 from spek.core.yaml_utils import dump_yaml
 
@@ -38,7 +38,7 @@ class ModuleRenderer(ABC):
         return self._meta.name or self.resource.as_string
 
     def _output_path_infix(self):
-        return f"{self.resource.source}/{self.resource.path}"
+        return f"{self.resource.source.scheme}/{self.resource.source.address}/{self.resource.path}"
 
     def _validate(self):
         if self._meta.output == OutputType.SKILL and not self._meta.name:
@@ -125,7 +125,7 @@ class ClaudeModuleRenderer(ModuleRenderer):
     @classmethod
     def render_rule(cls, resource: SourcedResource, frontmatter: dict[str, Any] | BaseModel | None, content: str) -> Path:
         out_dir = output_dir_for(Integration.CLAUDE, OutputType.RULE)
-        out_path = (out_dir / f"{resource.source}/{resource.path}").with_suffix(".md")
+        out_path = (out_dir / f"{resource.source.scheme}/{resource.source.address}/{resource.path}").with_suffix(".md")
         out_path.parent.mkdir(parents=True, exist_ok=True)
         if frontmatter:
             out_path.write_text(f"---\n{dump_yaml(frontmatter)}\n---\n{content}")
@@ -177,11 +177,14 @@ class WindsurfModuleRenderer(ModuleRenderer):
     @classmethod
     def render_rule(cls, resource: SourcedResource, frontmatter: dict[str, Any] | BaseModel | None, content: str) -> Path:
         out_dir = output_dir_for(Integration.WINDSURF, OutputType.RULE)
-        path_infix = f"{resource.source}/{resource.path}"
+        path_infix = f"{resource.source.scheme}/{resource.source.address}/{resource.path}"
         flattened = path_infix.replace("/", "--")
         out_path = out_dir / Path(flattened).with_suffix(".md")
         out_path.parent.mkdir(parents=True, exist_ok=True)
-        out_path.write_text(f"---\n{dump_yaml(frontmatter)}\n---\n{content}")
+        if frontmatter:
+            out_path.write_text(f"---\n{dump_yaml(frontmatter)}\n---\n{content}")
+        else:
+            out_path.write_text(content)
         return out_path
 
 _RENDERERS: dict[Integration, type[ModuleRenderer]] = {

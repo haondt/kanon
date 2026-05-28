@@ -3,9 +3,7 @@ from __future__ import annotations
 import click
 import json
 
-from spek.core import references
-from spek.core.config import PROJECT_SOURCE, SourcedResource, SpekConfig
-from spek.core.local import search_project_refs
+from spek.core.config import SourcedResource
 from spek.core.references import NormalizedTerms, Reference
 from spek.core.sources import resolve_sources
 
@@ -26,9 +24,9 @@ def ref_search(terms: tuple[str, ...], as_json: bool, match_all: bool, limit: in
     normalized_terms = NormalizedTerms(list(terms))
     results: list[tuple[int, str, Reference]] = []
 
-    for source_name, source in sources.items():
+    for source_key, source in sources.items():
         for result in source.search_references(normalized_terms, limit, match_all):
-            results.append((result.score(normalized_terms), SourcedResource(source_name, result.path).as_string, result))
+            results.append((result.score(normalized_terms), SourcedResource(source_key, result.path).as_string, result))
 
     results.sort(key=lambda x: x[0], reverse=True)
     results = results[:limit] if limit > 0 else results

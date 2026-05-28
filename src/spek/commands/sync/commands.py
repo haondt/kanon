@@ -7,7 +7,7 @@ from spek.commands.sync._modules import sync_modules
 from spek.commands.sync._render import render_all
 from spek.commands.sync._stances import sync_stances
 from spek.commands.sync._synced import read_synced_stance
-from spek.core.config import SPEK_SOURCE, SpekConfig
+from spek.core.config import SourceReference, SpekConfig
 from spek.core.sources import resolve_sources
 
 
@@ -25,14 +25,11 @@ def do_sync(pull: bool = False) -> None:
     sources = resolve_sources()
 
     if pull:
-        try:
-            spek_source = sources[SPEK_SOURCE]
-            new_sha = spek_source.get_sha()
-            click.echo(f"Recording SHA {new_sha[:8]}.")
-            config.meta.spek_sha = new_sha
-            config.save()
-        except Exception:
-            pass
+        spek_source = sources[SourceReference.SPEK_SOURCE_REFERENCE]
+        new_sha = spek_source.get_sha()
+        click.echo(f"Recording SHA {new_sha[:8]}.")
+        config.meta.spek_sha = new_sha
+        config.save()
 
     sync_modules(all_modules_needed, pull)
     render_all(explicit_modules)

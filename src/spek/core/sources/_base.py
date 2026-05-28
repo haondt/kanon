@@ -4,6 +4,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Callable
 
+from spek.core.config import SourceReference
 from spek.core.modules import Module
 from spek.core.profiles import ProfileSpec, ShallowProfile
 from spek.core.references import NormalizedTerms, Reference
@@ -11,10 +12,10 @@ from spek.core.stances import Stance
 
 @dataclass
 class SourceResolver:
-    get: Callable[[str], ParsedSource]
-    try_get: Callable[[str], ParsedSource | None]
-    def __getitem__(self, key: str) -> ParsedSource:
-        return self.get(key)
+    get: Callable[[SourceReference], ParsedSource]
+    try_get: Callable[[SourceReference], ParsedSource | None]
+    def __getitem__(self, ref: SourceReference) -> ParsedSource:
+        return self.get(ref)
 
 @dataclass
 class ParsedSource(ABC):
@@ -49,6 +50,9 @@ class ParsedSource(ABC):
         ...
     @abstractmethod
     def hydrate_reference(self, path: str) -> Reference:
+        ...
+    @abstractmethod
+    def contains_stance(self, path: str) -> bool:
         ...
     @abstractmethod
     def list_stances(self) -> list[str]:

@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import override
 
-from spek.core.config import PROJECT_MODULES_DIR, PROJECT_PROFILES_DIR, PROJECT_REFS_DIR, PROJECT_SOURCE, PROJECT_STANCES_DIR, SourcedResource, SpekConfig
+from spek.core.config import PROJECT_MODULES_DIR, PROJECT_PROFILES_DIR, PROJECT_REFS_DIR, PROJECT_STANCES_DIR, SourceReference, SpekConfig
 from spek.core.sources._filesystem import FilesystemSource
 
 @dataclass
@@ -32,4 +32,4 @@ class ProjectSource(FilesystemSource):
 
     @override
     def serialize(self) -> str:
-        return SourcedResource(PROJECT_SOURCE, PROJECT_SOURCE).as_string
+        return SourceReference.PROJECT_SOURCE_REFERENCE.as_string

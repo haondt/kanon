@@ -4,8 +4,9 @@ from spek.core.sources._local import LocalSource
 from spek.core.sources._github import GitHubSource
 from spek.core.sources._gitlab import GitLabSource
 from spek.core.sources._project import ProjectSource
-from spek.core.sources._resolve import parse_source_ref, resolve_sources
-from spek.core.stances import Stance
+from spek.core.sources._self import SelfSource
+from spek.core.sources._alias import AliasRef
+from spek.core.sources._resolve import hydrate_source_reference, resolve_sources
 
 __all__ = [
     "ParsedSource",
@@ -13,9 +14,9 @@ __all__ = [
     "LocalSource",
     "GitHubSource",
     "GitLabSource",
-    "SpekSource",
     "ProjectSource",
-    "parse_source_ref",
+    "SelfSource",
+    "AliasRef",
+    "hydrate_source_reference",
     "resolve_sources",
-    "Stance",
 ]

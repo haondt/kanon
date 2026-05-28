@@ -4,7 +4,7 @@ import pytest
 
 from spek.core.config import SpekConfig, SpekEnv
 from spek.core.settings import GlobalSettings
-from spek.core.sources._resolve import resolve_sources, parse_source_ref
+from spek.core.sources._resolve import resolve_sources, hydrate_source_reference
 
 
 @pytest.fixture(autouse=True)
@@ -14,7 +14,7 @@ def reset_singletons(tmp_path, monkeypatch):
     GlobalSettings.reset()
     SpekEnv.reset()
     resolve_sources.cache_clear()
-    parse_source_ref.cache_clear()
+    hydrate_source_reference.cache_clear()
     yield
     resolve_sources.cache_clear()
-    parse_source_ref.cache_clear()
+    hydrate_source_reference.cache_clear()

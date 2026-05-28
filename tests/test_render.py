@@ -74,7 +74,7 @@ def test_render_settings_windsurf_skips(project):
 def test_render_module_rule_writes_file(project):
     content = "---\nspek: {}\n---\nFollow the rule.\n"
     out = _render(content, "test/my-rule", Integration.CLAUDE)
-    assert out == project / ".claude" / "rules" / "spek" / "test" / "my-rule.md"
+    assert out == project / ".claude" / "rules" / "spek" / "spek" / "test" / "my-rule.md"
     assert "Follow the rule." in out.read_text()
 
 

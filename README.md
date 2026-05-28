@@ -132,14 +132,11 @@ modules:                   # always-active rules/skills
   - git/commit-base
   - python/style
   - workflow/spek-sketch
-  - mywork::python/style   # module from an external source
+  - mywork::python/style   # module from an external source (alias::path shorthand)
+  - project::my-conventions  # project-local module under .spek/project/
 stances:                   # omitted if empty
   - autonomous
   - collaborative
-local_modules:             # omitted if empty; short names like regular modules
-  - my-conventions
-local_stances:             # omitted if empty
-  - .spek/local/stances/my-stance.yaml
 sources:                   # omitted if empty; project-scoped sources
   mywork:
     path: /home/user/shared-specs    # local path (expanded to absolute at add time)

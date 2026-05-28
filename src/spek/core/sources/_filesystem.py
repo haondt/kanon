@@ -116,6 +116,12 @@ class FilesystemSource(ParsedSource, ABC):
         return Reference.load(path, reference_content)
 
     @override
+    def contains_stance(self, path: str) -> bool:
+        if self.stances_path is None:
+            return False
+        return (self.stances_path / path).with_suffix(".yaml").is_file()
+
+    @override
     def list_stances(self) -> list[str]:
         if self.stances_path is None or not self.stances_path.exists():
             return []

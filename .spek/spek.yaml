@@ -1,6 +1,6 @@
 meta:
   spek_version: 0.0.0
-  spek_sha: a941b8f1ed4ff2daeee8e03fa92041ac88b91d9b
+  spek_sha: 34a9c52054789c5715a7fdd3807da6945abffbee
   integrations:
   - claude
   - windsurf
@@ -50,6 +50,4 @@ stances:
 - autonomous
 - collaborative
 - critic
-local_modules: []
-local_stances: []
 sources: {}

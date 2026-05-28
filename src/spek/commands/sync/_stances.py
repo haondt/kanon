@@ -13,16 +13,20 @@ def sync_stances(pull: bool):
 
     synced_stances = set(list_synced_stances())
     if pull:
-        to_pull = set(config.stances_sr)
+        to_pull = list(config.stances_sr)
     else:
         to_pull = [s for s in config.stances_sr if s not in synced_stances]
 
     if pull:
         click.echo("Pulling stances from upstream:")
-    if not to_pull:
+    elif not to_pull:
         click.echo("No stance pulls required.")
     for resource in to_pull:
-        stance = sources[resource.source].hydrate_stance(resource.path)
+        source = sources.get(resource.source)
+        if source is None:
+            click.echo(f"Error: source '{resource.source}' not found for stance '{resource.as_string}'")
+            raise SystemExit(1)
+        stance = source.hydrate_stance(resource.path)
         write_synced_stance(resource, stance)
         click.echo(f"  stance:{resource.as_string} ← upstream")
 
