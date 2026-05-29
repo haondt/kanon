@@ -4,6 +4,8 @@ sections:
     items:
     - |-
       Consolidate and reduce the test suite to keep it manageable, accepting slightly reduced coverage.
+    - |-
+      `test_sync_pull_calls_pull_on_all_sources` name is misleading — `spek sync --pull` now only pulls sources referenced by active modules/stances, not all configured sources; test should be renamed and extended to assert unreferenced sources are skipped (finding f20 from review p6).
   containerization:
     name: Containerization
     items:
@@ -55,8 +57,6 @@ sections:
     name: External spec sources
     items:
     - |-
-      Implement remote source fetching: wire gh:: and gl:: paths in SourceSpec to spek sync --pull so modules are cloned/fetched from their declared remote before resolving; local sources already work.
-    - |-
       Decide how spek init / spek profile apply should work when profiles live in an external source.
     - |-
       Update `spek ref search` and `spek ref read` to search and retrieve reference entries from all configured sources, not just the local library.
@@ -64,6 +64,10 @@ sections:
       Block or warn when `spek source add` is given a reserved namespace name (`spek` or `project`); these are built-in namespaces and overwriting them should require `--force`.
     - |-
       Design canonical source identifiers: each source has a stable identity (e.g. its URL or registered name) separate from the user's local alias, so profiles can reference cross-source modules without knowing how the user named the source locally.
+    - |-
+      Implement a cache registry (e.g. a manifest file in sources_cache_path) so spek cache status can report metadata like source URL, cached ref, and last-pulled timestamp without walking the filesystem or re-opening git repos.
+    - |-
+      `module_add` calls `_pull_sources_for_modules(new_modules)` where `new_modules` includes pre-existing config modules; if any existing module references a since-removed source, `sources[src]` raises an unhandled `KeyError` (finding f19 from review p6).
   frontend:
     name: Frontend patterns
     items:

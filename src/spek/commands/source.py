@@ -8,7 +8,8 @@ import click
 from spek.commands._utils import load_config_or_exit
 from spek.core.config import SourceReference, SpekConfig, SpekEnv
 from spek.core.settings import GlobalSettings
-from spek.core.sources import LocalSource, hydrate_source_reference, resolve_sources
+from spek.core.sources import AliasRef, LocalSource, hydrate_source_reference, resolve_sources
+from spek.core.sources._base import PullResult
 
 @click.group()
 def source() -> None:
@@ -34,7 +35,12 @@ def source_add(source_name: str, path: str, global_scope: bool, force: bool) -> 
 
     try:
         value = SourceReference.parse(path)
-        hydrate_source_reference(value)
+        hydrated = hydrate_source_reference(value)
+        if isinstance(hydrated, AliasRef):
+            resolved = resolve_sources().get(value)
+            if resolved is None:
+                raise ValueError(f"Unknown alias: {path!r}")
+            hydrated = resolved
     except ValueError as e:
         click.echo(str(e))
         raise SystemExit(1)
@@ -55,6 +61,10 @@ def source_add(source_name: str, path: str, global_scope: bool, force: bool) -> 
         config.sources[source_name] = value.as_string
         config.save()
         click.echo(f"Added source '{source_name}' to spek.yaml.")
+
+    pull_result = hydrated.pull()
+    if pull_result == PullResult.CLONED:
+        click.echo(f"Cached {value.as_fully_qualified_string}")
 
 
 @source.command("remove")
@@ -123,3 +133,37 @@ def source_status(as_json: bool, global_scope: bool) -> None:
     click.echo(f"  {'-' * name_w}  {'-' * type_w}  {'-' * scope_w}  {'-' * resolves_w}  {'-' * path_w}")
     for r in rows:
         click.echo(f"  {r['name']:<{name_w}}  {r['type']:<{type_w}}  {r['scope']:<{scope_w}}  {r['resolves']:<{resolves_w}}  {r['path']:<{path_w}}")
+
+
+@source.command("pull")
+@click.argument("name", required=False, default=None)
+def source_pull(name: str | None) -> None:
+    """Pull remote sources into the local cache.
+
+    With no arguments, pulls all resolved sources (non-remote sources are skipped).
+    With NAME, pulls only the named source (alias or direct reference like gh::org/repo).
+    """
+    resolved = resolve_sources()
+
+    if name is None:
+        for source_key, src in resolved.items():
+            result = src.pull(force=True)
+            if result != PullResult.NOOP:
+                click.echo(f"{source_key.as_string} ← {result.value}")
+
+    else:
+        ref = SourceReference.parse(name, sanitize=True)
+        if ref in resolved:
+            src = resolved[ref]
+        else:
+            try:
+                hydrated = hydrate_source_reference(ref)
+                if isinstance(hydrated, AliasRef):
+                    raise ValueError
+                src = hydrated
+            except ValueError:
+                click.echo(f"Unknown source: {name!r}")
+                raise SystemExit(1)
+        result = src.pull(force=True)
+        if result != PullResult.NOOP:
+            click.echo(f"{ref.as_string} ← {result.value}")

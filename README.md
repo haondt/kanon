@@ -90,8 +90,11 @@ spek module add <module>...     # append modules to the active list
 spek module remove <module>...  # remove modules from the active list
 spek module search <term>...    # keyword search across available modules
 spek source add <name> <path>   # register a named source (local path or gh::/gl:: shorthand)
+spek source pull [name]         # clone/refresh a remote source cache (all sources if no name)
 spek source remove <name>       # remove a source
 spek source status              # show all sources and their resolution status
+spek cache status               # show disk usage of the local source cache
+spek cache clear [name]         # clear the entire cache, or just one source's cache
 spek check                      # validate that all modules and sources resolve
 spek local module <name>        # create a project-local spec module
 spek local stance <name>        # create a project-local stance
@@ -108,7 +111,7 @@ See `spek --help` or `spek <command> --help` for full options.
 # Register a local directory of spec modules under the name "mywork"
 spek source add mywork ~/shared-specs
 
-# Or declare a remote source (fetching not yet supported — declares intent)
+# Register a remote source — clones the repo into the local cache automatically
 spek source add mywork gh::org/specs@v1.0.0
 
 # Activate a module from that source
@@ -116,6 +119,12 @@ spek module add mywork::python/style
 
 # Sync to apply
 spek sync
+
+# Force-refresh all remote sources
+spek sync --pull
+
+# Or refresh a specific source
+spek source pull mywork
 ```
 
 <details>
@@ -141,7 +150,7 @@ sources:                   # omitted if empty; project-scoped sources
   mywork:
     path: /home/user/shared-specs    # local path (expanded to absolute at add time)
   upstream:
-    path: gh::org/specs              # remote (fetching not yet supported)
+    path: gh::org/specs              # remote (cloned to ~/.spek/sources/ cache on first use)
 ```
 
 </details>
@@ -153,6 +162,7 @@ sources:                   # omitted if empty; project-scoped sources
 |---|---|---|
 | `SPEK_SETTINGS_PATH` | `~/.spek/settings.yaml` | Override the global settings file path |
 | `SPEK_REPO_PATH` | auto-detected from package location | Override the spek repo root (mainly for development) |
+| `SPEK_SOURCES_CACHE_PATH` | `~/.spek/sources` | Override the remote source cache directory |
 
 </details>
 

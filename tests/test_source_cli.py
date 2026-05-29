@@ -49,7 +49,9 @@ def test_source_add_expands_tilde(tmp_path, monkeypatch):
     assert "~/specs" in raw["sources"]["shared"]
 
 
-def test_source_add_github_path_saved_as_is(tmp_path):
+def test_source_add_github_path_saved_as_is(tmp_path, monkeypatch):
+    from spek.core.sources._github import GitHubSource
+    monkeypatch.setattr(GitHubSource, "_ensure_cloned", lambda self: self.cache_path())
     make_config(tmp_path)
     result = CliRunner().invoke(cli, [
         "--project-root", str(tmp_path),

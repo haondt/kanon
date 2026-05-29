@@ -8,7 +8,18 @@ from questionary import Choice
 
 from spek.commands._utils import load_config_or_exit
 from spek.core.config import SourceReference, SourcedResource, SpekConfig
-from spek.core.sources import resolve_sources
+from spek.core.sources import ParsedSource, resolve_sources
+
+
+def _pull_sources_for_modules(module_strings: list[str], sources: dict[SourceReference, ParsedSource]) -> None:
+    pulled: set[SourceReference] = set()
+    for m in module_strings:
+        sr = SourcedResource.parse(m)
+        src = sr.source
+        if src not in pulled:
+            pulled.add(src)
+            sources[src].pull()
+
 
 def _all_available() -> list[SourcedResource]:
     result: list[SourcedResource] = []
@@ -60,6 +71,8 @@ def _do_picker(run_sync: bool) -> None:
     config.modules = result
     config.save()
     click.echo(f"Saved {len(result)} module(s) to spek.yaml.")
+
+    _pull_sources_for_modules(result, sources)
 
     if run_sync:
         from spek.commands.sync import do_sync
@@ -118,6 +131,8 @@ def module_set(modules: tuple[str, ...], run_sync: bool) -> None:
     config.save()
     click.echo(f"Saved {len(modules)} module(s) to spek.yaml.")
 
+    _pull_sources_for_modules([r.as_string for r in module_refs], sources)
+
     if run_sync:
         from spek.commands.sync import do_sync
         do_sync()
@@ -144,9 +159,12 @@ def module_add(modules: tuple[str, ...], run_sync: bool) -> None:
     if already_active:
         click.echo(f"{', '.join(already_active)} already active.")
 
-    config.modules = SourcedResource.sanitize(modules_sanitized + list(selected_set))
+    new_modules = SourcedResource.sanitize(modules_sanitized + list(selected_set))
+    config.modules = new_modules
     config.save()
     click.echo(f"Added {len(modules)} module(s) to spek.yaml.")
+
+    _pull_sources_for_modules(new_modules, sources)
 
     if run_sync:
         from spek.commands.sync import do_sync

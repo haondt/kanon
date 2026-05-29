@@ -117,6 +117,12 @@ class SpekEnv:
             return Path(val)
         return Path.home() / ".spek" / "settings.yaml"
 
+    @cached_property
+    def sources_cache_path(self) -> Path:
+        if val := os.environ.get("SPEK_SOURCES_CACHE_PATH"):
+            return Path(val)
+        return Path.home() / ".spek" / "sources"
+
 
 
 class SpekMeta(BaseModel):

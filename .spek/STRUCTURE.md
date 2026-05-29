@@ -37,16 +37,16 @@ stances/         # YAML files — each lists module paths; activated via /spek-s
 profiles/        # YAML files — named module+stance bundles; base/ and python/
 src/spek/
   cli.py         # Click entrypoint; registers all command groups
-  commands/      # one file per subcommand: init, profile, local, module, source, check, destroy, ref; session/, todo/, and sync/ are packages; _utils.py holds shared helpers (read_text_arg, read_text_arg_json for stdin/JSON input support)
+  commands/      # one file per subcommand: init, profile, local, module, source, cache, check, destroy, ref; session/, todo/, and sync/ are packages; _utils.py holds shared helpers (read_text_arg, read_text_arg_json for stdin/JSON input support)
   core/          # pure logic, no CLI dependency
 .spek/           # spek's own session/project files (dogfooding)
 ```
 
 ## Core modules (`src/spek/core/`)
 
-- `config.py` — `SpekConfig` Pydantic model; `load()`/`save()` against `.spek/spek.yaml`; `sources: dict[str, str]` (raw key→value strings); `local_modules`/`local_stances` are gone — project-local content is referenced via `project::` in `modules`/`stances`; scheme constants: `ALIAS_SCHEME="alias"`, `SPEK_SCHEME="spek"`, `GITHUB_SCHEME="gh"`, `GITLAB_SCHEME="gl"`, `LOCAL_SCHEME="local"`; `VALID_SCHEMES`, `SPEK_BUILTIN_ADDRESSES={"spek","project","self"}`; also declares `OutputType`/`Integration` enums, `AI_TOOL_OUTPUT_DIRS`, `AI_TOOL_SETTINGS_FILES`, `AI_TOOL_SPECIFIC_RULES`, and `SpekEnv` singleton (env-sourced config)
+- `config.py` — `SpekConfig` Pydantic model; `load()`/`save()` against `.spek/spek.yaml`; `sources: dict[str, str]` (raw key→value strings); `local_modules`/`local_stances` are gone — project-local content is referenced via `project::` in `modules`/`stances`; scheme constants: `ALIAS_SCHEME="alias"`, `SPEK_SCHEME="spek"`, `GITHUB_SCHEME="gh"`, `GITLAB_SCHEME="gl"`, `LOCAL_SCHEME="local"`; `VALID_SCHEMES`, `SPEK_BUILTIN_ADDRESSES={"spek","project","self"}`; also declares `OutputType`/`Integration` enums, `AI_TOOL_OUTPUT_DIRS`, `AI_TOOL_SETTINGS_FILES`, `AI_TOOL_SPECIFIC_RULES`, and `SpekEnv` singleton (env-sourced config); `SpekEnv.sources_cache_path` cached property returns `~/.spek/sources` by default, overridden by `SPEK_SOURCES_CACHE_PATH`
 - `settings.py` — `SourceSpec(BaseModel)` (`path: str` — unified path string, local or `gh::`/`gl::` remote); `GlobalSettings(BaseModel)` (`sources: dict[str, SourceSpec]`); `load_global_settings()` reads `~/.spek/settings.yaml`, returns empty model if missing
-- `sources/` — package; `hydrate_source_reference(ref)` classifies a `SourceReference` into `LocalSource`, `GitHubSource`, `GitLabSource`, `SpekSource`, `ProjectSource`, or `SelfSource`; `resolve_sources()` merges global + project sources into a keyed `SourcesDict`; `ParsedSource` union type; `AliasRef` placeholder resolved during cycle detection in `resolve_sources()`
+- `sources/` — package; `hydrate_source_reference(ref)` classifies a `SourceReference` into `LocalSource`, `GitHubSource`, `GitLabSource`, `SpekSource`, `ProjectSource`, or `SelfSource`; `resolve_sources()` merges global + project sources into a keyed `SourcesDict`; `ParsedSource` union type; `AliasRef` placeholder resolved during cycle detection in `resolve_sources()`; `ParsedSource` base has `pull(force=False) -> PullResult` (NOOP default) and `cache_path() -> Path | None` (None default); `PullResult` enum (`CLONED`, `PULLED`, `CACHED`, `NOOP`) in `_base.py`; `GitHubSource` and `GitLabSource` extend `FilesystemSource`, override `cache_path()` and `pull()` using gitpython — cache lives under `SpekEnv.sources_cache_path / scheme / address[@ref]`; `_ensure_cloned()` gates on `(path / '.git').exists()` to handle partial clones
 - `yaml_utils.py` — all YAML I/O: `load_yaml(path, model?)`, `save_yaml(data, path)`; also exports `FRONTMATTER_RE` (shared frontmatter regex); exports `_literal_representer`, `_enum_str_representer`, `_make_dumper(*enum_types)` for YAML serialization with block-literal strings and str-enum support
 - `render/` — package; reads local module copies, strips frontmatter, writes AI tool output files; `ModuleFrontmatter` parses `spek.description/output/name/args/integrations/preapproved_tools/template`; `output` and `template` are `Literal`-typed (`Literal["rule","skill"]` and `Literal["jinja"] | None`); when `template: jinja`, body is rendered through `_apply_jinja(body, context)` (Jinja2 `StrictUndefined`, `keep_trailing_newline=True`) with `modules` and `integrations` as sets before rule/skill branching; for `output: skill`, writes `<name>/SKILL.md` with generated YAML frontmatter (`description`, `argument-hint`/`args`, plus any keys from `integrations.<tool>` except `hooks`); Windsurf converts skills to workflows (`.windsurf/workflows/<name>.md` with description frontmatter); skills require an explicit `spek.name` — `ValueError` raised at render time if absent; `preapproved_tools` from spec frontmatter are merged into `allowed-tools` in the skill frontmatter; when `context: fork`, appends STRUCTURE.md preload commands to `allowed-tools` and injects a `## Project structure` shell-expansion block into the skill body; Windsurf rules are flattened (path separators replaced with `--`) and require a `trigger` field in frontmatter (defaults to `always_on`, override via `integrations.windsurf.trigger`); tool-specific rules declared in `config.AI_TOOL_SPECIFIC_RULES`; `render_tool_specific_rules(ai_tool, project_root)` writes the tool-specific rule file; `collect_hooks(content, ai_tool)` extracts hook declarations from frontmatter; `collect_preapproved_tools(content)` extracts rule-module `preapproved_tools`; `render_settings(hooks_by_event, project_root, ai_tool, preapproved_tools?)` writes `.claude/settings.json` with `permissions.allow` + hooks
 - `modules.py` — `list_modules(specs_dir)` enumerates all spec files in a given directory
@@ -60,11 +60,12 @@ src/spek/
 ## Data flow
 
 ```
-spek init   → writes .spek/spek.yaml (modules, stances, integrations, sources)
-spek sync   → resolves sources: merges ~/.spek/settings.yaml + config.sources; adds "spek" → upstream repo/specs
-            → copies spec files from each source into .spek/modules/{scheme}/{address}/{path}.md
-            → calls render/ to emit AI tool output (rules, skills, workflows) for each configured integration
-            → writes tool-specific settings files (e.g., .claude/settings.json for hooks)
+spek init      → writes .spek/spek.yaml (modules, stances, integrations, sources)
+spek sync      → resolves sources: merges ~/.spek/settings.yaml + config.sources; adds "spek" → upstream repo/specs
+               → copies spec files from each source into .spek/modules/{scheme}/{address}/{path}.md
+               → calls render/ to emit AI tool output (rules, skills, workflows) for each configured integration
+               → writes tool-specific settings files (e.g., .claude/settings.json for hooks)
+spek sync --pull → first calls .pull(force=True) on each source referenced by active modules/stances, then syncs as above
 ```
 
 ## spek session subcommands
@@ -101,13 +102,19 @@ Full `spek todo` command group. Reads/writes `.spek/todo.yaml`. `section add` au
 
 ## spek source subcommands
 
-- `spek source add [--global] <name> <path>` — register a named source; `--global` writes to `~/.spek/settings.yaml`, default writes to `.spek/spek.yaml`; local paths are expanded to absolute at add time
+- `spek source add [--global] <name> <path>` — register a named source; `--global` writes to `~/.spek/settings.yaml`, default writes to `.spek/spek.yaml`; local paths are expanded to absolute at add time; remote (`gh::`/`gl::`) sources are cloned immediately on add
+- `spek source pull [name]` — force-refresh remote source caches; no name → pulls all resolved sources referenced by active modules/stances; name → alias or direct ref (e.g. `gh::org/repo`)
 - `spek source remove [--global] <name>` — remove a source from the appropriate config
 - `spek source status [--json]` — table of all sources with name, path, type (local/gh/gl), scope (global/project), and whether the local path resolves
 
+## spek cache subcommands
+
+- `spek cache status` — walks `SpekEnv.sources_cache_path`, lists each cached repo with scheme, path, and disk usage
+- `spek cache clear [name]` — no name → `shutil.rmtree` the entire cache dir; name → resolve alias or direct ref, clear only that source's `cache_path()`
+
 ## spek check
 
-- `spek [--project-root <path>] check` — validates `spek.yaml`: errors on modules that don't resolve in any source, errors on local sources whose path doesn't exist, info for remote sources (not yet fetchable); exits non-zero on errors
+- `spek [--project-root <path>] check` — validates `spek.yaml`: errors on modules that don't resolve in any source, errors on local sources whose path doesn't exist; remote sources are validated via their cache (populated on first pull); exits non-zero on errors
 
 ## Key concepts
 

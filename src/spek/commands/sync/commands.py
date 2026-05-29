@@ -25,6 +25,11 @@ def do_sync(pull: bool = False) -> None:
     sources = resolve_sources()
 
     if pull:
+        needed_refs = {sr.source for sr in all_modules_needed}
+        for ref, src in sources.items():
+            if ref in needed_refs:
+                src.pull(force=True)
+
         spek_source = sources[SourceReference.SPEK_SOURCE_REFERENCE]
         new_sha = spek_source.get_sha()
         click.echo(f"Recording SHA {new_sha[:8]}.")

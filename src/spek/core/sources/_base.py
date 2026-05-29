@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from enum import StrEnum
+from pathlib import Path
 from typing import Callable
 
 from spek.core.config import SourceReference
@@ -9,6 +11,14 @@ from spek.core.modules import Module
 from spek.core.profiles import ProfileSpec, ShallowProfile
 from spek.core.references import NormalizedTerms, Reference
 from spek.core.stances import Stance
+
+
+class PullResult(StrEnum):
+    CLONED = "cloned"
+    PULLED = "pulled"
+    CACHED = "cached"
+    NOOP = "noop"
+
 
 @dataclass
 class SourceResolver:
@@ -63,3 +73,9 @@ class ParsedSource(ABC):
     @abstractmethod
     def get_sha(self) -> str:
         ...
+
+    def pull(self, force: bool = False) -> PullResult: # pyright: ignore[reportUnusedParameter]
+        return PullResult.NOOP
+
+    def cache_path(self) -> Path | None:
+        return None

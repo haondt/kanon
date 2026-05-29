@@ -1,17 +1,26 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from pathlib import Path
 from typing import override
 
-from spek.core.config import GITLAB_SCHEME, SourceReference
-from spek.core.modules import Module
-from spek.core.profiles import ProfileSpec, ShallowProfile
-from spek.core.references import NormalizedTerms, Reference
-from spek.core.stances import Stance
-from spek.core.sources._base import ParsedSource, SourceResolver
+import git
+
+from spek.core.config import (
+    GITLAB_SCHEME,
+    SOURCED_MODULES_DIR,
+    SOURCED_PROFILES_DIR,
+    SOURCED_REFS_DIR,
+    SOURCED_STANCES_DIR,
+    SpekEnv,
+    SourceReference,
+)
+from spek.core.sources._base import PullResult, SourceResolver
+from spek.core.sources._filesystem import FilesystemSource
+
 
 @dataclass
-class GitLabSource(ParsedSource):
+class GitLabSource(FilesystemSource):
     groups: list[str]
     repo: str
     ref: str | None
@@ -35,41 +44,59 @@ class GitLabSource(ParsedSource):
         return SourceReference(GITLAB_SCHEME, path).as_string
 
     @override
-    def contains_module(self, path: str) -> bool:
-        return False
+    def cache_path(self) -> Path:
+        base = SpekEnv.instance().sources_cache_path / GITLAB_SCHEME / '/'.join(self.groups + [self.repo])
+        if self.ref:
+            return Path(f"{base}@{self.ref}")
+        return base
+
+    def _ensure_cloned(self) -> Path:
+        path = self.cache_path()
+        if not (path / ".git").exists():
+            url = f"https://gitlab.com/{'/'.join(self.groups)}/{self.repo}.git"
+            repo = git.Repo.clone_from(url, str(path))
+            if self.ref:
+                repo.git.checkout(self.ref)
+        return path
+
     @override
-    def contains_stance(self, path: str) -> bool:
-        return False
+    def pull(self, force: bool = False) -> PullResult:
+        path = self.cache_path()
+        already_existed = (path / ".git").exists()
+        self._ensure_cloned()
+        if not already_existed:
+            return PullResult.CLONED
+        if force:
+            repo = git.Repo(str(path))
+            repo.remotes.origin.pull()
+            return PullResult.PULLED
+        return PullResult.CACHED
+
+    @property
     @override
-    def list_modules(self) -> list[str]:
-        return []
+    def specs_path(self) -> Path | None:
+        path = self._ensure_cloned() / SOURCED_MODULES_DIR
+        return path if path.exists() else None
+
+    @property
     @override
-    def hydrate_module(self, path: str) -> Module:
-        raise NotImplementedError()
+    def profiles_path(self) -> Path | None:
+        path = self._ensure_cloned() / SOURCED_PROFILES_DIR
+        return path if path.exists() else None
+
+    @property
     @override
-    def list_profiles(self) -> list[str]:
-        return []
+    def references_path(self) -> Path | None:
+        path = self._ensure_cloned() / SOURCED_REFS_DIR
+        return path if path.exists() else None
+
+    @property
     @override
-    def _retrieve_profile_content(self, path: str) -> str:
-        raise NotImplementedError()
-    @override
-    def hydrate_profile(self, path: str) -> ProfileSpec:
-        raise NotImplementedError()
-    @override
-    def shallow_hydrate_profile(self, path: str) -> ShallowProfile:
-        raise NotImplementedError()
-    @override
-    def search_references(self, terms: list[str] | NormalizedTerms, limit: int = 0, match_all: bool = True) -> list[Reference]:
-        return []
-    @override
-    def hydrate_reference(self, path: str) -> Reference:
-        raise NotImplementedError()
-    @override
-    def list_stances(self) -> list[str]:
-        return []
-    @override
-    def hydrate_stance(self, path: str) -> Stance:
-        raise NotImplementedError()
+    def stances_path(self) -> Path | None:
+        path = self._ensure_cloned() / SOURCED_STANCES_DIR
+        return path if path.exists() else None
+
     @override
     def get_sha(self) -> str:
-        raise NotImplementedError()
+        repo = git.Repo(str(self._ensure_cloned()))
+        return repo.head.commit.hexsha
