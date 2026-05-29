@@ -3,4 +3,5 @@ modules:
   - self::tools/spek/ref
   - self::tools/spek/module
   - self::tools/spek/todo
+  - self::tools/spek/source
   - self::tools/spek/session
