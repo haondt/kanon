@@ -1,6 +1,6 @@
 ---
 spek:
-  description: "How to write a spec module"
+  description: "How to write a spek module"
   keywords:
     - spek
     - specs
@@ -19,8 +19,9 @@ spek:
   description: "One phrase — the constraint, not the module name"
   output: skill           # omit for rules (default)
   name: spek-foo          # required if output: skill
-  preapproved_tools:      # optional; tools pre-approved for forked skill contexts
+  preapproved_tools:      # optional; for rules: added to global project settings; for skills with needs_context: false: added to allowed_tools
     - Bash(git diff *)
+  template: jinja         # optional; enables Jinja2 templating in the module body (context: modules, integrations)
   skill:
     model_invokable: false  # set false to prevent AI from invoking this skill autonomously
     human_invokable: false  # set false to prevent human invocation
@@ -28,7 +29,7 @@ spek:
     needs_context: false    # set false to fork context (injects STRUCTURE.md, sets context: fork)
 ```
 
-- `description` appears in `spek module list` and as the skill description in the AI tool; for skills, this is shown in autocomplete and is the primary signal used to decide whether to invoke the skill — write it to convey *when* to use it, not just *what* it is; must be 1–1024 characters; include keywords that help agents match the skill to relevant tasks
+- `description` appears in `spek module list` and as the skill description in the AI tool; for skills, this is shown in autocomplete and is the primary signal used to decide whether to invoke the skill — write it to convey *when* to use it, not just *what* it is; try to keep it under 1024 characters, beyond that consider breaking it into a spec that mentions a reference. Include keywords that help agents match the skill to relevant tasks
 - `output: skill` marks it as an invocable skill rather than a passive rule
 - `name` is the skill name (e.g. `spek-foo` → `/spek-foo`); required for skills
 - `preapproved_tools` is a list of tool patterns pre-approved for use in forked skill contexts

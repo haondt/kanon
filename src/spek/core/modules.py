@@ -21,7 +21,6 @@ class _SpekMeta(BaseModel):
     name: str | None = None
     description: str | None = None
     skill: _SkillMeta = Field(default_factory=_SkillMeta)
-    needs_context: bool = True
     preapproved_tools: list[str] = Field(default_factory=list)
     template: Literal["jinja"] | None = None
 

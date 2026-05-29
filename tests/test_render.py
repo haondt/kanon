@@ -106,7 +106,6 @@ def _skill_content(model_invokable: bool = True, needs_context: bool = True, pre
         if not needs_context:
             parts.append("    needs_context: false")
         skill_block = "  skill:\n" + "\n".join(parts) + "\n"
-    top_needs = "  needs_context: false\n" if not needs_context else ""
     pre = ""
     if preapproved:
         pre = "  preapproved_tools:\n" + "".join(f"    - {t}\n" for t in preapproved)
@@ -116,7 +115,7 @@ def _skill_content(model_invokable: bool = True, needs_context: bool = True, pre
           output: skill
           name: my-skill
           description: A test skill
-        {skill_block}{top_needs}{pre}---
+        {skill_block}{pre}---
         Do the thing.
         """)
 
@@ -141,7 +140,6 @@ def test_render_module_fork_skill_appends_preload_command(project):
           output: skill
           name: my-skill
           description: A test skill
-          needs_context: false
           skill:
             needs_context: false
         ---

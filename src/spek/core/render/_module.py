@@ -92,11 +92,7 @@ class ClaudeModuleRenderer(ModuleRenderer):
         body = self._base_render_body()
 
         skill_preapproved_tools: set[str] = set(self._meta.preapproved_tools)
-        if not self._meta.needs_context:
-            skill_preapproved_tools = skill_preapproved_tools | {f"Bash(test {PROJECT_SPEK_DIR}/STRUCTURE.md)", f"Bash(cat {PROJECT_SPEK_DIR}/STRUCTURE.md)"}
-            body = body.rstrip("\n") + f"\n\n## Project structure\n\n!`test -f {PROJECT_SPEK_DIR}/STRUCTURE.md && cat {PROJECT_SPEK_DIR}/STRUCTURE.md`\n"
-
-        out_dir=output_dir_for(Integration.CLAUDE, self._meta.output)
+        out_dir = output_dir_for(Integration.CLAUDE, self._meta.output)
         if self._meta.output == OutputType.SKILL:
 
             frontmatter = ClaudeSkillFrontmatter(
@@ -108,7 +104,9 @@ class ClaudeModuleRenderer(ModuleRenderer):
             if self._meta.skill.model_invokable == False:
                 frontmatter.disable_model_invocation = True
 
-            if self._meta.skill.needs_context == False:
+            if not self._meta.skill.needs_context:
+                skill_preapproved_tools = skill_preapproved_tools | {f"Bash(test {PROJECT_SPEK_DIR}/STRUCTURE.md)", f"Bash(cat {PROJECT_SPEK_DIR}/STRUCTURE.md)"}
+                body = body.rstrip("\n") + f"\n\n## Project structure\n\n!`test -f {PROJECT_SPEK_DIR}/STRUCTURE.md && cat {PROJECT_SPEK_DIR}/STRUCTURE.md`\n"
                 frontmatter.context = "fork"
                 frontmatter.allowed_tools = list(skill_preapproved_tools)
 
