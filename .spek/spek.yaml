@@ -1,6 +1,6 @@
 meta:
   spek_version: 0.0.0
-  spek_sha: a7185c76e882801bfbfba605d79fa3e8779124c1
+  spek_sha: 8ce7c7c29e7bb7d00eaffec97deabc8c8539a9a8
   integrations:
   - claude
   - windsurf
@@ -25,6 +25,8 @@ modules:
 - gh::haondt/spek-specs::python/testing/base
 - gh::haondt/spek-specs::python/testing/pytest
 - gh::haondt/spek-specs::python/venv
+- docs/references
+- docs/specs
 - docs/structure
 - systems/base
 - tools/spek/module

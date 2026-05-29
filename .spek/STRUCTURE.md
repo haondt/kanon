@@ -152,5 +152,3 @@ This repo dogfoods spek, so it contains **both** the spec library **and** a `.sp
 **Rule:** if a task involves built-in spec content (workflow skills, tool references), edit files under `specs/`. External spec content (AI conventions, Python style, etc.) lives in an external source repo. If a task involves this project's own session or docs, edit files under `.spek/`. Never edit `.spek/modules/` by hand.
 
 **Sync timing:** `just sync` is run at the user's discretion — they may choose to sync mid-session or wait until after the retro. During a session, `.spek/modules/` may intentionally lag `specs/`; do not flag this as an error.
-
-Before writing, editing or planning a spec, run `spek ref read spek/specs`. Before writing, editing or planning a reference entry, run `spek ref read spek/references`.
