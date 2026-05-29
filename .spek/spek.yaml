@@ -7,6 +7,7 @@ meta:
   profile: haondt::python/cli
 modules:
 - haondt::ai/coding/prefer-reuse
+- haondt::git/commit-short
 - gh::haondt/spek-specs::ai/coding/verify-before-use
 - gh::haondt/spek-specs::ai/communication/prefer-brevity
 - gh::haondt/spek-specs::ai/style/confirm-before-acting
@@ -16,7 +17,6 @@ modules:
 - gh::haondt/spek-specs::docs/readme
 - gh::haondt/spek-specs::git/branch-base
 - gh::haondt/spek-specs::git/commit-base
-- gh::haondt/spek-specs::git/commit-long
 - gh::haondt/spek-specs::python/build
 - gh::haondt/spek-specs::python/dependencies/base
 - gh::haondt/spek-specs::python/dependencies/uv

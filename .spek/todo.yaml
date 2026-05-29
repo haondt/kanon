@@ -68,6 +68,10 @@ sections:
       Implement a cache registry (e.g. a manifest file in sources_cache_path) so spek cache status can report metadata like source URL, cached ref, and last-pulled timestamp without walking the filesystem or re-opening git repos.
     - |-
       `module_add` calls `_pull_sources_for_modules(new_modules)` where `new_modules` includes pre-existing config modules; if any existing module references a since-removed source, `sources[src]` raises an unhandled `KeyError` (finding f19 from review p6).
+    - |-
+      Have .spek/spek.yaml already exists. Run 'spek sync' to update., , and related setup commands auto-generate  with appropriate entries (e.g. ignoring cached/ephemeral files that shouldn't be committed).
+    - |-
+      Have `spek init`, `spek onboard`, and related setup commands auto-generate `.spek/.gitignore` with appropriate entries (e.g. ignoring cached/ephemeral files that shouldn't be committed).
   frontend:
     name: Frontend patterns
     items:
