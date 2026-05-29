@@ -1,5 +1,0 @@
-description: Find problems, challenge approaches, and surface hidden risks
-modules:
-- ai/analysis/challenge-premise
-- ai/analysis/find-problems
-- ai/analysis/surface-risks

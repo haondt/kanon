@@ -1,32 +1,31 @@
 meta:
   spek_version: 0.0.0
-  spek_sha: 7f7a9d06f64b785fde6654586a5389ef0577241d
+  spek_sha: 7918f94e7a5ec9b0f2dc7933b0408a836b1c3d5e
   integrations:
   - claude
   - windsurf
-  profile: python/cli
+  profile: haondt::python/cli
 modules:
-- ai/analysis/find-problems
-- ai/coding/prefer-reuse
-- ai/coding/verify-before-use
-- ai/communication/prefer-brevity
-- ai/style/confirm-before-acting
-- ai/style/stay-in-scope
-- build/just
-- code/hygiene
-- docs/readme
+- haondt::ai/coding/prefer-reuse
+- gh::haondt/spek-specs::ai/coding/verify-before-use
+- gh::haondt/spek-specs::ai/communication/prefer-brevity
+- gh::haondt/spek-specs::ai/style/confirm-before-acting
+- gh::haondt/spek-specs::ai/style/stay-in-scope
+- gh::haondt/spek-specs::build/just
+- gh::haondt/spek-specs::code/hygiene
+- gh::haondt/spek-specs::docs/readme
+- gh::haondt/spek-specs::git/branch-base
+- gh::haondt/spek-specs::git/commit-base
+- gh::haondt/spek-specs::git/commit-long
+- gh::haondt/spek-specs::python/build
+- gh::haondt/spek-specs::python/dependencies/base
+- gh::haondt/spek-specs::python/dependencies/uv
+- gh::haondt/spek-specs::python/models/pydantic
+- gh::haondt/spek-specs::python/style
+- gh::haondt/spek-specs::python/testing/base
+- gh::haondt/spek-specs::python/testing/pytest
+- gh::haondt/spek-specs::python/venv
 - docs/structure
-- git/branch-base
-- git/commit-base
-- git/commit-long
-- python/build
-- python/dependencies/base
-- python/dependencies/uv
-- python/models/pydantic
-- python/style
-- python/testing/base
-- python/testing/pytest
-- python/venv
 - systems/base
 - tools/spek/module
 - tools/spek/ref
@@ -47,7 +46,8 @@ modules:
 - workflow/spek-think
 - workflow/spek-todo
 stances:
-- autonomous
-- collaborative
-- critic
-sources: {}
+- haondt::autonomous
+- gh::haondt/spek-specs::collaborative
+- gh::haondt/spek-specs::critic
+sources:
+  haondt: gh::haondt/spek-specs
