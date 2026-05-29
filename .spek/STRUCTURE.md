@@ -2,15 +2,15 @@
 
 CLI tool for managing AI-assisted development conventions across projects.
 
-- Maintains a library of modular spec files (`specs/`) covering git, Python, workflow, docs, etc.
+- Resolves spec modules from external sources (`gh::`, `gl::`, local paths) and the built-in library
 - Initializes target projects via Q&A (`spek init`), stamping a resolved set of modules and stances into `.spek/`
-- Syncs spec files into committed local copies (`spek sync`) and generates AI tool output (rules, skills)
+- Syncs spec files locally (`spek sync`) and generates AI tool output (rules, skills); synced copies are gitignored
 - Provides a session workflow: `/spek-sketch` (optional) → `/spek-plan` → `/spek-build` → `/spek-retro`
 - Supports on-demand behavioral stances via `/spek-stance`
 - `/spek-think` enters a non-actionary brainstorming mode for the remainder of the conversation
 - `/spek-detour` makes a quick out-of-scope edit without going through the full workflow
 - `/spek-todo` adds an item to `.spek/todo.yaml`
-- `/spek-onboard` onboards an existing project: writes STRUCTURE.md, selects modules via `spek module list --json` + user approval, applies with `spek module set --sync`, extracts inline TODOs
+- `/spek-onboard` onboards an existing project: writes STRUCTURE.md, selects modules via `spek module list --json` + user approval, applies with `spek module set --sync`, adds inline TODOs to `.spek/todo.yaml`
 
 ## Tech stack
 
@@ -19,22 +19,14 @@ Python CLI — Click, Pydantic, PyYAML. Dev: uv, just, pytest. Published via Git
 ## Layout
 
 ```
-specs/           # the spec module library — content, not code
-  ai/            # AI behavioral conventions (style/, communication/, analysis/, coding/)
-  build/         # just, make
-  code/          # hygiene (language-agnostic)
-  config/        # configuration conventions
-  docs/          # readme, structure, session, todo
-  frontend/      # hyperscript, htmx, bulma, dcdn (reference/informative modules)
-  git/           # commit and branch conventions
-  persistence/   # sqlite, postgres, redis
-  python/        # style, venv, config, build, models/, frameworks/, dependencies/, testing/
-  systems/       # architectural context modules — how pieces fit together; systems/base is the behavioral entry point (search ref library first)
-  tools/spek/    # informational reference for spek CLI tools (ref.md, module.md) — what commands exist and what they output, no behavioral rules
-  workflow/      # spek-sketch/plan/implement/review/fix/retro/stance/onboard skills
-references/      # on-demand reference entries (library docs, code patterns, examples); searched via spek ref
-stances/         # YAML files — each lists module paths; activated via /spek-stance
-profiles/        # YAML files — named module+stance bundles; base/ and python/
+specs/           # built-in spec module library — spek-specific content only
+  docs/          # structure.md convention
+  systems/       # architectural context modules (systems/base is the behavioral entry point)
+  tools/spek/    # informational reference for spek CLI tools (ref, module, todo, session, source)
+  workflow/      # spek session skill files (spek-sketch/plan/build/review/fix/retro/stance/onboard/etc.)
+profiles/        # YAML files — named module+stance bundles; only base/ remains (base, docs, workflow, tools)
+.spek/project/   # project-local content for this repo's dogfooded spek instance
+  references/    # on-demand reference entries searched via spek ref (e.g. references.md, specs.md)
 src/spek/
   cli.py         # Click entrypoint; registers all command groups
   commands/      # one file per subcommand: init, profile, local, module, source, cache, check, destroy, ref; session/, todo/, and sync/ are packages; _utils.py holds shared helpers (read_text_arg, read_text_arg_json for stdin/JSON input support)
@@ -50,7 +42,7 @@ src/spek/
 - `yaml_utils.py` — all YAML I/O: `load_yaml(path, model?)`, `save_yaml(data, path)`; also exports `FRONTMATTER_RE` (shared frontmatter regex); exports `_literal_representer`, `_enum_str_representer`, `_make_dumper(*enum_types)` for YAML serialization with block-literal strings and str-enum support
 - `render/` — package; reads local module copies, strips frontmatter, writes AI tool output files; `ModuleFrontmatter` parses `spek.description/output/name/args/integrations/preapproved_tools/template`; `output` and `template` are `Literal`-typed (`Literal["rule","skill"]` and `Literal["jinja"] | None`); when `template: jinja`, body is rendered through `_apply_jinja(body, context)` (Jinja2 `StrictUndefined`, `keep_trailing_newline=True`) with `modules` and `integrations` as sets before rule/skill branching; for `output: skill`, writes `<name>/SKILL.md` with generated YAML frontmatter (`description`, `argument-hint`/`args`, plus any keys from `integrations.<tool>` except `hooks`); Windsurf converts skills to workflows (`.windsurf/workflows/<name>.md` with description frontmatter); skills require an explicit `spek.name` — `ValueError` raised at render time if absent; `preapproved_tools` from spec frontmatter are merged into `allowed-tools` in the skill frontmatter; when `context: fork`, appends STRUCTURE.md preload commands to `allowed-tools` and injects a `## Project structure` shell-expansion block into the skill body; Windsurf rules are flattened (path separators replaced with `--`) and require a `trigger` field in frontmatter (defaults to `always_on`, override via `integrations.windsurf.trigger`); tool-specific rules declared in `config.AI_TOOL_SPECIFIC_RULES`; `render_tool_specific_rules(ai_tool, project_root)` writes the tool-specific rule file; `collect_hooks(content, ai_tool)` extracts hook declarations from frontmatter; `collect_preapproved_tools(content)` extracts rule-module `preapproved_tools`; `render_settings(hooks_by_event, project_root, ai_tool, preapproved_tools?)` writes `.claude/settings.json` with `permissions.allow` + hooks
 - `modules.py` — `list_modules(specs_dir)` enumerates all spec files in a given directory
-- `profiles.py` — `resolve_profile()` recursive resolution with deduplication; `ProfileSpec` model
+- `profiles.py` — `resolve_profile()` recursive resolution with deduplication; `ProfileSpec` model; built-in profiles under `profiles/base/` only (base, docs, workflow, tools)
 - `references.py` — `search_references(repo_path, terms, project_root?)` keyword search; `read_reference(repo_path, name, project_root?)` retrieves content; project refs in `.spek/project/references/` shadow upstream on name collision; `ReferenceResult` model
 - `session.py` — `SessionState` Pydantic model (goal, plan, build, review, amendments, detours, stance, `_meta`); load/save/lint; `_meta.next_key` tracks next stable key per namespace (`pn`, `bn`, `f`, `p`); `Finding` has required `type: FindingType` and `severity: FindingSeverity` fields; `ReviewPass` has `status: Literal['open','approved']`; YAML serialization helpers moved to `yaml_utils.py`; backing file `.spek/session.yaml`
 - `todo.py` — `TodoState` / `TodoSection` Pydantic models; load/save/lint; backing file `.spek/todo.yaml`
@@ -141,8 +133,8 @@ Full `spek todo` command group. Reads/writes `.spek/todo.yaml`. `section add` au
 - Whether a module is always-active or stance-only is determined entirely by its presence in `spek.yaml.modules`, not by anything in the file itself
 - `_metadata.py` version is `"0.0.0"` in the repo — CI rewrites it from the git tag at build time; do not edit manually
 - `spek.yaml` is for *target projects* — this repo's `.spek/spek.yaml` is its own dogfooded config
-- `.spek/modules/` and `.spek/stances/` in target projects are committed — AI output can be regenerated without the upstream spek repo
-- Session state is now `.spek/session.yaml` (committed); todo backlog is `.spek/todo.yaml` (committed); `.spek/TODO.md` has been deleted; `.spek/SESSION.md` is no longer created by any code path
+- `.spek/modules/` and `.spek/stances/` are gitignored — regenerated by `spek sync`; only `spek.yaml`, `todo.yaml`, `session.yaml`, `STRUCTURE.md`, and `.spek/project/` are committed
+- `.spek/TODO.md` and `.spek/SESSION.md` are no longer created by any code path; session state lives in `session.yaml`, todo backlog in `todo.yaml`
 - `commands/session/`, `commands/todo/`, and `commands/sync/` are packages (one module per subgroup) rather than single files; `core/render/` and `core/sources/` are also packages
 - Do not edit `.claude/*`, `.windsurf/*` or any other tool-specific files directly. Those files are generated by spek, if you ever need to edit rules or skills or settings, you should be looking at the upstream specs, python code or other generators.
 
@@ -152,11 +144,12 @@ This repo dogfoods spek, so it contains **both** the spec library **and** a `.sp
 
 | Directory | What it is | When to edit |
 |---|---|---|
-| `specs/` | The distributable module library — source of truth | Adding or changing spec content for users of spek |
-| `.spek/modules/` | Synced copies of whichever modules this project uses | Never edit directly — regenerated by `spek sync` |
+| `specs/` | Built-in module library (workflow, tools, systems, docs specs only) | Adding or changing built-in spek spec content |
+| `profiles/` | Named module bundles for bootstrapping | Adding or changing profile definitions |
+| `.spek/modules/` | Synced copies of whichever modules this project uses (gitignored) | Never edit directly — regenerated by `spek sync` |
 | `.spek/` (other files) | Session state, todo, structure for this project | Session workflow (session.yaml, todo.yaml) |
 
-**Rule:** if a task involves spec content (guidelines, rules, conventions shipped to users), edit files under `specs/`. If a task involves this project's own session or docs, edit files under `.spek/`. Never edit `.spek/modules/` by hand.
+**Rule:** if a task involves built-in spec content (workflow skills, tool references), edit files under `specs/`. External spec content (AI conventions, Python style, etc.) lives in an external source repo. If a task involves this project's own session or docs, edit files under `.spek/`. Never edit `.spek/modules/` by hand.
 
 **Sync timing:** `just sync` is run at the user's discretion — they may choose to sync mid-session or wait until after the retro. During a session, `.spek/modules/` may intentionally lag `specs/`; do not flag this as an error.
 
