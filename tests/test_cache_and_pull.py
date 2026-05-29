@@ -16,12 +16,13 @@ from spek.core.config import (
     GITHUB_SCHEME,
     GITLAB_SCHEME,
     SOURCED_MODULES_DIR,
-    SpekEnv,
     SourceReference,
+    SourcedResource,
+    SpekConfig,
+    SpekEnv,
 )
-from spek.core.sources import GitHubSource, GitLabSource, hydrate_source_reference
+from spek.core.sources import GitHubSource, GitLabSource
 from spek.core.sources._base import ParsedSource, PullResult
-from spek.core.sources._resolve import resolve_sources
 
 
 # ── helpers ───────────────────────────────────────────────────────────────────
@@ -55,25 +56,25 @@ def make_config(root: Path, **extra) -> None:
 # ── cache_path() derivation ───────────────────────────────────────────────────
 
 
-def test_cache_path_gh_no_ref(tmp_path, monkeypatch):
+def test_cache_path_gh_no_ref(tmp_path: Path, monkeypatch):
     monkeypatch.setenv("SPEK_SOURCES_CACHE_PATH", str(tmp_path / "cache"))
     SpekEnv.reset()
-    src = GitHubSource.parse(None, "org/repo")  # type: ignore[arg-type]
-    assert src.cache_path() == tmp_path / "cache" / GITHUB_SCHEME / "org" / "repo"
+    src = GitHubSource.parse("org/repo")
+    assert src.cache_path() == tmp_path / "cache" / GITHUB_SCHEME / "org%2Frepo"
 
 
 def test_cache_path_gh_with_ref(tmp_path, monkeypatch):
     monkeypatch.setenv("SPEK_SOURCES_CACHE_PATH", str(tmp_path / "cache"))
     SpekEnv.reset()
-    src = GitHubSource.parse(None, "org/repo@main")  # type: ignore[arg-type]
-    assert src.cache_path() == Path(str(tmp_path / "cache" / GITHUB_SCHEME / "org" / "repo") + "@main")
+    src = GitHubSource.parse("org/repo@main")
+    assert src.cache_path() == tmp_path / "cache" / GITHUB_SCHEME / "org%2Frepo%40main"
 
 
 def test_cache_path_gl_groups(tmp_path, monkeypatch):
     monkeypatch.setenv("SPEK_SOURCES_CACHE_PATH", str(tmp_path / "cache"))
     SpekEnv.reset()
-    src = GitLabSource.parse(None, "g1/g2/repo@abc")  # type: ignore[arg-type]
-    assert src.cache_path() == Path(str(tmp_path / "cache" / GITLAB_SCHEME / "g1" / "g2" / "repo") + "@abc")
+    src = GitLabSource.parse("g1/g2/repo@abc")
+    assert src.cache_path() == tmp_path / "cache" / GITLAB_SCHEME / "g1%2Fg2%2Frepo%40abc"
 
 
 # ── pull() behaviour ──────────────────────────────────────────────────────────
@@ -85,7 +86,7 @@ def test_pull_clones_when_missing(tmp_path, monkeypatch):
     monkeypatch.setenv("SPEK_SOURCES_CACHE_PATH", str(tmp_path / "cache"))
     SpekEnv.reset()
 
-    src = GitHubSource.parse(None, "org/repo")  # type: ignore[arg-type]
+    src = GitHubSource.parse("org/repo")
 
     def _patched_ensure_cloned(self):
         path = self.cache_path()
@@ -105,7 +106,7 @@ def test_pull_noop_when_present_force_false(tmp_path, monkeypatch):
     monkeypatch.setenv("SPEK_SOURCES_CACHE_PATH", str(tmp_path / "cache"))
     SpekEnv.reset()
 
-    src = GitHubSource.parse(None, "org/repo")  # type: ignore[arg-type]
+    src = GitHubSource.parse( "org/repo")  # type: ignore[arg-type]
     cache_path = src.cache_path()
     # Pre-clone so cache already exists
     git.Repo.clone_from(str(remote), str(cache_path))
@@ -124,7 +125,7 @@ def test_pull_fetches_when_present_force_true(tmp_path, monkeypatch):
     monkeypatch.setenv("SPEK_SOURCES_CACHE_PATH", str(tmp_path / "cache"))
     SpekEnv.reset()
 
-    src = GitHubSource.parse(None, "org/repo")  # type: ignore[arg-type]
+    src = GitHubSource.parse("org/repo")
     cache_path = src.cache_path()
     git.Repo.clone_from(str(remote), str(cache_path))
 
@@ -211,15 +212,13 @@ def test_cache_clear_named(tmp_path, monkeypatch):
     make_bare_repo(remote)
 
     cache_dir = tmp_path / "cache"
-    src_cache = cache_dir / GITHUB_SCHEME / "org" / "repo"
+    src_cache = cache_dir / GITHUB_SCHEME / "org%2Frepo"
     git.Repo.clone_from(str(remote), str(src_cache))
 
-    other = cache_dir / GITHUB_SCHEME / "org" / "other"
+    other = cache_dir / GITHUB_SCHEME / "org%2Fother"
     git.Repo.clone_from(str(remote), str(other))
 
     make_config(tmp_path, sources={"mywork": "gh::org/repo"})
-
-    monkeypatch.setattr(GitHubSource, "_ensure_cloned", lambda self: self.cache_path())
 
     result = CliRunner().invoke(cli, ["--project-root", str(tmp_path), "cache", "clear", "mywork"])
     assert result.exit_code == 0, result.output
@@ -309,7 +308,7 @@ def test_module_add_clones_remote_source(tmp_path, monkeypatch):
     monkeypatch.setenv("SPEK_SOURCES_CACHE_PATH", str(tmp_path / "cache"))
     SpekEnv.reset()
 
-    cache_path = tmp_path / "cache" / GITHUB_SCHEME / "org" / "repo"
+    cache_path = tmp_path / "cache" / GITHUB_SCHEME / "org%2Frepo"
     cloned = []
 
     def fake_clone_from(url, path, **kwargs):
@@ -336,3 +335,78 @@ def test_module_add_clones_remote_source(tmp_path, monkeypatch):
     assert result.exit_code == 0, result.output
     assert cloned
     assert cache_path.exists()
+
+
+# ── spek cache status ─────────────────────────────────────────────────────────
+
+
+def test_cache_status_empty(tmp_path, monkeypatch):
+    monkeypatch.setenv("SPEK_SOURCES_CACHE_PATH", str(tmp_path / "cache"))
+    SpekEnv.reset()
+    make_config(tmp_path)
+    result = CliRunner().invoke(cli, ["--project-root", str(tmp_path), "cache", "status"])
+    assert result.exit_code == 0, result.output
+    assert "empty" in result.output.lower()
+
+
+def test_cache_status_shows_cloned_repo(tmp_path, monkeypatch):
+    monkeypatch.setenv("SPEK_SOURCES_CACHE_PATH", str(tmp_path / "cache"))
+    SpekEnv.reset()
+    remote = tmp_path / "remote.git"
+    make_bare_repo(remote)
+    repo_path = tmp_path / "cache" / "gh" / "org%2Frepo"
+    git.Repo.clone_from(str(remote), str(repo_path))
+    make_config(tmp_path)
+    result = CliRunner().invoke(cli, ["--project-root", str(tmp_path), "cache", "status"])
+    assert result.exit_code == 0, result.output
+    assert "gh" in result.output
+    assert "org%2Frepo" in result.output
+
+
+# ── list_synced_modules round-trip ────────────────────────────────────────────
+
+
+def _make_spek_dir(root: Path) -> None:
+    spek_dir = root / ".spek"
+    spek_dir.mkdir(exist_ok=True)
+    (spek_dir / "modules").mkdir(exist_ok=True)
+    (spek_dir / "spek.yaml").write_text(yaml.dump({
+        "meta": {"spek_version": "0.0.0", "spek_sha": "abc1234", "integrations": ["claude"]},
+        "modules": [],
+    }))
+
+
+def test_list_synced_modules_roundtrip_gh_source(tmp_path):
+    from spek.commands.sync._synced import list_synced_modules, write_synced_module
+    from spek.core.modules import Module
+    _make_spek_dir(tmp_path)
+    SpekConfig.initialize(tmp_path)
+
+    resource = SourcedResource(SourceReference("gh", "org/repo"), "python/style")
+    write_synced_module(resource, Module.load("Style rule."))
+
+    assert resource in list_synced_modules()
+
+
+def test_list_synced_modules_roundtrip_local_absolute_path(tmp_path):
+    from spek.commands.sync._synced import list_synced_modules, write_synced_module
+    from spek.core.modules import Module
+    _make_spek_dir(tmp_path)
+    SpekConfig.initialize(tmp_path)
+
+    resource = SourcedResource(SourceReference("local", "/home/user/my-specs"), "python/style")
+    write_synced_module(resource, Module.load("Style rule."))
+
+    assert resource in list_synced_modules()
+
+
+def test_list_synced_modules_roundtrip_gl_with_groups(tmp_path):
+    from spek.commands.sync._synced import list_synced_modules, write_synced_module
+    from spek.core.modules import Module
+    _make_spek_dir(tmp_path)
+    SpekConfig.initialize(tmp_path)
+
+    resource = SourcedResource(SourceReference("gl", "group/subgroup/repo@main"), "conventions/commits")
+    write_synced_module(resource, Module.load("Commit rule."))
+
+    assert resource in list_synced_modules()

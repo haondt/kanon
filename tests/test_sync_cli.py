@@ -5,6 +5,7 @@ import yaml
 from click.testing import CliRunner
 
 from spek.cli import cli
+from spek.core.config import LOCAL_SCHEME, SourceReference
 
 
 def make_project(root: Path, modules: list[str], module_contents: dict[str, str]) -> None:
@@ -197,16 +198,16 @@ def test_sync_pull_external_namespace(tmp_path):
     ])
 
     assert result.exit_code == 0, result.output
-    assert (spek_dir / "modules" / "alias" / "mywork" / "python" / "style.md").exists()
-    assert (project / ".claude" / "rules" / "alias" / "mywork" / "python" / "style.md").exists()
+    src_subpath = SourceReference(LOCAL_SCHEME, str(ext_specs)).cache_subpath()
+    assert (spek_dir / "modules" / src_subpath / "python" / "style.md").exists()
+    assert (project / ".claude" / "rules" / src_subpath / "python" / "style.md").exists()
 
 
 def test_sync_external_namespace_produces_nested_output(tmp_path):
-    """External namespace 'mywork' produces rules at .claude/rules/mywork/..."""
+    """External namespace 'mywork' produces rules under a path derived from the source address."""
     spek_dir = tmp_path / ".spek"
     spek_dir.mkdir()
 
-    # External source directory
     ext_dir = tmp_path / "mywork-specs"
     ext_dir.mkdir()
     (ext_dir / "specs" / "python").mkdir(parents=True)
@@ -224,6 +225,7 @@ def test_sync_external_namespace_produces_nested_output(tmp_path):
     ])
 
     assert result.exit_code == 0, result.output
-    rule = tmp_path / ".claude" / "rules" / "alias" / "mywork" / "python" / "style.md"
+    src_subpath = SourceReference(LOCAL_SCHEME, str(ext_dir)).cache_subpath()
+    rule = tmp_path / ".claude" / "rules" / src_subpath / "python" / "style.md"
     assert rule.exists(), result.output
     assert rule.read_text() == "Use type hints."

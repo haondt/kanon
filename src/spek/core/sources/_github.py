@@ -12,10 +12,9 @@ from spek.core.config import (
     SOURCED_PROFILES_DIR,
     SOURCED_REFS_DIR,
     SOURCED_STANCES_DIR,
-    SpekEnv,
     SourceReference,
 )
-from spek.core.sources._base import PullResult, SourceResolver
+from spek.core.sources._base import PullResult
 from spek.core.sources._filesystem import FilesystemSource
 
 
@@ -25,28 +24,27 @@ class GitHubSource(FilesystemSource):
     repo: str
     ref: str | None
 
+
+    @override
+    def cache_path(self) -> Path:
+        return self.get_reference().cache_path()
+
     @classmethod
-    def parse(cls, resolver: SourceResolver, address: str) -> GitHubSource:
+    def parse(cls, address: str) -> GitHubSource:
         rest, _, ref = address.partition("@")
         ref = ref or None
         parts = rest.split("/")
         if len(parts) != 2 or not all(parts):
             raise ValueError(f"Invalid GitHub source path: {address!r}. Expected gh::org/repo[@ref]")
-        return GitHubSource(_resolver=resolver, org=parts[0], repo=parts[1], ref=ref)
+        return GitHubSource(org=parts[0], repo=parts[1], ref=ref)
 
     @override
-    def serialize(self) -> str:
+    def get_reference(self) -> SourceReference:
         path = f'{self.org}/{self.repo}'
         if self.ref:
             path = f'{path}@{self.ref}'
-        return SourceReference(GITHUB_SCHEME, path).as_string
+        return SourceReference(GITHUB_SCHEME, path)
 
-    @override
-    def cache_path(self) -> Path:
-        base = SpekEnv.instance().sources_cache_path / GITHUB_SCHEME / f"{self.org}/{self.repo}"
-        if self.ref:
-            return Path(f"{base}@{self.ref}")
-        return base
 
     def _ensure_cloned(self) -> Path:
         path = self.cache_path()

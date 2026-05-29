@@ -4,7 +4,7 @@ import click
 
 from spek.commands._utils import load_config_or_exit
 from spek.core.config import SourcedResource
-from spek.core.sources import resolve_sources
+from spek.core.sources import SourceResolver
 
 
 @click.group()
@@ -16,7 +16,7 @@ def profile() -> None:
 def profile_list() -> None:
     """List all available profiles."""
     load_config_or_exit()
-    sources = resolve_sources()
+    sources = SourceResolver.instance()
     profile_refs: list[SourcedResource] = []
     for source_key, source in sources.items():
         for path in source.list_profiles():
@@ -48,11 +48,9 @@ def profile_apply(name: str | None, run_sync: bool) -> None:
         click.echo("No profile recorded in spek.yaml and no NAME given.")
         raise SystemExit(1)
 
-    sources = resolve_sources()
-
     try:
         profile_ref = SourcedResource.parse(profile_ref)
-        profile = sources[profile_ref.source].hydrate_profile(profile_ref.path)
+        profile = SourceResolver.instance()[profile_ref.source].hydrate_profile(profile_ref.path)
     except FileNotFoundError as e:
         click.echo(str(e))
         raise SystemExit(1)
@@ -64,7 +62,7 @@ def profile_apply(name: str | None, run_sync: bool) -> None:
     config.stances = profile.stances
     config.meta.profile = profile_ref.as_string
     config.save()
-    click.echo(f"Applied profile '{profile_ref}': {len(config.modules)} module(s), {len(config.stances)} stance(s) written to spek.yaml.")
+    click.echo(f"Applied profile '{profile_ref.as_string}': {len(config.modules)} module(s), {len(config.stances)} stance(s) written to spek.yaml.")
 
     if run_sync:
         from spek.commands.sync import do_sync

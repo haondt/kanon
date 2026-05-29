@@ -7,6 +7,7 @@ from enum import StrEnum
 from pathlib import Path
 from collections.abc import Sequence
 from typing import Any, ClassVar, override
+import urllib.parse
 from pydantic import BaseModel
 
 from spek.core.yaml_utils import load_yaml, save_yaml
@@ -195,6 +196,9 @@ class SpekConfig(BaseModel):
     def save(self) -> None:
         save_yaml(self, self.root() / CONFIG_FILE)
 
+
+_cache_path_safe: str = '-_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+
 @dataclass
 class SourceReference:
     scheme: str
@@ -295,6 +299,19 @@ class SourceReference:
         sanitized_sorted = sorted(sanitized.items(), key=lambda f: f[0])
         return [i[1] for i in sanitized_sorted]
 
+    def cache_subpath(self) -> str:
+        return f'{urllib.parse.quote(self.scheme, _cache_path_safe)}/{urllib.parse.quote(self.address, _cache_path_safe)}'
+
+    @classmethod
+    def from_cache_subpath(cls, scheme_part: str, address_part: str) -> SourceReference:
+        return cls(
+            scheme=urllib.parse.unquote(scheme_part),
+            address=urllib.parse.unquote(address_part),
+        )
+
+    def cache_path(self) -> Path:
+        return SpekEnv.instance().sources_cache_path / self.cache_subpath()
+
 SourceReference.SPEK_SOURCE_REFERENCE = SourceReference(SPEK_SCHEME, SPEK_ADDRESS)
 SourceReference.PROJECT_SOURCE_REFERENCE = SourceReference(SPEK_SCHEME, PROJECT_ADDRESS)
 SourceReference.SELF_SOURCE_REFERENCE = SourceReference(SPEK_SCHEME, SELF_ADDRESS)
@@ -370,4 +387,3 @@ class SourcedResource:
             sanitized[r.as_fully_qualified_string] = r.as_string
         sanitized_sorted = sorted(sanitized.items(), key=lambda f: f[0])
         return [i[1] for i in sanitized_sorted]
-

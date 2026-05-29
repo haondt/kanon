@@ -8,22 +8,22 @@ from questionary import Choice
 
 from spek.commands._utils import load_config_or_exit
 from spek.core.config import SourceReference, SourcedResource, SpekConfig
-from spek.core.sources import ParsedSource, resolve_sources
+from spek.core.sources import SourceResolver
 
 
-def _pull_sources_for_modules(module_strings: list[str], sources: dict[SourceReference, ParsedSource]) -> None:
+def _pull_sources_for_modules(module_strings: list[str]) -> None:
     pulled: set[SourceReference] = set()
     for m in module_strings:
         sr = SourcedResource.parse(m)
         src = sr.source
         if src not in pulled:
             pulled.add(src)
-            sources[src].pull()
+            SourceResolver.instance()[src].pull()
 
 
 def _all_available() -> list[SourcedResource]:
     result: list[SourcedResource] = []
-    for source_ref, source in resolve_sources().items():
+    for source_ref, source in SourceResolver.instance().items():
         for path in source.list_modules():
             result.append(SourcedResource(source_ref, path))
     return sorted(result, key=lambda f: f.as_fully_qualified_string)
@@ -42,7 +42,7 @@ def module_edit(run_sync: bool) -> None:
 
 def _do_picker(run_sync: bool) -> None:
     config = load_config_or_exit()
-    sources = resolve_sources()
+    sources = SourceResolver.instance()
 
     available = _all_available()
     available = { m.as_string: sources[m.source].hydrate_module(m.path) for m in available }
@@ -64,7 +64,7 @@ def _do_picker(run_sync: bool) -> None:
         use_jk_keys=False,
     ).ask()
 
-    if not result:
+    if result is None:
         click.echo("No modules selected. Aborting.")
         raise SystemExit(1)
 
@@ -72,7 +72,7 @@ def _do_picker(run_sync: bool) -> None:
     config.save()
     click.echo(f"Saved {len(result)} module(s) to spek.yaml.")
 
-    _pull_sources_for_modules(result, sources)
+    _pull_sources_for_modules(result)
 
     if run_sync:
         from spek.commands.sync import do_sync
@@ -86,7 +86,7 @@ def module_list(as_json: bool) -> None:
     """List all available modules with descriptions."""
     config = load_config_or_exit()
     selected_set = set(SourcedResource.sanitize(config.modules))
-    sources = resolve_sources()
+    sources = SourceResolver.instance()
     available = _all_available()
     available = { m.as_string: (m, sources[m.source].hydrate_module(m.path)) for m in available }
 
@@ -121,8 +121,8 @@ def module_set(modules: tuple[str, ...], run_sync: bool) -> None:
     """Non-interactively set the module list (full replacement)."""
     module_refs = [SourcedResource.parse(r) for r in SourcedResource.sanitize(modules)]
     config = load_config_or_exit()
-    sources = resolve_sources()
-    unknown = [m.as_string for m in module_refs if m.source not in sources or not sources[m.source].contains_module(m.path)]
+    sources = SourceResolver.instance()
+    unknown = [m.as_string for m in module_refs if sources.try_resolve(m.source) is None or not sources[m.source].contains_module(m.path)]
     if unknown:
         click.echo(f"Unknown module(s): {', '.join(unknown)}")
         raise SystemExit(1)
@@ -131,7 +131,7 @@ def module_set(modules: tuple[str, ...], run_sync: bool) -> None:
     config.save()
     click.echo(f"Saved {len(modules)} module(s) to spek.yaml.")
 
-    _pull_sources_for_modules([r.as_string for r in module_refs], sources)
+    _pull_sources_for_modules([r.as_string for r in module_refs])
 
     if run_sync:
         from spek.commands.sync import do_sync
@@ -148,8 +148,8 @@ def module_add(modules: tuple[str, ...], run_sync: bool) -> None:
     modules_sanitized = SourcedResource.sanitize(modules)
     module_refs = [SourcedResource.parse(r) for r in modules_sanitized]
     config = load_config_or_exit()
-    sources = resolve_sources()
-    unknown = [m.as_string for m in module_refs if m.source not in sources or not sources[m.source].contains_module(m.path)]
+    sources = SourceResolver.instance()
+    unknown = [m.as_string for m in module_refs if sources.try_resolve(m.source) is None or not sources[m.source].contains_module(m.path)]
     if unknown:
         click.echo(f"Unknown module(s): {', '.join(unknown)}")
         raise SystemExit(1)
@@ -164,7 +164,7 @@ def module_add(modules: tuple[str, ...], run_sync: bool) -> None:
     config.save()
     click.echo(f"Added {len(modules)} module(s) to spek.yaml.")
 
-    _pull_sources_for_modules(new_modules, sources)
+    _pull_sources_for_modules(new_modules)
 
     if run_sync:
         from spek.commands.sync import do_sync
@@ -212,7 +212,7 @@ def module_search(terms: tuple[str, ...], source_filter: str | None, as_json: bo
     """
     config = SpekConfig.get()
     active_sanitized = set()
-    sources = resolve_sources()
+    sources = SourceResolver.instance()
     if config is not None:
         active_sanitized = set(SourcedResource.sanitize(config.modules))
 
@@ -220,7 +220,7 @@ def module_search(terms: tuple[str, ...], source_filter: str | None, as_json: bo
     if source_filter:
         parsed_source_filter = SourceReference.parse(source_filter)
 
-    if parsed_source_filter and parsed_source_filter not in sources:
+    if parsed_source_filter and sources.try_resolve(parsed_source_filter) is None:
         click.echo(f"Unknown source: '{source_filter}'")
         raise SystemExit(1)
 

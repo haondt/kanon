@@ -8,7 +8,7 @@ import click
 from spek.commands._utils import load_config_or_exit
 from spek.core.config import SourceReference, SpekConfig, SpekEnv
 from spek.core.settings import GlobalSettings
-from spek.core.sources import AliasRef, LocalSource, hydrate_source_reference, resolve_sources
+from spek.core.sources import AliasRef, LocalSource, SourceResolver, hydrate_source_reference
 from spek.core.sources._base import PullResult
 
 @click.group()
@@ -37,7 +37,7 @@ def source_add(source_name: str, path: str, global_scope: bool, force: bool) -> 
         value = SourceReference.parse(path)
         hydrated = hydrate_source_reference(value)
         if isinstance(hydrated, AliasRef):
-            resolved = resolve_sources().get(value)
+            resolved = SourceResolver.instance().try_resolve(value)
             if resolved is None:
                 raise ValueError(f"Unknown alias: {path!r}")
             hydrated = resolved
@@ -106,7 +106,7 @@ def source_status(as_json: bool, global_scope: bool) -> None:
         except ValueError:
             pass
 
-    resolved = resolve_sources()
+    resolved = SourceResolver.instance()
 
     rows: list[Any] = []
     for source_key, source in resolved.items():
@@ -143,7 +143,7 @@ def source_pull(name: str | None) -> None:
     With no arguments, pulls all resolved sources (non-remote sources are skipped).
     With NAME, pulls only the named source (alias or direct reference like gh::org/repo).
     """
-    resolved = resolve_sources()
+    resolved = SourceResolver.instance()
 
     if name is None:
         for source_key, src in resolved.items():
@@ -153,17 +153,13 @@ def source_pull(name: str | None) -> None:
 
     else:
         ref = SourceReference.parse(name, sanitize=True)
-        if ref in resolved:
+        try:
             src = resolved[ref]
-        else:
-            try:
-                hydrated = hydrate_source_reference(ref)
-                if isinstance(hydrated, AliasRef):
-                    raise ValueError
-                src = hydrated
-            except ValueError:
-                click.echo(f"Unknown source: {name!r}")
-                raise SystemExit(1)
+        except ValueError:
+            click.echo(f"Unknown source: {name!r}")
+            raise SystemExit(1)
         result = src.pull(force=True)
         if result != PullResult.NOOP:
             click.echo(f"{ref.as_string} ← {result.value}")
+        else:
+            click.echo(f"No pull required")

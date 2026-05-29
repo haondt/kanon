@@ -1,8 +1,0 @@
-description: "Python CLI tool"
-extends:
-  - python/base
-modules:
-  - python/dependencies/uv
-  - python/testing/pytest
-  - python/models/pydantic
-  - build/just

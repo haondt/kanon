@@ -5,9 +5,8 @@ import yaml
 from pathlib import Path
 
 from spek.core.config import SpekConfig, SourcedResource, SourceReference, SpekEnv
-from spek.core.settings import GlobalSettings
 from spek.core.sources._local import LocalSource
-from spek.core.sources._resolve import resolve_sources, _resolver
+from spek.core.sources._resolve import resolve_sources
 
 
 # ── SourcedResource.parse ─────────────────────────────────────────────────────
@@ -207,7 +206,7 @@ def test_list_modules_returns_sorted_names(tmp_path):
     (specs / "b").mkdir()
     (specs / "a" / "foo.md").write_text("")
     (specs / "b" / "bar.md").write_text("")
-    source = LocalSource(_resolver=_resolver, original_address=str(tmp_path), root=tmp_path)
+    source = LocalSource(original_address=str(tmp_path), root=tmp_path)
     result = source.list_modules()
     assert result == ["a/foo", "b/bar"]
 
@@ -217,12 +216,12 @@ def test_list_modules_ignores_non_md_files(tmp_path):
     specs.mkdir()
     (specs / "x.md").write_text("")
     (specs / "x.yaml").write_text("")
-    source = LocalSource(_resolver=_resolver, original_address=str(tmp_path), root=tmp_path)
+    source = LocalSource(original_address=str(tmp_path), root=tmp_path)
     result = source.list_modules()
     assert result == ["x"]
 
 
 def test_list_modules_empty_when_no_specs_dir(tmp_path):
-    source = LocalSource(_resolver=_resolver, original_address=str(tmp_path), root=tmp_path)
+    source = LocalSource(original_address=str(tmp_path), root=tmp_path)
     result = source.list_modules()
     assert result == []

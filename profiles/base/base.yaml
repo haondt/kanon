@@ -1,14 +1,7 @@
 description: "Core conventions for all projects"
 extends:
-  - base/ai
-  - base/git
-  - base/docs
-  - base/workflow
-  - base/tools
+  - self::base/docs
+  - self::base/workflow
+  - self::base/tools
 modules:
-  - code/hygiene
-  - systems/base
-stances:
-  - autonomous
-  - collaborative
-  - critic
+  - self::systems/base

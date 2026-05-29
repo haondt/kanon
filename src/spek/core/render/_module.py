@@ -125,7 +125,7 @@ class ClaudeModuleRenderer(ModuleRenderer):
     @classmethod
     def render_rule(cls, resource: SourcedResource, frontmatter: dict[str, Any] | BaseModel | None, content: str) -> Path:
         out_dir = output_dir_for(Integration.CLAUDE, OutputType.RULE)
-        out_path = (out_dir / f"{resource.source.scheme}/{resource.source.address}/{resource.path}").with_suffix(".md")
+        out_path = (out_dir / resource.source.cache_subpath() / resource.path).with_suffix(".md")
         out_path.parent.mkdir(parents=True, exist_ok=True)
         if frontmatter:
             out_path.write_text(f"---\n{dump_yaml(frontmatter)}\n---\n{content}")
@@ -177,7 +177,7 @@ class WindsurfModuleRenderer(ModuleRenderer):
     @classmethod
     def render_rule(cls, resource: SourcedResource, frontmatter: dict[str, Any] | BaseModel | None, content: str) -> Path:
         out_dir = output_dir_for(Integration.WINDSURF, OutputType.RULE)
-        path_infix = f"{resource.source.scheme}/{resource.source.address}/{resource.path}"
+        path_infix = f'{resource.source.cache_subpath()}/{resource.path}'
         flattened = path_infix.replace("/", "--")
         out_path = out_dir / Path(flattened).with_suffix(".md")
         out_path.parent.mkdir(parents=True, exist_ok=True)

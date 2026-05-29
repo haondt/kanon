@@ -11,7 +11,7 @@ from spek.core.modules import Module
 from spek.core.profiles import ProfileSpec, ShallowProfile
 from spek.core.references import NormalizedTerms, Reference
 from spek.core.stances import Stance
-from spek.core.sources._base import ParsedSource
+from spek.core.sources._base import ParsedSource, SourceResolver
 
 
 @dataclass
@@ -76,12 +76,12 @@ class FilesystemSource(ParsedSource, ABC):
 
     @override
     def hydrate_profile(self, path: str) -> ProfileSpec:
-        def _retrieve_profile_content_from_ref(ref: str) -> str:
-            parsed_ref = SourcedResource.parse(ref)
-            source = self._resolver[parsed_ref.source]
+        def _retrieve_profile_content_from_ref(parsed_ref: SourcedResource) -> str:
+            source = SourceResolver.instance()[parsed_ref.source]
             return source._retrieve_profile_content(parsed_ref.path)
         profile_content = self._retrieve_profile_content(path)
-        return ProfileSpec.load(profile_content, _retrieve_profile_content_from_ref, frozenset({path}))
+        self_reference = SourcedResource(self.get_reference(), path)
+        return ProfileSpec.load(profile_content, _retrieve_profile_content_from_ref, self_reference.source, frozenset({self_reference}))
 
     @override
     def shallow_hydrate_profile(self, path: str) -> ShallowProfile:

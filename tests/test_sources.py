@@ -174,6 +174,22 @@ def test_validate_as_key_local_prefix_raises():
         SourceReference.parse("local::mywork").validate_as_key()
 
 
+# ── cache_subpath / from_cache_subpath round-trip ─────────────────────────────
+
+
+@pytest.mark.parametrize("ref", [
+    SourceReference("gh", "org/repo"),
+    SourceReference("gh", "org/repo@main"),
+    SourceReference("gl", "g1/g2/repo@abc"),
+    SourceReference("local", "/some/absolute/path"),
+    SourceReference("local", "/path/with spaces/and@symbols"),
+])
+def test_cache_subpath_roundtrip(ref):
+    scheme_part, address_part = ref.cache_subpath().split("/", 1)
+    restored = SourceReference.from_cache_subpath(scheme_part, address_part)
+    assert restored == ref
+
+
 # ── hydrate_source_reference ──────────────────────────────────────────────────
 
 

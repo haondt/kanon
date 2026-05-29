@@ -17,8 +17,8 @@ def make_config(root: Path, modules: list[str] | None = None, **extra) -> None:
     }))
 
 
-def test_check_passes_with_valid_modules(tmp_path):
-    make_config(tmp_path, modules=["git/commit-base"])
+def test_check_passes_with_valid_modules(tmp_path: Path):
+    make_config(tmp_path, modules=["tools/spek/module"])
     result = CliRunner().invoke(cli, ["--project-root", str(tmp_path), "check"])
     assert result.exit_code == 0, result.output
     assert "All checks passed." in result.output

@@ -42,40 +42,40 @@ def test_module_list_json_entry_shape(tmp_path):
     assert "source" in entry
 
 
-def test_module_list_json_marks_active_correctly(tmp_path):
-    make_config(tmp_path, modules=["git/commit-base"])
+def test_module_list_json_marks_active_correctly(tmp_path: Path):
+    make_config(tmp_path, modules=["tools/spek/module"])
     result = CliRunner().invoke(cli, ["--project-root", str(tmp_path), "module", "list", "--json", ])
     by_name = {e["name"]: e for e in json.loads(result.output)}
-    assert by_name["git/commit-base"]["active"] is True
-    assert by_name["python/style"]["active"] is False
+    assert by_name["tools/spek/module"]["active"] is True
+    assert by_name["tools/spek/session"]["active"] is False
 
 
 def test_module_list_default_output_shows_checkmark(tmp_path):
-    make_config(tmp_path, modules=["git/commit-base"])
+    make_config(tmp_path, modules=["tools/spek/module"])
     result = CliRunner().invoke(cli, ["--project-root", str(tmp_path), "module", "list", ])
     assert result.exit_code == 0, result.output
     assert "[✓]" in result.output
-    assert "git/commit-base" in result.output
+    assert "tools/spek/module" in result.output
 
 
 # ── module set ────────────────────────────────────────────────────────────────
 
 
-def test_module_set_saves_modules(tmp_path):
-    make_config(tmp_path, modules=["git/commit-base"])
-    result = CliRunner().invoke(cli, ["--project-root", str(tmp_path), "module", "set", "python/style", "git/commit-base"
+def test_module_set_saves_modules(tmp_path: Path):
+    make_config(tmp_path, modules=["tools/spek/module"])
+    result = CliRunner().invoke(cli, ["--project-root", str(tmp_path), "module", "set", "tools/spek/session", "tools/spek/module"
     ])
     assert result.exit_code == 0, result.output
     config = SpekConfig.load(tmp_path / ".spek" / "spek.yaml")
-    assert set(config.modules) == {"python/style", "git/commit-base"}
+    assert set(config.modules) == {"tools/spek/session", "tools/spek/module"}
 
 
-def test_module_set_replaces_existing(tmp_path):
-    make_config(tmp_path, modules=["git/commit-base", "python/style"])
-    CliRunner().invoke(cli, ["--project-root", str(tmp_path), "module", "set", "code/hygiene"
+def test_module_set_replaces_existing(tmp_path: Path):
+    make_config(tmp_path, modules=["tools/spek/module", "tools/spek/session"])
+    CliRunner().invoke(cli, ["--project-root", str(tmp_path), "module", "set", "systems/base"
     ])
     config = SpekConfig.load(tmp_path / ".spek" / "spek.yaml")
-    assert config.modules == ["code/hygiene"]
+    assert config.modules == ["systems/base"]
 
 
 def test_module_set_rejects_unknown_module(tmp_path):
@@ -93,28 +93,28 @@ def test_module_set_no_config_exits(tmp_path):
     assert "spek init" in result.output
 
 
-def test_module_set_deduplicates_repeated_modules(tmp_path):
+def test_module_set_deduplicates_repeated_modules(tmp_path: Path):
     make_config(tmp_path)
-    result = CliRunner().invoke(cli, ["--project-root", str(tmp_path), "module", "set", "git/commit-base", "git/commit-base", "python/style"
+    result = CliRunner().invoke(cli, ["--project-root", str(tmp_path), "module", "set", "tools/spek/module", "tools/spek/module", "tools/spek/session"
     ])
     assert result.exit_code == 0, result.output
     config = SpekConfig.load(tmp_path / ".spek" / "spek.yaml")
-    assert config.modules.count("git/commit-base") == 1
-    assert set(config.modules) == {"git/commit-base", "python/style"}
+    assert config.modules.count("tools/spek/module") == 1
+    assert set(config.modules) == {"tools/spek/module", "tools/spek/session"}
 
 
-def test_module_set_preserves_stances_and_meta(tmp_path):
+def test_module_set_preserves_stances_and_meta(tmp_path: Path):
     spek_dir = tmp_path / ".spek"
     spek_dir.mkdir()
     (spek_dir / "spek.yaml").write_text(yaml.dump({
         "meta": {"spek_version": "1.2.3", "spek_sha": "abc1234", "integrations": ["claude"]},
-        "modules": ["git/commit-base"],
+        "modules": ["tools/spek/module"],
         "stances": ["autonomous", "collaborative"],
     }))
-    CliRunner().invoke(cli, ["--project-root", str(tmp_path), "module", "set", "python/style"
+    CliRunner().invoke(cli, ["--project-root", str(tmp_path), "module", "set", "tools/spek/session"
     ])
     config = SpekConfig.load(spek_dir / "spek.yaml")
-    assert config.modules == ["python/style"]
+    assert config.modules == ["tools/spek/session"]
     assert config.stances == ["autonomous", "collaborative"]
     assert config.meta.spek_version == "1.2.3"
 
@@ -135,15 +135,15 @@ def test_module_bare_shows_subcommands(tmp_path):
 # ── module add ────────────────────────────────────────────────────────────────
 
 
-def test_module_add_appends_to_existing(tmp_path):
-    make_config(tmp_path, modules=["git/commit-base"])
+def test_module_add_appends_to_existing(tmp_path: Path):
+    make_config(tmp_path, modules=["tools/spek/module"])
     result = CliRunner().invoke(cli, [
-        "--project-root", str(tmp_path), "module", "add", "python/style"
+        "--project-root", str(tmp_path), "module", "add", "tools/spek/session"
     ])
     assert result.exit_code == 0, result.output
     config = SpekConfig.load(tmp_path / ".spek" / "spek.yaml")
-    assert "git/commit-base" in config.modules
-    assert "python/style" in config.modules
+    assert "tools/spek/module" in config.modules
+    assert "tools/spek/session" in config.modules
 
 
 def test_module_add_rejects_unknown(tmp_path):
@@ -154,16 +154,16 @@ def test_module_add_rejects_unknown(tmp_path):
     assert "not/real" in result.output
 
 
-def test_module_add_already_active_reports_message(tmp_path):
-    make_config(tmp_path, modules=["git/commit-base"])
-    result = CliRunner().invoke(cli, ["--project-root", str(tmp_path), "module", "add", "git/commit-base"
+def test_module_add_already_active_reports_message(tmp_path: Path):
+    make_config(tmp_path, modules=["tools/spek/module"])
+    result = CliRunner().invoke(cli, ["--project-root", str(tmp_path), "module", "add", "tools/spek/module"
     ])
     assert result.exit_code == 0
     assert "already active" in result.output
 
 
 def test_module_add_no_config_exits(tmp_path):
-    result = CliRunner().invoke(cli, ["--project-root", str(tmp_path), "module", "add", "git/commit-base"
+    result = CliRunner().invoke(cli, ["--project-root", str(tmp_path), "module", "add", "tools/spek/module"
     ])
     assert result.exit_code != 0
     assert "spek init" in result.output
@@ -200,18 +200,18 @@ def test_module_remove_no_config_exits(tmp_path):
 # ── module search ─────────────────────────────────────────────────────────────
 
 
-def test_module_search_finds_matching(tmp_path):
+def test_module_search_finds_matching(tmp_path: Path):
     make_config(tmp_path)
-    result = CliRunner().invoke(cli, ["--project-root", str(tmp_path), "module", "search", "git"
+    result = CliRunner().invoke(cli, ["--project-root", str(tmp_path), "module", "search", "spek"
     ])
     assert result.exit_code == 0, result.output
-    assert "git" in result.output
+    assert "spek" in result.output
 
 
-def test_module_search_json_returns_list(tmp_path):
+def test_module_search_json_returns_list(tmp_path: Path):
     import json
-    make_config(tmp_path, modules=["git/commit-base"])
-    result = CliRunner().invoke(cli, ["--project-root", str(tmp_path), "module", "search", "git", "--json"
+    make_config(tmp_path, modules=["tools/spek/module"])
+    result = CliRunner().invoke(cli, ["--project-root", str(tmp_path), "module", "search", "spek", "--json"
     ])
     assert result.exit_code == 0, result.output
     data = json.loads(result.output)
@@ -224,10 +224,10 @@ def test_module_search_json_returns_list(tmp_path):
     assert "source" in entry
 
 
-def test_module_search_marks_active(tmp_path):
+def test_module_search_marks_active(tmp_path: Path):
     import json
-    make_config(tmp_path, modules=["git/commit-base"])
-    result = CliRunner().invoke(cli, ["--project-root", str(tmp_path), "module", "search", "commit-base", "--json"
+    make_config(tmp_path, modules=["systems/base"])
+    result = CliRunner().invoke(cli, ["--project-root", str(tmp_path), "module", "search", "base", "--json"
     ])
     data = json.loads(result.output)
     assert data[0]["active"] is True

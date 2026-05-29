@@ -12,10 +12,9 @@ from spek.core.config import (
     SOURCED_PROFILES_DIR,
     SOURCED_REFS_DIR,
     SOURCED_STANCES_DIR,
-    SpekEnv,
     SourceReference,
 )
-from spek.core.sources._base import PullResult, SourceResolver
+from spek.core.sources._base import PullResult
 from spek.core.sources._filesystem import FilesystemSource
 
 
@@ -25,8 +24,12 @@ class GitLabSource(FilesystemSource):
     repo: str
     ref: str | None
 
+    @override
+    def cache_path(self) -> Path:
+        return self.get_reference().cache_path()
+
     @classmethod
-    def parse(cls, resolver: SourceResolver, address: str) -> GitLabSource:
+    def parse(cls, address: str) -> GitLabSource:
         rest, _, ref = address.partition("@")
         ref = ref or None
         parts = rest.split("/")
@@ -34,21 +37,14 @@ class GitLabSource(FilesystemSource):
             raise ValueError(
                 f"Invalid GitLab source path: {address!r}. Expected gl::group/.../repo[@ref]"
             )
-        return GitLabSource(_resolver=resolver, groups=parts[:-1], repo=parts[-1], ref=ref)
+        return GitLabSource(groups=parts[:-1], repo=parts[-1], ref=ref)
 
     @override
-    def serialize(self) -> str:
+    def get_reference(self) -> SourceReference:
         path = '/'.join(self.groups + [self.repo])
         if self.ref:
             path = f'{path}@{self.ref}'
-        return SourceReference(GITLAB_SCHEME, path).as_string
-
-    @override
-    def cache_path(self) -> Path:
-        base = SpekEnv.instance().sources_cache_path / GITLAB_SCHEME / '/'.join(self.groups + [self.repo])
-        if self.ref:
-            return Path(f"{base}@{self.ref}")
-        return base
+        return SourceReference(GITLAB_SCHEME, path)
 
     def _ensure_cloned(self) -> Path:
         path = self.cache_path()

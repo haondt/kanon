@@ -1,7 +1,0 @@
-description: "AI assistant behavioral conventions and stances"
-modules:
-  - ai/communication/prefer-brevity
-  - ai/coding/verify-before-use
-  - ai/coding/prefer-reuse
-  - ai/style/stay-in-scope
-  - ai/style/confirm-before-acting

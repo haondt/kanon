@@ -4,13 +4,16 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from enum import StrEnum
 from pathlib import Path
-from typing import Callable
+from typing import ClassVar, TypeVar
+from collections.abc import Iterable
 
-from spek.core.config import SourceReference
+from spek.core.config import SourceReference, SourcedResource
 from spek.core.modules import Module
 from spek.core.profiles import ProfileSpec, ShallowProfile
 from spek.core.references import NormalizedTerms, Reference
 from spek.core.stances import Stance
+
+T = TypeVar("T", SourceReference, SourcedResource)
 
 
 class PullResult(StrEnum):
@@ -20,20 +23,50 @@ class PullResult(StrEnum):
     NOOP = "noop"
 
 
-@dataclass
-class SourceResolver:
-    get: Callable[[SourceReference], ParsedSource]
-    try_get: Callable[[SourceReference], ParsedSource | None]
+class SourceResolver(ABC):
+    _instance: ClassVar[SourceResolver | None] = None
+
+    @classmethod
+    def initialize(cls, instance: SourceResolver):
+        cls._instance = instance
+
+    @classmethod
+    def instance(cls) -> SourceResolver:
+        if cls._instance is None:
+            raise RuntimeError("SourceResolver has not been initialized. Call SourceResolver.initialize() first.")
+        return cls._instance
+
+    @classmethod
+    def reset(cls) -> None:
+        cls._instance = None
+
+    @abstractmethod
+    def resolve(self, ref: SourceReference) -> ParsedSource:
+        ...
+
+    @abstractmethod
+    def dealias(self, ref: T) -> T:
+        ...
+
+    @abstractmethod
+    def try_resolve(self, ref: SourceReference) -> ParsedSource | None:
+        ...
+
+    @abstractmethod
+    def items(self) -> Iterable[tuple[SourceReference, ParsedSource]]:
+        ...
+
+    @abstractmethod
     def __getitem__(self, ref: SourceReference) -> ParsedSource:
-        return self.get(ref)
+        ...
 
 @dataclass
 class ParsedSource(ABC):
-    _resolver: SourceResolver
-
     @abstractmethod
-    def serialize(self) -> str:
+    def get_reference(self) -> SourceReference:
         ...
+    def serialize(self) -> str:
+        return self.get_reference().as_string
     @abstractmethod
     def contains_module(self, path: str) -> bool:
         ...

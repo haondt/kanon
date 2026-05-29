@@ -5,7 +5,7 @@ import json
 
 from spek.core.config import SourcedResource
 from spek.core.references import NormalizedTerms, Reference
-from spek.core.sources import resolve_sources
+from spek.core.sources import SourceResolver
 
 
 @click.group()
@@ -20,7 +20,7 @@ def ref():
 @click.option("-n", "limit", type=int, default=10, help="Maximum results to return. 0 for unlimited.")
 def ref_search(terms: tuple[str, ...], as_json: bool, match_all: bool, limit: int) -> None:
     """Search reference entries by keyword."""
-    sources = resolve_sources()
+    sources = SourceResolver.instance()
     normalized_terms = NormalizedTerms(list(terms))
     results: list[tuple[int, str, Reference]] = []
 
@@ -56,9 +56,9 @@ def ref_search(terms: tuple[str, ...], as_json: bool, match_all: bool, limit: in
 @click.option("--json", "as_json", is_flag=True, help="Output result as JSON.")
 def ref_read(name: str, as_json: bool) -> None:
     """Read a reference entry by name."""
-    sources = resolve_sources()
+    sources = SourceResolver.instance()
     res = SourcedResource.parse(name)
-    source = sources.get(res.source)
+    source = sources.try_resolve(res.source)
     if source is None:
         click.echo(f"Could not resolve source {res.source}")
         raise SystemExit(1)

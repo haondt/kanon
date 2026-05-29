@@ -8,7 +8,7 @@ from spek.commands.sync._render import render_all
 from spek.commands.sync._stances import sync_stances
 from spek.commands.sync._synced import read_synced_stance
 from spek.core.config import SourceReference, SpekConfig
-from spek.core.sources import resolve_sources
+from spek.core.sources import SourceResolver
 
 
 def do_sync(pull: bool = False) -> None:
@@ -17,18 +17,17 @@ def do_sync(pull: bool = False) -> None:
 
     sync_stances(pull)
     config = SpekConfig.instance()
-    explicit_modules = set(config.modules_sr)
+    sources = SourceResolver.instance()
+    explicit_modules = {sources.dealias(r) for r in config.modules_sr}
     all_modules_needed = set(explicit_modules)
     for res in config.stances_sr:
-        all_modules_needed = all_modules_needed | set(read_synced_stance(res).modules_sr)
+        all_modules_needed = all_modules_needed | {sources.dealias(r) for r in read_synced_stance(res).modules_sr}
 
-    sources = resolve_sources()
 
     if pull:
         needed_refs = {sr.source for sr in all_modules_needed}
-        for ref, src in sources.items():
-            if ref in needed_refs:
-                src.pull(force=True)
+        for ref in needed_refs:
+            sources[ref].pull(force=True)
 
         spek_source = sources[SourceReference.SPEK_SOURCE_REFERENCE]
         new_sha = spek_source.get_sha()

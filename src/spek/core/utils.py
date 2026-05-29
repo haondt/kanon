@@ -26,10 +26,10 @@ def deep_merge(d1: dict[str, Any], d2: dict[str, Any], conflicts: str = "new", _
                 raise KeyError(f"Multiple entries found for key: {_path}.{k}")
             continue
         if isinstance(v, dict):
-            result[k] = deep_merge(result[k], v, conflicts, _path + "." + k)
+            result[k] = deep_merge(result[k], v, conflicts, _path + "." + k) # pyright: ignore[reportUnknownArgumentType]
             continue
         if isinstance(v, (tuple, list)):
-            result[k] = merge_list(result[k], v)
+            result[k] = merge_list(result[k], v) # pyright: ignore[reportArgumentType]
             continue
 
         if conflicts == "new":

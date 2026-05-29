@@ -4,13 +4,14 @@ import click
 
 from spek.commands.sync._synced import list_synced_modules, remove_synced_module, write_synced_module, create_synced_modules_dir
 from spek.core.config import SourcedResource
-from spek.core.sources import resolve_sources
+from spek.core.sources import SourceResolver
 
 def sync_modules(all_modules_needed: set[SourcedResource], pull: bool):
     create_synced_modules_dir()
-    sources = resolve_sources()
+    sources = SourceResolver.instance()
 
     synced_modules = set(list_synced_modules())
+    all_modules_needed = {sources.dealias(r) for r in all_modules_needed}
     if pull:
         to_pull = [s for s in all_modules_needed]
     else:
@@ -22,7 +23,7 @@ def sync_modules(all_modules_needed: set[SourcedResource], pull: bool):
         click.echo("No module pulls required.")
 
     for resource in to_pull:
-        source = sources.get(resource.source)
+        source = sources.try_resolve(resource.source)
         if source is None:
             click.echo(f"Error: source '{resource.source}' not found for module '{resource.as_string}'")
             raise SystemExit(1)

@@ -6,7 +6,7 @@ from typing import Any
 import click
 
 from spek.core.config import SourceReference, SpekEnv
-from spek.core.sources import AliasRef, hydrate_source_reference, resolve_sources
+from spek.core.sources import SourceResolver
 
 
 @click.group()
@@ -69,19 +69,13 @@ def cache_clear(name: str | None) -> None:
         click.echo("Cache cleared.")
         return
 
-    resolved = resolve_sources()
+    resolved = SourceResolver.instance()
     ref = SourceReference.parse(name, sanitize=True)
-    if ref in resolved:
+    try:
         src = resolved[ref]
-    else:
-        try:
-            hydrated = hydrate_source_reference(ref)
-            if isinstance(hydrated, AliasRef):
-                raise ValueError
-            src = hydrated
-        except ValueError:
-            click.echo(f"Unknown source: {name!r}")
-            raise SystemExit(1)
+    except ValueError:
+        click.echo(f"Unknown source: {name!r}")
+        raise SystemExit(1)
     path = src.cache_path()
     if path is None:
         click.echo(f"{ref.as_string} has no cache (not a remote source).")

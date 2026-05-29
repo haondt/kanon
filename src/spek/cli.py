@@ -1,6 +1,7 @@
 import click
 from spek import __version__
 from spek.core.config import SpekConfig
+from spek.core.sources import initialize as sources_initialize
 from spek.commands.scaffold import init
 from spek.commands.sync import sync
 from spek.commands.profile import profile
@@ -21,6 +22,7 @@ from spek.commands.todo import todo
 def cli(project_root: str) -> None:
     """Manage AI-assisted development conventions across projects."""
     SpekConfig.initialize(project_root)
+    sources_initialize()
 
 
 cli.add_command(init)

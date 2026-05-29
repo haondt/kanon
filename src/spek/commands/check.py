@@ -3,9 +3,9 @@ from __future__ import annotations
 import click
 
 from spek.commands._utils import load_config_or_exit
-from spek.core.config import GITHUB_SCHEME, GITLAB_SCHEME, SourceReference, SourcedResource
+from spek.core.config import SourceReference, SourcedResource
 from spek.core.settings import GlobalSettings
-from spek.core.sources import GitHubSource, GitLabSource, LocalSource, hydrate_source_reference, resolve_sources, AliasRef
+from spek.core.sources import GitHubSource, GitLabSource, LocalSource, SourceResolver, hydrate_source_reference, AliasRef
 
 
 @click.command("check")
@@ -32,16 +32,13 @@ def check() -> None:
             elif isinstance(parsed, (GitHubSource, GitLabSource)):
                 infos.append(f"Source {label!r} is a remote source (not yet fetched): {path}")
 
-    sources = resolve_sources()
+    sources = SourceResolver.instance()
 
     for module_ref in config.modules:
         module = SourcedResource.parse(module_ref)
-        if module.source not in sources:
-            if module.source.scheme in (GITHUB_SCHEME, GITLAB_SCHEME):
-                infos.append(f"Module {module_ref!r} references a remote source (not yet fetched).")
-            else:
-                errors.append(f"Could not resolve module {module_ref!r} because the source does not exist.")
-        elif not sources[module.source].contains_module(module.path):
+        if (resolved := sources.try_resolve(module.source)) is None:
+            errors.append(f"Could not resolve module {module_ref!r} because the source does not exist.")
+        elif not resolved.contains_module(module.path):
             source_obj = sources[module.source]
             if isinstance(source_obj, (GitHubSource, GitLabSource)):
                 infos.append(f"Module {module_ref!r} references a remote source (not yet fetched).")
@@ -50,11 +47,8 @@ def check() -> None:
 
     for stance_ref in config.stances:
         stance = SourcedResource.parse(stance_ref)
-        if stance.source not in sources:
-            if stance.source.scheme in (GITHUB_SCHEME, GITLAB_SCHEME):
-                infos.append(f"Stance {stance_ref!r} references a remote source (not yet fetched).")
-            else:
-                errors.append(f"Could not resolve stance {stance_ref!r} because the source does not exist.")
+        if (resolved := sources.try_resolve(stance.source)) is None:
+            errors.append(f"Could not resolve stance {stance_ref!r} because the source does not exist.")
         elif not sources[stance.source].contains_stance(stance.path):
             source_obj = sources[stance.source]
             if isinstance(source_obj, (GitHubSource, GitLabSource)):

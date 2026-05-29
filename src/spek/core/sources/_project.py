@@ -31,5 +31,5 @@ class ProjectSource(FilesystemSource):
         return SpekConfig.root() / PROJECT_STANCES_DIR
 
     @override
-    def serialize(self) -> str:
-        return SourceReference.PROJECT_SOURCE_REFERENCE.as_string
+    def get_reference(self) -> SourceReference:
+        return SourceReference.PROJECT_SOURCE_REFERENCE

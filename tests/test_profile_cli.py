@@ -1,3 +1,4 @@
+from pathlib import Path
 import yaml
 from click.testing import CliRunner
 
@@ -17,25 +18,25 @@ def make_config(root, profile=None):
     }))
 
 
-def test_profile_apply_updates_config(tmp_path):
+def test_profile_apply_updates_config(tmp_path: Path):
     make_config(tmp_path)
 
-    result = CliRunner().invoke(cli, ["--project-root", str(tmp_path), "profile", "apply", "base/git"])
+    result = CliRunner().invoke(cli, ["--project-root", str(tmp_path), "profile", "apply", "base/base"])
 
     assert result.exit_code == 0, result.output
     config = SpekConfig.load(tmp_path / ".spek" / "spek.yaml")
-    assert config.meta.profile == "base/git"
-    assert "git/commit-base" in config.modules
+    assert config.meta.profile == "base/base"
+    assert "workflow/base" in config.modules
 
 
-def test_profile_apply_uses_recorded_profile(tmp_path):
-    make_config(tmp_path, profile="base/git")
+def test_profile_apply_uses_recorded_profile(tmp_path: Path):
+    make_config(tmp_path, profile="base/base")
 
     result = CliRunner().invoke(cli, ["--project-root", str(tmp_path), "profile", "apply"])
 
     assert result.exit_code == 0, result.output
     config = SpekConfig.load(tmp_path / ".spek" / "spek.yaml")
-    assert config.meta.profile == "base/git"
+    assert config.meta.profile == "base/base"
 
 
 def test_profile_apply_no_config_exits(tmp_path):

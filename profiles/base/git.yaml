@@ -1,5 +1,0 @@
-description: "Git conventions"
-modules:
-  - git/commit-base
-  - git/commit-long
-  - git/branch-base

@@ -7,7 +7,7 @@ from questionary import Choice
 from spek import __version__
 from spek.core.config import SourceReference, SpekConfig, SpekMeta, SourcedResource
 from spek.core.config import AI_TOOL_OUTPUT_DIRS
-from spek.core.sources import resolve_sources
+from spek.core.sources import SourceResolver
 
 INTEGRATIONS = list(AI_TOOL_OUTPUT_DIRS)
 
@@ -21,19 +21,19 @@ def init() -> None:
 
     SpekConfig.root().mkdir(parents=True, exist_ok=True)
 
-    sources = resolve_sources()
+    sources = SourceResolver.instance()
 
     integrations = questionary.checkbox(
         "Select integrations:",
         choices=INTEGRATIONS,
         use_jk_keys=False,
     ).ask()
-    if not integrations:
+    if integrations is None:
         click.echo("No integrations selected. Aborting.")
         raise SystemExit(1)
 
-    selected_modules: list[str] = []
-    selected_stances: list[str] = []
+    selected_modules: list[str] | None = []
+    selected_stances: list[str] | None = []
     chosen_profile: str | None = None
 
     profile_refs = sorted(
@@ -71,7 +71,8 @@ def init() -> None:
         use_search_filter=True,
         use_jk_keys=False,
     ).ask()
-    if not selected_modules:
+
+    if selected_modules is None:
         click.echo("No modules selected. Aborting.")
         raise SystemExit(1)
 
