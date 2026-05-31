@@ -4,26 +4,26 @@ from pathlib import Path
 import yaml
 from click.testing import CliRunner
 
-from spek.cli import cli
-from spek.core.config import LOCAL_SCHEME, SourceReference
+from kanon.cli import cli
+from kanon.core.config import LOCAL_SCHEME, SourceReference
 
 
-def make_project(root: Path, modules: list[str], module_contents: dict[str, str]) -> None:
-    spek_dir = root / ".spek"
-    spek_dir.mkdir()
-    (spek_dir / "spek.yaml").write_text(yaml.dump({
+def make_project(root: Path, kanons: list[str], kanon_contents: dict[str, str]) -> None:
+    kanon_dir = root / ".kanon"
+    kanon_dir.mkdir()
+    (kanon_dir / "kanon.yaml").write_text(yaml.dump({
         "meta": {
-            "spek_version": "0.0.0",
-            "spek_sha": "abc1234",
+            "kanon_version": "0.0.0",
+            "kanon_sha": "abc1234",
             "integrations": ["claude"],
         },
-        "modules": modules,
+        "kanons": kanons,
     }))
-    (spek_dir / "modules").mkdir()
-    (spek_dir / "stances").mkdir()
-    for name, content in module_contents.items():
-        # All bare module names default to the spek::spek source, so store under spek/spek/
-        dest = spek_dir / "modules" / "spek" / "spek" / Path(name).with_suffix(".md")
+    (kanon_dir / "kanons").mkdir()
+    (kanon_dir / "stances").mkdir()
+    for name, content in kanon_contents.items():
+        # All bare kanon names default to the kanon::kanon source, so store under kanon/kanon/
+        dest = kanon_dir / "kanons" / "kanon" / "kanon" / Path(name).with_suffix(".md")
         dest.parent.mkdir(parents=True, exist_ok=True)
         dest.write_text(content)
 
@@ -37,20 +37,20 @@ def test_sync_writes_rule(tmp_path):
     ])
 
     assert result.exit_code == 0, result.output
-    rule = tmp_path / ".claude" / "rules" / "spek" / "spek" / "git" / "commit-style.md"
+    rule = tmp_path / ".claude" / "rules" / "kanon" / "kanon" / "git" / "commit-style.md"
     assert rule.exists()
     assert rule.read_text() == "Write concise commit messages."
 
 
 def test_sync_strips_frontmatter(tmp_path):
     make_project(tmp_path, ["workflow/base"], {
-        "workflow/base": "---\nspek:\n  output: rule\n---\nFollow the workflow.\n",
+        "workflow/base": "---\nkanon:\n  output: rule\n---\nFollow the workflow.\n",
     })
 
     CliRunner().invoke(cli, ["--project-root", str(tmp_path), "sync"
     ])
 
-    rule = tmp_path / ".claude" / "rules" / "spek" / "spek" / "workflow" / "base.md"
+    rule = tmp_path / ".claude" / "rules" / "kanon" / "kanon" / "workflow" / "base.md"
     assert rule.read_text() == "Follow the workflow.\n"
 
 
@@ -58,44 +58,44 @@ def test_sync_no_config_exits(tmp_path):
     result = CliRunner().invoke(cli, ["--project-root", str(tmp_path), "sync"
     ])
     assert result.exit_code != 0
-    assert "spek init" in result.output
+    assert "kanon init" in result.output
 
 
-def test_sync_stance_modules_not_rendered(tmp_path):
-    spek_dir = tmp_path / ".spek"
-    spek_dir.mkdir()
-    (spek_dir / "spek.yaml").write_text(yaml.dump({
-        "meta": {"spek_version": "0.0.0", "spek_sha": "abc1234", "integrations": ["claude"]},
-        "modules": ["git/commit-style"],
+def test_sync_stance_kanons_not_rendered(tmp_path):
+    kanon_dir = tmp_path / ".kanon"
+    kanon_dir.mkdir()
+    (kanon_dir / "kanon.yaml").write_text(yaml.dump({
+        "meta": {"kanon_version": "0.0.0", "kanon_sha": "abc1234", "integrations": ["claude"]},
+        "kanons": ["git/commit-style"],
         "stances": ["focused"],
     }))
-    (spek_dir / "modules").mkdir(parents=True)
-    (spek_dir / "modules" / "spek" / "spek" / "git").mkdir(parents=True)
-    (spek_dir / "modules" / "spek" / "spek" / "git" / "commit-style.md").write_text("Write good commits.")
-    (spek_dir / "modules" / "spek" / "spek" / "ai").mkdir(parents=True)
-    (spek_dir / "modules" / "spek" / "spek" / "ai" / "assume-and-proceed.md").write_text("Assume and proceed.")
-    (spek_dir / "stances" / "spek" / "spek").mkdir(parents=True)
-    (spek_dir / "stances" / "spek" / "spek" / "focused.yaml").write_text(yaml.dump({"modules": ["ai/assume-and-proceed"]}))
+    (kanon_dir / "kanons").mkdir(parents=True)
+    (kanon_dir / "kanons" / "kanon" / "kanon" / "git").mkdir(parents=True)
+    (kanon_dir / "kanons" / "kanon" / "kanon" / "git" / "commit-style.md").write_text("Write good commits.")
+    (kanon_dir / "kanons" / "kanon" / "kanon" / "ai").mkdir(parents=True)
+    (kanon_dir / "kanons" / "kanon" / "kanon" / "ai" / "assume-and-proceed.md").write_text("Assume and proceed.")
+    (kanon_dir / "stances" / "kanon" / "kanon").mkdir(parents=True)
+    (kanon_dir / "stances" / "kanon" / "kanon" / "focused.yaml").write_text(yaml.dump({"kanons": ["ai/assume-and-proceed"]}))
 
     result = CliRunner().invoke(cli, ["--project-root", str(tmp_path), "sync"
     ])
 
     assert result.exit_code == 0, result.output
-    assert (tmp_path / ".claude" / "rules" / "spek" / "spek" / "git" / "commit-style.md").exists()
-    assert not (tmp_path / ".claude" / "rules" / "spek" / "spek" / "ai" / "assume-and-proceed.md").exists()
+    assert (tmp_path / ".claude" / "rules" / "kanon" / "kanon" / "git" / "commit-style.md").exists()
+    assert not (tmp_path / ".claude" / "rules" / "kanon" / "kanon" / "ai" / "assume-and-proceed.md").exists()
 
 
 def test_sync_routes_command_to_skill(tmp_path):
-    make_project(tmp_path, ["workflow/spek-sketch"], {
-        "workflow/spek-sketch": "---\nspek:\n  output: skill\n  name: spek-sketch\n  description: Turn a vague idea into a goal\n---\nSketch the goal.\n",
+    make_project(tmp_path, ["workflow/kanon-sketch"], {
+        "workflow/kanon-sketch": "---\nkanon:\n  output: skill\n  name: kanon-sketch\n  description: Turn a vague idea into a goal\n---\nSketch the goal.\n",
     })
 
     CliRunner().invoke(cli, ["--project-root", str(tmp_path), "sync"
     ])
 
-    assert not (tmp_path / ".claude" / "rules" / "spek" / "workflow" / "spek-sketch.md").exists()
+    assert not (tmp_path / ".claude" / "rules" / "kanon" / "kanon" / "workflow" / "kanon-sketch.md").exists()
     assert not (tmp_path / ".claude" / "commands").exists()
-    skill = tmp_path / ".claude" / "skills" / "spek-sketch" / "SKILL.md"
+    skill = tmp_path / ".claude" / "skills" / "kanon-sketch" / "SKILL.md"
     assert skill.exists()
     content = skill.read_text()
     assert "Sketch the goal." in content
@@ -103,24 +103,24 @@ def test_sync_routes_command_to_skill(tmp_path):
 
 
 def test_sync_skill_name_override(tmp_path):
-    make_project(tmp_path, ["workflow/spek-sketch"], {
-        "workflow/spek-sketch": "---\nspek:\n  output: skill\n  name: spek-sketch\n  description: Turn a vague idea into a goal\n---\nSketch the goal.\n",
+    make_project(tmp_path, ["workflow/kanon-sketch"], {
+        "workflow/kanon-sketch": "---\nkanon:\n  output: skill\n  name: kanon-sketch\n  description: Turn a vague idea into a goal\n---\nSketch the goal.\n",
     })
 
     CliRunner().invoke(cli, ["--project-root", str(tmp_path), "sync"
     ])
 
-    assert not (tmp_path / ".claude" / "skills" / "spek" / "workflow" / "spek-sketch").exists()
-    skill = tmp_path / ".claude" / "skills" / "spek-sketch" / "SKILL.md"
+    assert not (tmp_path / ".claude" / "skills" / "kanon" / "kanon" / "workflow" / "kanon-sketch").exists()
+    skill = tmp_path / ".claude" / "skills" / "kanon-sketch" / "SKILL.md"
     assert skill.exists()
 
 
 def test_sync_skill_frontmatter(tmp_path):
     content = "\n".join([
         "---",
-        "spek:",
+        "kanon:",
         "  output: skill",
-        "  name: spek-stance",
+        "  name: kanon-stance",
         "  description: Switch behavioral stance",
         "  skill:",
         "    args: '[stance-name]'",
@@ -130,16 +130,16 @@ def test_sync_skill_frontmatter(tmp_path):
         "Stance body.",
         "",
     ])
-    make_project(tmp_path, ["workflow/spek-stance"], {"workflow/spek-stance": content})
+    make_project(tmp_path, ["workflow/kanon-stance"], {"workflow/kanon-stance": content})
 
     CliRunner().invoke(cli, ["--project-root", str(tmp_path), "sync"
     ])
 
-    skill = tmp_path / ".claude" / "skills" / "spek-stance" / "SKILL.md"
+    skill = tmp_path / ".claude" / "skills" / "kanon-stance" / "SKILL.md"
     assert skill.exists()
     fm_text = skill.read_text()
     fm = yaml.safe_load(fm_text.split("---")[1])
-    assert fm["name"] == "spek-stance"
+    assert fm["name"] == "kanon-stance"
     assert fm["description"] == "Switch behavioral stance"
     assert fm["argument-hint"] == "[stance-name]"
     assert fm["disable-model-invocation"] is True
@@ -148,26 +148,26 @@ def test_sync_skill_frontmatter(tmp_path):
 
 
 def test_sync_windsurf_command_still_flat(tmp_path):
-    spek_dir = tmp_path / ".spek"
-    spek_dir.mkdir()
-    (spek_dir / "spek.yaml").write_text(yaml.dump({
+    kanon_dir = tmp_path / ".kanon"
+    kanon_dir.mkdir()
+    (kanon_dir / "kanon.yaml").write_text(yaml.dump({
         "meta": {
-            "spek_version": "0.0.0",
-            "spek_sha": "abc1234",
+            "kanon_version": "0.0.0",
+            "kanon_sha": "abc1234",
             "integrations": ["windsurf"],
         },
-        "modules": ["workflow/spek-sketch"],
+        "kanons": ["workflow/kanon-sketch"],
     }))
-    (spek_dir / "modules").mkdir()
-    (spek_dir / "stances").mkdir()
-    dest = spek_dir / "modules" / "spek" / "spek" / "workflow" / "spek-sketch.md"
+    (kanon_dir / "kanons").mkdir()
+    (kanon_dir / "stances").mkdir()
+    dest = kanon_dir / "kanons" / "kanon" / "kanon" / "workflow" / "kanon-sketch.md"
     dest.parent.mkdir(parents=True)
-    dest.write_text("---\nspek:\n  output: skill\n  name: spek-sketch\n---\nSketch the goal.\n")
+    dest.write_text("---\nkanon:\n  output: skill\n  name: kanon-sketch\n---\nSketch the goal.\n")
 
     CliRunner().invoke(cli, ["--project-root", str(tmp_path), "sync"
     ])
 
-    workflow = tmp_path / ".windsurf" / "workflows" / "spek-sketch.md"
+    workflow = tmp_path / ".windsurf" / "workflows" / "kanon-sketch.md"
     assert workflow.exists()
     content = workflow.read_text()
     assert "---" in content
@@ -176,50 +176,50 @@ def test_sync_windsurf_command_still_flat(tmp_path):
 
 
 def test_sync_pull_external_namespace(tmp_path):
-    """--pull copies external-namespace modules from their configured source."""
-    ext_specs = tmp_path / "mywork-specs"
-    ext_specs.mkdir()
-    (ext_specs / "specs" / "python").mkdir(parents=True)
-    (ext_specs / "specs" / "python" / "style.md").write_text("External style rule.")
+    """--pull copies external-namespace kanons from their configured source."""
+    ext_kanons = tmp_path / "mywork-kanons"
+    ext_kanons.mkdir()
+    (ext_kanons / "kanons" / "python").mkdir(parents=True)
+    (ext_kanons / "kanons" / "python" / "style.md").write_text("External style rule.")
 
     project = tmp_path / "project"
     project.mkdir()
-    spek_dir = project / ".spek"
-    spek_dir.mkdir()
-    (spek_dir / "spek.yaml").write_text(yaml.dump({
-        "meta": {"spek_version": "0.0.0", "spek_sha": "abc1234", "integrations": ["claude"]},
-        "modules": ["mywork::python/style"],
-        "sources": {"mywork": f"local::{ext_specs}"},
+    kanon_dir = project / ".kanon"
+    kanon_dir.mkdir()
+    (kanon_dir / "kanon.yaml").write_text(yaml.dump({
+        "meta": {"kanon_version": "0.0.0", "kanon_sha": "abc1234", "integrations": ["claude"]},
+        "kanons": ["mywork::python/style"],
+        "sources": {"mywork": f"local::{ext_kanons}"},
     }))
-    (spek_dir / "modules").mkdir()
-    (spek_dir / "stances").mkdir()
+    (kanon_dir / "kanons").mkdir()
+    (kanon_dir / "stances").mkdir()
 
     result = CliRunner().invoke(cli, ["--project-root", str(project), "sync", "--pull"
     ])
 
     assert result.exit_code == 0, result.output
-    src_subpath = SourceReference(LOCAL_SCHEME, str(ext_specs)).cache_subpath()
-    assert (spek_dir / "modules" / src_subpath / "python" / "style.md").exists()
+    src_subpath = SourceReference(LOCAL_SCHEME, str(ext_kanons)).cache_subpath()
+    assert (kanon_dir / "kanons" / src_subpath / "python" / "style.md").exists()
     assert (project / ".claude" / "rules" / src_subpath / "python" / "style.md").exists()
 
 
 def test_sync_external_namespace_produces_nested_output(tmp_path):
     """External namespace 'mywork' produces rules under a path derived from the source address."""
-    spek_dir = tmp_path / ".spek"
-    spek_dir.mkdir()
+    kanon_dir = tmp_path / ".kanon"
+    kanon_dir.mkdir()
 
-    ext_dir = tmp_path / "mywork-specs"
+    ext_dir = tmp_path / "mywork-kanons"
     ext_dir.mkdir()
-    (ext_dir / "specs" / "python").mkdir(parents=True)
-    (ext_dir / "specs" / "python" / "style.md").write_text("Use type hints.")
+    (ext_dir / "kanons" / "python").mkdir(parents=True)
+    (ext_dir / "kanons" / "python" / "style.md").write_text("Use type hints.")
 
-    (spek_dir / "spek.yaml").write_text(yaml.dump({
-        "meta": {"spek_version": "0.0.0", "spek_sha": "abc1234", "integrations": ["claude"]},
-        "modules": ["mywork::python/style"],
+    (kanon_dir / "kanon.yaml").write_text(yaml.dump({
+        "meta": {"kanon_version": "0.0.0", "kanon_sha": "abc1234", "integrations": ["claude"]},
+        "kanons": ["mywork::python/style"],
         "sources": {"mywork": f"local::{ext_dir}"},
     }))
-    (spek_dir / "modules").mkdir()
-    (spek_dir / "stances").mkdir()
+    (kanon_dir / "kanons").mkdir()
+    (kanon_dir / "stances").mkdir()
 
     result = CliRunner().invoke(cli, ["--project-root", str(tmp_path), "sync"
     ])

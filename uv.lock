@@ -96,7 +96,7 @@ wheels = [
 ]
 
 [[package]]
-name = "haondt-spek"
+name = "haondt-kanon"
 source = { editable = "." }
 dependencies = [
     { name = "click" },

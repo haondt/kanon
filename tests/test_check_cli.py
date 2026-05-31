@@ -4,31 +4,31 @@ import yaml
 from click.testing import CliRunner
 from pathlib import Path
 
-from spek.cli import cli
+from kanon.cli import cli
 
 
-def make_config(root: Path, modules: list[str] | None = None, **extra) -> None:
-    spek_dir = root / ".spek"
-    spek_dir.mkdir(exist_ok=True)
-    (spek_dir / "spek.yaml").write_text(yaml.dump({
-        "meta": {"spek_version": "0.0.0", "spek_sha": "abc1234", "integrations": ["claude"]},
-        "modules": modules or [],
+def make_config(root: Path, kanons: list[str] | None = None, **extra) -> None:
+    kanon_dir = root / ".kanon"
+    kanon_dir.mkdir(exist_ok=True)
+    (kanon_dir / "kanon.yaml").write_text(yaml.dump({
+        "meta": {"kanon_version": "0.0.0", "kanon_sha": "abc1234", "integrations": ["claude"]},
+        "kanons": kanons or [],
         **extra,
     }))
 
 
-def test_check_passes_with_valid_modules(tmp_path: Path):
-    make_config(tmp_path, modules=["tools/spek/module"])
+def test_check_passes_with_valid_kanons(tmp_path: Path):
+    make_config(tmp_path, kanons=["tools/kanon/kanons"])
     result = CliRunner().invoke(cli, ["--project-root", str(tmp_path), "check"])
     assert result.exit_code == 0, result.output
     assert "All checks passed." in result.output
 
 
-def test_check_fails_with_unknown_module(tmp_path):
-    make_config(tmp_path, modules=["not/a/real/module"])
+def test_check_fails_with_unknown_kanon(tmp_path):
+    make_config(tmp_path, kanons=["not/a/real/kanon"])
     result = CliRunner().invoke(cli, ["--project-root", str(tmp_path), "check"])
     assert result.exit_code != 0
-    assert "not/a/real/module" in result.output
+    assert "not/a/real/kanon" in result.output
     assert "error" in result.output
 
 
@@ -52,4 +52,4 @@ def test_check_reports_remote_source_as_info(tmp_path, monkeypatch):
 def test_check_no_config_exits(tmp_path):
     result = CliRunner().invoke(cli, ["--project-root", str(tmp_path), "check"])
     assert result.exit_code != 0
-    assert "spek init" in result.output
+    assert "kanon init" in result.output

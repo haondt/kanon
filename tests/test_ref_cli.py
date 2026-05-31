@@ -6,12 +6,12 @@ from pathlib import Path
 import yaml
 from click.testing import CliRunner
 
-from spek.cli import cli
-from spek.core.config import SpekEnv
+from kanon.cli import cli
+from kanon.core.config import KanonEnv
 
 
-def make_references(spek_repo: Path, entries: dict[str, str]) -> None:
-    references_dir = spek_repo / "references"
+def make_references(kanon_repo: Path, entries: dict[str, str]) -> None:
+    references_dir = kanon_repo / "references"
     for name, content in entries.items():
         dest = references_dir.joinpath(*name.split("/")).with_suffix(".md")
         dest.parent.mkdir(parents=True, exist_ok=True)
@@ -19,7 +19,7 @@ def make_references(spek_repo: Path, entries: dict[str, str]) -> None:
 
 
 def make_project_references(project: Path, entries: dict[str, str]) -> None:
-    references_dir = project / ".spek" / "project" / "references"
+    references_dir = project / ".kanon" / "project" / "references"
     for name, content in entries.items():
         dest = references_dir.joinpath(*name.split("/")).with_suffix(".md")
         dest.parent.mkdir(parents=True, exist_ok=True)
@@ -27,18 +27,18 @@ def make_project_references(project: Path, entries: dict[str, str]) -> None:
 
 
 def init_project(project: Path) -> None:
-    spek_dir = project / ".spek"
-    spek_dir.mkdir(parents=True, exist_ok=True)
+    kanon_dir = project / ".kanon"
+    kanon_dir.mkdir(parents=True, exist_ok=True)
     data = {
-        "meta": {"spek_version": "0.0.0", "spek_sha": "abc1234", "integrations": ["claude"]},
-        "modules": [],
+        "meta": {"kanon_version": "0.0.0", "kanon_sha": "abc1234", "integrations": ["claude"]},
+        "kanons": [],
     }
-    (spek_dir / "spek.yaml").write_text(yaml.dump(data))
+    (kanon_dir / "kanon.yaml").write_text(yaml.dump(data))
 
 
 NAVBAR_CONTENT = """\
 ---
-spek:
+kanon:
   description: "Simple Bulma navbar"
   keywords:
     - bulma
@@ -50,7 +50,7 @@ spek:
 
 FORM_CONTENT = """\
 ---
-spek:
+kanon:
   description: "Basic Bulma form"
   keywords:
     - bulma
@@ -62,7 +62,7 @@ spek:
 
 LOCAL_REF_CONTENT = """\
 ---
-spek:
+kanon:
   description: "Local project button"
   keywords:
     - local
@@ -74,7 +74,7 @@ spek:
 
 OVERRIDE_CONTENT = """\
 ---
-spek:
+kanon:
   description: "Overridden navbar (local)"
   keywords:
     - bulma
@@ -90,8 +90,8 @@ def invoke(args: list[str], project_root: Path) -> object:
 
 
 def test_search_returns_match(tmp_path, monkeypatch):
-    monkeypatch.setenv("SPEK_REPO_PATH", str(tmp_path))
-    SpekEnv.reset()
+    monkeypatch.setenv("KANON_REPO_PATH", str(tmp_path))
+    KanonEnv.reset()
     make_references(tmp_path, {"frontend/bulma/navbar": NAVBAR_CONTENT})
     result = invoke(["ref", "search", "navbar"], tmp_path)
     assert result.exit_code == 0
@@ -99,8 +99,8 @@ def test_search_returns_match(tmp_path, monkeypatch):
 
 
 def test_search_no_match(tmp_path, monkeypatch):
-    monkeypatch.setenv("SPEK_REPO_PATH", str(tmp_path))
-    SpekEnv.reset()
+    monkeypatch.setenv("KANON_REPO_PATH", str(tmp_path))
+    KanonEnv.reset()
     make_references(tmp_path, {"frontend/bulma/navbar": NAVBAR_CONTENT})
     result = invoke(["ref", "search", "modal"], tmp_path)
     assert result.exit_code == 0
@@ -108,8 +108,8 @@ def test_search_no_match(tmp_path, monkeypatch):
 
 
 def test_search_json_output(tmp_path, monkeypatch):
-    monkeypatch.setenv("SPEK_REPO_PATH", str(tmp_path))
-    SpekEnv.reset()
+    monkeypatch.setenv("KANON_REPO_PATH", str(tmp_path))
+    KanonEnv.reset()
     make_references(tmp_path, {
         "frontend/bulma/navbar": NAVBAR_CONTENT,
         "frontend/bulma/form": FORM_CONTENT,
@@ -125,26 +125,26 @@ def test_search_json_output(tmp_path, monkeypatch):
 
 
 def test_read_returns_content(tmp_path, monkeypatch):
-    monkeypatch.setenv("SPEK_REPO_PATH", str(tmp_path))
-    SpekEnv.reset()
+    monkeypatch.setenv("KANON_REPO_PATH", str(tmp_path))
+    KanonEnv.reset()
     make_references(tmp_path, {"frontend/bulma/navbar": NAVBAR_CONTENT})
     result = invoke(["ref", "read", "frontend/bulma/navbar"], tmp_path)
     assert result.exit_code == 0
     assert '<nav class="navbar">' in result.output
-    assert "spek:" not in result.output
+    assert "kanon:" not in result.output
 
 
 def test_read_missing_exits_nonzero(tmp_path, monkeypatch):
-    monkeypatch.setenv("SPEK_REPO_PATH", str(tmp_path))
-    SpekEnv.reset()
+    monkeypatch.setenv("KANON_REPO_PATH", str(tmp_path))
+    KanonEnv.reset()
     make_references(tmp_path, {})
     result = invoke(["ref", "read", "frontend/bulma/missing"], tmp_path)
     assert result.exit_code != 0
 
 
 def test_read_json_output(tmp_path, monkeypatch):
-    monkeypatch.setenv("SPEK_REPO_PATH", str(tmp_path))
-    SpekEnv.reset()
+    monkeypatch.setenv("KANON_REPO_PATH", str(tmp_path))
+    KanonEnv.reset()
     make_references(tmp_path, {"frontend/bulma/navbar": NAVBAR_CONTENT})
     result = invoke(["ref", "read", "--json", "frontend/bulma/navbar"], tmp_path)
     assert result.exit_code == 0
@@ -153,12 +153,12 @@ def test_read_json_output(tmp_path, monkeypatch):
     assert data["description"] == "Simple Bulma navbar"
     assert "navbar" in data["keywords"]
     assert '<nav class="navbar">' in data["content"]
-    assert "spek:" not in data["content"]
+    assert "kanon:" not in data["content"]
 
 
 def test_search_multi_term_and(tmp_path, monkeypatch):
-    monkeypatch.setenv("SPEK_REPO_PATH", str(tmp_path))
-    SpekEnv.reset()
+    monkeypatch.setenv("KANON_REPO_PATH", str(tmp_path))
+    KanonEnv.reset()
     make_references(tmp_path, {"frontend/bulma/navbar": NAVBAR_CONTENT})
     result = invoke(["ref", "search", "--match-all", "bulma", "navbar"], tmp_path)
     assert result.exit_code == 0
@@ -166,8 +166,8 @@ def test_search_multi_term_and(tmp_path, monkeypatch):
 
 
 def test_search_multi_term_and_no_match(tmp_path, monkeypatch):
-    monkeypatch.setenv("SPEK_REPO_PATH", str(tmp_path))
-    SpekEnv.reset()
+    monkeypatch.setenv("KANON_REPO_PATH", str(tmp_path))
+    KanonEnv.reset()
     make_references(tmp_path, {"frontend/bulma/navbar": NAVBAR_CONTENT})
     result = invoke(["ref", "search", "--match-all", "bulma", "form"], tmp_path)
     assert result.exit_code == 0
@@ -175,8 +175,8 @@ def test_search_multi_term_and_no_match(tmp_path, monkeypatch):
 
 
 def test_search_multi_term_or_default(tmp_path, monkeypatch):
-    monkeypatch.setenv("SPEK_REPO_PATH", str(tmp_path))
-    SpekEnv.reset()
+    monkeypatch.setenv("KANON_REPO_PATH", str(tmp_path))
+    KanonEnv.reset()
     make_references(tmp_path, {"frontend/bulma/navbar": NAVBAR_CONTENT})
     result = invoke(["ref", "search", "navbar", "form"], tmp_path)
     assert result.exit_code == 0
@@ -184,8 +184,8 @@ def test_search_multi_term_or_default(tmp_path, monkeypatch):
 
 
 def test_search_ranking(tmp_path, monkeypatch):
-    monkeypatch.setenv("SPEK_REPO_PATH", str(tmp_path))
-    SpekEnv.reset()
+    monkeypatch.setenv("KANON_REPO_PATH", str(tmp_path))
+    KanonEnv.reset()
     make_references(tmp_path, {
         "frontend/bulma/navbar": NAVBAR_CONTENT,
         "frontend/bulma/form": FORM_CONTENT,
@@ -198,9 +198,9 @@ def test_search_ranking(tmp_path, monkeypatch):
 
 
 def test_search_default_limit(tmp_path, monkeypatch):
-    monkeypatch.setenv("SPEK_REPO_PATH", str(tmp_path))
-    SpekEnv.reset()
-    entries = {f"entry/item{i:02d}": f"---\nspek:\n  description: \"Item {i}\"\n  keywords:\n    - shared\n---\ncontent\n" for i in range(12)}
+    monkeypatch.setenv("KANON_REPO_PATH", str(tmp_path))
+    KanonEnv.reset()
+    entries = {f"entry/item{i:02d}": f"---\nkanon:\n  description: \"Item {i}\"\n  keywords:\n    - shared\n---\ncontent\n" for i in range(12)}
     make_references(tmp_path, entries)
     result = invoke(["ref", "search", "--json", "shared"], tmp_path)
     assert result.exit_code == 0
@@ -208,9 +208,9 @@ def test_search_default_limit(tmp_path, monkeypatch):
 
 
 def test_search_limit_override(tmp_path, monkeypatch):
-    monkeypatch.setenv("SPEK_REPO_PATH", str(tmp_path))
-    SpekEnv.reset()
-    entries = {f"entry/item{i:02d}": f"---\nspek:\n  description: \"Item {i}\"\n  keywords:\n    - shared\n---\ncontent\n" for i in range(12)}
+    monkeypatch.setenv("KANON_REPO_PATH", str(tmp_path))
+    KanonEnv.reset()
+    entries = {f"entry/item{i:02d}": f"---\nkanon:\n  description: \"Item {i}\"\n  keywords:\n    - shared\n---\ncontent\n" for i in range(12)}
     make_references(tmp_path, entries)
     result = invoke(["ref", "search", "--json", "-n", "3", "shared"], tmp_path)
     assert result.exit_code == 0
@@ -218,9 +218,9 @@ def test_search_limit_override(tmp_path, monkeypatch):
 
 
 def test_search_limit_unlimited(tmp_path, monkeypatch):
-    monkeypatch.setenv("SPEK_REPO_PATH", str(tmp_path))
-    SpekEnv.reset()
-    entries = {f"entry/item{i:02d}": f"---\nspek:\n  description: \"Item {i}\"\n  keywords:\n    - shared\n---\ncontent\n" for i in range(12)}
+    monkeypatch.setenv("KANON_REPO_PATH", str(tmp_path))
+    KanonEnv.reset()
+    entries = {f"entry/item{i:02d}": f"---\nkanon:\n  description: \"Item {i}\"\n  keywords:\n    - shared\n---\ncontent\n" for i in range(12)}
     make_references(tmp_path, entries)
     result = invoke(["ref", "search", "--json", "-n", "0", "shared"], tmp_path)
     assert result.exit_code == 0
@@ -230,8 +230,8 @@ def test_search_limit_unlimited(tmp_path, monkeypatch):
 # ── Project source tests ──────────────────────────────────────────────────────
 
 def test_search_finds_project_ref(tmp_path, monkeypatch):
-    monkeypatch.setenv("SPEK_REPO_PATH", str(tmp_path))
-    SpekEnv.reset()
+    monkeypatch.setenv("KANON_REPO_PATH", str(tmp_path))
+    KanonEnv.reset()
     project = tmp_path / "project"
     project.mkdir()
     init_project(project)
@@ -243,9 +243,9 @@ def test_search_finds_project_ref(tmp_path, monkeypatch):
     assert data[0]["name"] == "project::components/button"
 
 
-def test_search_merges_project_and_spek(tmp_path, monkeypatch):
-    monkeypatch.setenv("SPEK_REPO_PATH", str(tmp_path))
-    SpekEnv.reset()
+def test_search_merges_project_and_kanon(tmp_path, monkeypatch):
+    monkeypatch.setenv("KANON_REPO_PATH", str(tmp_path))
+    KanonEnv.reset()
     project = tmp_path / "project"
     project.mkdir()
     init_project(project)
@@ -259,9 +259,9 @@ def test_search_merges_project_and_spek(tmp_path, monkeypatch):
     assert "project::components/button" not in names
 
 
-def test_search_project_and_spek_same_path_both_appear(tmp_path, monkeypatch):
-    monkeypatch.setenv("SPEK_REPO_PATH", str(tmp_path))
-    SpekEnv.reset()
+def test_search_project_and_kanon_same_path_both_appear(tmp_path, monkeypatch):
+    monkeypatch.setenv("KANON_REPO_PATH", str(tmp_path))
+    KanonEnv.reset()
     project = tmp_path / "project"
     project.mkdir()
     init_project(project)
@@ -276,8 +276,8 @@ def test_search_project_and_spek_same_path_both_appear(tmp_path, monkeypatch):
 
 
 def test_read_returns_project_ref(tmp_path, monkeypatch):
-    monkeypatch.setenv("SPEK_REPO_PATH", str(tmp_path))
-    SpekEnv.reset()
+    monkeypatch.setenv("KANON_REPO_PATH", str(tmp_path))
+    KanonEnv.reset()
     project = tmp_path / "project"
     project.mkdir()
     init_project(project)
@@ -290,8 +290,8 @@ def test_read_returns_project_ref(tmp_path, monkeypatch):
 
 
 def test_read_project_ref_by_qualified_name(tmp_path, monkeypatch):
-    monkeypatch.setenv("SPEK_REPO_PATH", str(tmp_path))
-    SpekEnv.reset()
+    monkeypatch.setenv("KANON_REPO_PATH", str(tmp_path))
+    KanonEnv.reset()
     project = tmp_path / "project"
     project.mkdir()
     init_project(project)
@@ -304,9 +304,9 @@ def test_read_project_ref_by_qualified_name(tmp_path, monkeypatch):
     assert "<nav>local override</nav>" in data["content"]
 
 
-def test_read_spek_ref_when_project_has_same_path(tmp_path, monkeypatch):
-    monkeypatch.setenv("SPEK_REPO_PATH", str(tmp_path))
-    SpekEnv.reset()
+def test_read_kanon_ref_when_project_has_same_path(tmp_path, monkeypatch):
+    monkeypatch.setenv("KANON_REPO_PATH", str(tmp_path))
+    KanonEnv.reset()
     project = tmp_path / "project"
     project.mkdir()
     init_project(project)
@@ -318,9 +318,9 @@ def test_read_spek_ref_when_project_has_same_path(tmp_path, monkeypatch):
     assert data["description"] == "Simple Bulma navbar"
 
 
-def test_search_no_project_config_uses_spek_only(tmp_path, monkeypatch):
-    monkeypatch.setenv("SPEK_REPO_PATH", str(tmp_path))
-    SpekEnv.reset()
+def test_search_no_project_config_uses_kanon_only(tmp_path, monkeypatch):
+    monkeypatch.setenv("KANON_REPO_PATH", str(tmp_path))
+    KanonEnv.reset()
     make_references(tmp_path, {"frontend/bulma/navbar": NAVBAR_CONTENT})
     result = invoke(["ref", "search", "--json", "navbar"], tmp_path)
     assert result.exit_code == 0

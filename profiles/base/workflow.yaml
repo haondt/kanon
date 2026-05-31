@@ -1,16 +1,16 @@
 description: "Dev workflow conventions and session skills"
-modules:
+kanons:
   - self::workflow/base
-  - self::workflow/spek-sketch
-  - self::workflow/spek-plan
-  - self::workflow/spek-reconcile
-  - self::workflow/spek-build
-  - self::workflow/spek-review
-  - self::workflow/spek-fix
-  - self::workflow/spek-retro
-  - self::workflow/spek-stance
-  - self::workflow/spek-think
-  - self::workflow/spek-detour
-  - self::workflow/spek-amend
-  - self::workflow/spek-todo
-  - self::workflow/spek-onboard
+  - self::workflow/kanon-sketch
+  - self::workflow/kanon-plan
+  - self::workflow/kanon-reconcile
+  - self::workflow/kanon-build
+  - self::workflow/kanon-review
+  - self::workflow/kanon-fix
+  - self::workflow/kanon-retro
+  - self::workflow/kanon-stance
+  - self::workflow/kanon-think
+  - self::workflow/kanon-detour
+  - self::workflow/kanon-amend
+  - self::workflow/kanon-todo
+  - self::workflow/kanon-onboard

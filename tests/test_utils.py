@@ -1,6 +1,6 @@
 import pytest
 
-from spek.core.utils import deep_merge
+from kanon.core.utils import deep_merge
 
 
 def test_deep_merge_new_wins_on_collision():

@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 from pydantic import BaseModel
 
-from spek.core.yaml_utils import load_yaml, save_yaml
+from kanon.core.yaml_utils import load_yaml, save_yaml
 
 
 class _Sample(BaseModel):

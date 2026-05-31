@@ -5,16 +5,16 @@ from pathlib import Path
 import pytest
 import yaml
 
-from spek.core.config import SpekConfig, SpekEnv, SourceReference
-from spek.core.settings import GlobalSettings
-from spek.core.sources import (
+from kanon.core.config import KanonConfig, KanonEnv, SourceReference
+from kanon.core.settings import GlobalSettings
+from kanon.core.sources import (
     AliasRef,
     GitHubSource,
     GitLabSource,
     LocalSource,
     hydrate_source_reference,
 )
-from spek.core.sources._resolve import resolve_sources
+from kanon.core.sources._resolve import resolve_sources
 
 
 def test_parse_local_absolute(tmp_path):
@@ -25,9 +25,9 @@ def test_parse_local_absolute(tmp_path):
 
 def test_parse_local_tilde(monkeypatch, tmp_path):
     monkeypatch.setenv("HOME", str(tmp_path))
-    result = hydrate_source_reference(SourceReference("local", "~/specs"))
+    result = hydrate_source_reference(SourceReference("local", "~/kanons"))
     assert isinstance(result, LocalSource)
-    assert result.root == tmp_path / "specs"
+    assert result.root == tmp_path / "kanons"
 
 
 def test_parse_github_simple():
@@ -91,15 +91,15 @@ def test_parse_bare_absolute_path():
 
 
 def test_parse_bare_tilde_path():
-    ref = SourceReference.parse("~/specs")
+    ref = SourceReference.parse("~/kanons")
     assert ref.scheme == "local"
-    assert ref.address == "~/specs"
+    assert ref.address == "~/kanons"
 
 
 def test_parse_bare_relative_path():
-    ref = SourceReference.parse("./specs")
+    ref = SourceReference.parse("./kanons")
     assert ref.scheme == "local"
-    assert ref.address == "./specs"
+    assert ref.address == "./kanons"
 
 
 def test_parse_alias_prefix():
@@ -120,10 +120,10 @@ def test_parse_gh_prefix():
     assert ref.address == "org/repo"
 
 
-def test_parse_spek_spek():
-    ref = SourceReference.parse("spek::spek")
-    assert ref.scheme == "spek"
-    assert ref.address == "spek"
+def test_parse_kanon_kanon():
+    ref = SourceReference.parse("kanon::kanon")
+    assert ref.scheme == "kanon"
+    assert ref.address == "kanon"
 
 
 # ── SourceReference.validate_as_key ───────────────────────────────────────────
@@ -137,26 +137,26 @@ def test_validate_as_key_alias_prefix():
     SourceReference.parse("alias::mywork").validate_as_key()
 
 
-def test_validate_as_key_spek_spek_allowed():
-    ref = SourceReference.parse("spek::spek")
-    assert ref.scheme == "spek"
-    assert ref.address == "spek"
+def test_validate_as_key_kanon_kanon_allowed():
+    ref = SourceReference.parse("kanon::kanon")
+    assert ref.scheme == "kanon"
+    assert ref.address == "kanon"
     ref.validate_as_key()
 
 
-def test_validate_as_key_spek_project_raises():
+def test_validate_as_key_kanon_project_raises():
     with pytest.raises(ValueError):
-        SourceReference.parse("spek::project").validate_as_key()
+        SourceReference.parse("kanon::project").validate_as_key()
 
 
-def test_validate_as_key_spek_self_raises():
+def test_validate_as_key_kanon_self_raises():
     with pytest.raises(ValueError):
-        SourceReference.parse("spek::self").validate_as_key()
+        SourceReference.parse("kanon::self").validate_as_key()
 
 
-def test_validate_as_key_spek_anything_else_raises():
+def test_validate_as_key_kanon_anything_else_raises():
     with pytest.raises(ValueError):
-        SourceReference.parse("spek::other").validate_as_key()
+        SourceReference.parse("kanon::other").validate_as_key()
 
 
 def test_validate_as_key_gh_prefix_raises():
@@ -229,39 +229,39 @@ def clear_resolve_cache():
     GlobalSettings.reset()
 
 
-def _make_config(spek_dir: Path, sources: dict | None = None) -> None:
+def _make_config(kanon_dir: Path, sources: dict | None = None) -> None:
     data: dict = {
-        "meta": {"spek_version": "0.0.0", "spek_sha": "abc1234", "integrations": ["claude"]},
-        "modules": [],
+        "meta": {"kanon_version": "0.0.0", "kanon_sha": "abc1234", "integrations": ["claude"]},
+        "kanons": [],
     }
     if sources:
         data["sources"] = sources
-    (spek_dir / "spek.yaml").write_text(yaml.dump(data))
+    (kanon_dir / "kanon.yaml").write_text(yaml.dump(data))
 
 
 def test_resolve_sources_cycle_detection(tmp_path, monkeypatch):
-    spek_dir = tmp_path / ".spek"
-    spek_dir.mkdir()
-    _make_config(spek_dir, sources={"a": "alias::b", "b": "alias::a"})
-    SpekConfig.initialize(tmp_path)
+    kanon_dir = tmp_path / ".kanon"
+    kanon_dir.mkdir()
+    _make_config(kanon_dir, sources={"a": "alias::b", "b": "alias::a"})
+    KanonConfig.initialize(tmp_path)
     with pytest.raises(ValueError, match="Cycle"):
         resolve_sources()
 
 
 def test_resolve_sources_indirect_cycle(tmp_path, monkeypatch):
-    spek_dir = tmp_path / ".spek"
-    spek_dir.mkdir()
-    _make_config(spek_dir, sources={"a": "alias::b", "b": "alias::c", "c": "alias::a"})
-    SpekConfig.initialize(tmp_path)
+    kanon_dir = tmp_path / ".kanon"
+    kanon_dir.mkdir()
+    _make_config(kanon_dir, sources={"a": "alias::b", "b": "alias::c", "c": "alias::a"})
+    KanonConfig.initialize(tmp_path)
     with pytest.raises(ValueError, match="Cycle"):
         resolve_sources()
 
 
-def test_resolve_sources_spek_spek_shadowing_warns(tmp_path):
-    spek_dir = tmp_path / ".spek"
-    spek_dir.mkdir()
-    _make_config(spek_dir, sources={"spek::spek": str(tmp_path)})
-    SpekConfig.initialize(tmp_path)
+def test_resolve_sources_kanon_kanon_shadowing_warns(tmp_path):
+    kanon_dir = tmp_path / ".kanon"
+    kanon_dir.mkdir()
+    _make_config(kanon_dir, sources={"kanon::kanon": str(tmp_path)})
+    KanonConfig.initialize(tmp_path)
     import warnings
     with warnings.catch_warnings(record=True) as caught:
         warnings.simplefilter("always")

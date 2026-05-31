@@ -6,9 +6,9 @@ import pytest
 import yaml
 from click.testing import CliRunner
 
-from spek.cli import cli
-from spek.core.config import SpekConfig
-from spek.core.session import (
+from kanon.cli import cli
+from kanon.core.config import KanonConfig
+from kanon.core.session import (
     Finding,
     FindingSeverity,
     FindingType,
@@ -57,7 +57,7 @@ def test_finding_fix_note_none_stays_none():
 
 
 def test_session_roundtrip(tmp_path):
-    SpekConfig.initialize(tmp_path)
+    KanonConfig.initialize(tmp_path)
     state = SessionState(goal="My goal")
     state.plan.steps["s1"] = PlanStep(text="Step one")
     state.plan.notes["pn1"] = "A plan note"
@@ -82,14 +82,14 @@ def test_session_roundtrip(tmp_path):
 
 
 def test_create_session_fails_if_exists(tmp_path):
-    SpekConfig.initialize(tmp_path)
+    KanonConfig.initialize(tmp_path)
     create_session("first")
     with pytest.raises(FileExistsError):
         create_session("second")
 
 
 def test_delete_session_raises_if_missing(tmp_path):
-    SpekConfig.initialize(tmp_path)
+    KanonConfig.initialize(tmp_path)
     with pytest.raises(FileNotFoundError):
         delete_session()
 
@@ -122,7 +122,7 @@ def test_lint_session_clean():
 
 
 def test_key_generation_increments(tmp_path):
-    SpekConfig.initialize(tmp_path)
+    KanonConfig.initialize(tmp_path)
     create_session("goal")
     state, _ = load_session()
     k1 = next_plan_note_key(state)
@@ -132,7 +132,7 @@ def test_key_generation_increments(tmp_path):
 
 
 def test_key_generation_does_not_reuse_after_delete(tmp_path):
-    SpekConfig.initialize(tmp_path)
+    KanonConfig.initialize(tmp_path)
     create_session("goal")
     state, _ = load_session()
     k1 = next_plan_note_key(state)
@@ -152,7 +152,7 @@ def invoke(*args, project_root):
 def test_session_start_creates_file(tmp_path):
     result = invoke("start", "My goal", project_root=tmp_path)
     assert result.exit_code == 0, result.output
-    assert (tmp_path / ".spek" / "session.yaml").exists()
+    assert (tmp_path / ".kanon" / "session.yaml").exists()
 
 
 def test_session_start_fails_if_exists(tmp_path):
@@ -200,7 +200,7 @@ def test_session_plan_add_step(tmp_path):
         "--project-root", str(tmp_path), "session", "plan", "add-step", "s1", "First step"
     ])
     assert result.exit_code == 0, result.output
-    SpekConfig.initialize(tmp_path)
+    KanonConfig.initialize(tmp_path)
     state, _ = load_session()
     assert "s1" in state.plan.steps
     assert state.plan.steps["s1"].text == "First step"
@@ -217,12 +217,12 @@ def test_session_plan_check_and_uncheck(tmp_path):
     invoke("start", "Goal", project_root=tmp_path)
     CliRunner().invoke(cli, ["--project-root", str(tmp_path), "session", "plan", "add-step", "s1", "Step"])
     CliRunner().invoke(cli, ["--project-root", str(tmp_path), "session", "plan", "check", "s1"])
-    SpekConfig.initialize(tmp_path)
+    KanonConfig.initialize(tmp_path)
     state, _ = load_session()
     assert state.plan.steps["s1"].done is True
 
     CliRunner().invoke(cli, ["--project-root", str(tmp_path), "session", "plan", "uncheck", "s1"])
-    SpekConfig.initialize(tmp_path)
+    KanonConfig.initialize(tmp_path)
     state, _ = load_session()
     assert state.plan.steps["s1"].done is False
 
@@ -241,7 +241,7 @@ def test_session_plan_unnote_removes_note(tmp_path):
     invoke("start", "Goal", project_root=tmp_path)
     CliRunner().invoke(cli, ["--project-root", str(tmp_path), "session", "plan", "note", "A note"])
     CliRunner().invoke(cli, ["--project-root", str(tmp_path), "session", "amend", "plan", "unnote", "pn1"])
-    SpekConfig.initialize(tmp_path)
+    KanonConfig.initialize(tmp_path)
     state, _ = load_session()
     assert "pn1" not in state.plan.notes
 
@@ -255,7 +255,7 @@ def test_session_build_note_and_unnote(tmp_path):
     assert data["key"] == "bn1"
 
     CliRunner().invoke(cli, ["--project-root", str(tmp_path), "session", "build", "unnote", "bn1"])
-    SpekConfig.initialize(tmp_path)
+    KanonConfig.initialize(tmp_path)
     state, _ = load_session()
     assert "bn1" not in state.build.notes
 
@@ -263,7 +263,7 @@ def test_session_build_note_and_unnote(tmp_path):
 def test_session_detour_add(tmp_path):
     invoke("start", "Goal", project_root=tmp_path)
     CliRunner().invoke(cli, ["--project-root", str(tmp_path), "session", "detour", "add", "Fixed typo"])
-    SpekConfig.initialize(tmp_path)
+    KanonConfig.initialize(tmp_path)
     state, _ = load_session()
     assert "Fixed typo" in state.detours
 
@@ -271,12 +271,12 @@ def test_session_detour_add(tmp_path):
 def test_session_stance_set_and_clear(tmp_path):
     invoke("start", "Goal", project_root=tmp_path)
     CliRunner().invoke(cli, ["--project-root", str(tmp_path), "session", "stance", "set", "autonomous"])
-    SpekConfig.initialize(tmp_path)
+    KanonConfig.initialize(tmp_path)
     state, _ = load_session()
     assert state.stance == "autonomous"
 
     CliRunner().invoke(cli, ["--project-root", str(tmp_path), "session", "stance", "clear"])
-    SpekConfig.initialize(tmp_path)
+    KanonConfig.initialize(tmp_path)
     state, _ = load_session()
     assert state.stance is None
 
@@ -320,7 +320,7 @@ def test_session_review_add_finding_stores_type_and_severity(tmp_path):
     CliRunner().invoke(cli, [
         "--project-root", str(tmp_path), "session", "review", "add-finding", "p1", "security", "critical", "SQL injection risk"
     ])
-    SpekConfig.initialize(tmp_path)
+    KanonConfig.initialize(tmp_path)
     state, _ = load_session()
     f = state.review["p1"].findings["f1"]
     assert f.type == FindingType.security
@@ -365,12 +365,12 @@ def test_session_review_close_and_reopen_finding(tmp_path):
     CliRunner().invoke(cli, ["--project-root", str(tmp_path), "session", "review", "start"])
     CliRunner().invoke(cli, ["--project-root", str(tmp_path), "session", "review", "add-finding", "p1", "bug", "minor", "A finding"])
     CliRunner().invoke(cli, ["--project-root", str(tmp_path), "session", "review", "close-finding", "p1", "f1"])
-    SpekConfig.initialize(tmp_path)
+    KanonConfig.initialize(tmp_path)
     state, _ = load_session()
     assert state.review["p1"].findings["f1"].status == "closed"
 
     CliRunner().invoke(cli, ["--project-root", str(tmp_path), "session", "review", "reopen-finding", "p1", "f1"])
-    SpekConfig.initialize(tmp_path)
+    KanonConfig.initialize(tmp_path)
     state, _ = load_session()
     assert state.review["p1"].findings["f1"].status == "reopened"
 
@@ -384,7 +384,7 @@ def test_session_review_approve_happy_path(tmp_path):
         "--project-root", str(tmp_path), "session", "review", "approve", "p1", "--json"
     ])
     assert result.exit_code == 0
-    SpekConfig.initialize(tmp_path)
+    KanonConfig.initialize(tmp_path)
     state, _ = load_session()
     assert state.review["p1"].status == "approved"
 
@@ -397,7 +397,7 @@ def test_session_review_approve_blocks_on_open_findings(tmp_path):
         "--project-root", str(tmp_path), "session", "review", "approve", "p1"
     ])
     assert result.exit_code != 0
-    SpekConfig.initialize(tmp_path)
+    KanonConfig.initialize(tmp_path)
     state, _ = load_session()
     assert state.review["p1"].status == "open"
 
@@ -409,7 +409,7 @@ def test_session_review_approve_no_findings(tmp_path):
         "--project-root", str(tmp_path), "session", "review", "approve", "p1", "--json"
     ])
     assert result.exit_code == 0
-    SpekConfig.initialize(tmp_path)
+    KanonConfig.initialize(tmp_path)
     state, _ = load_session()
     assert state.review["p1"].status == "approved"
 
@@ -429,11 +429,11 @@ def test_session_review_start_does_not_reuse_approved_pass(tmp_path):
 def test_session_review_set_fix_note(tmp_path):
     invoke("start", "Goal", project_root=tmp_path)
     CliRunner().invoke(cli, ["--project-root", str(tmp_path), "session", "review", "start"])
-    CliRunner().invoke(cli, ["--project-root", str(tmp_path), "session", "review", "add-finding", "p1", "spec", "nit", "A finding"])
+    CliRunner().invoke(cli, ["--project-root", str(tmp_path), "session", "review", "add-finding", "p1", "kanon", "nit", "A finding"])
     CliRunner().invoke(cli, [
         "--project-root", str(tmp_path), "session", "review", "set-fix-note", "p1", "f1", "Fixed it"
     ])
-    SpekConfig.initialize(tmp_path)
+    KanonConfig.initialize(tmp_path)
     state, _ = load_session()
     assert state.review["p1"].findings["f1"].fix_note == "Fixed it"
 
@@ -441,7 +441,7 @@ def test_session_review_set_fix_note(tmp_path):
 def test_session_amend_goal(tmp_path):
     invoke("start", "Original goal", project_root=tmp_path)
     CliRunner().invoke(cli, ["--project-root", str(tmp_path), "session", "amend", "goal", "New goal"])
-    SpekConfig.initialize(tmp_path)
+    KanonConfig.initialize(tmp_path)
     state, _ = load_session()
     assert state.goal == "New goal"
 
@@ -450,7 +450,7 @@ def test_session_amend_plan_step(tmp_path):
     invoke("start", "Goal", project_root=tmp_path)
     CliRunner().invoke(cli, ["--project-root", str(tmp_path), "session", "plan", "add-step", "s1", "Old text"])
     CliRunner().invoke(cli, ["--project-root", str(tmp_path), "session", "amend", "plan", "step", "s1", "New text"])
-    SpekConfig.initialize(tmp_path)
+    KanonConfig.initialize(tmp_path)
     state, _ = load_session()
     assert state.plan.steps["s1"].text == "New text"
 
@@ -458,7 +458,7 @@ def test_session_amend_plan_step(tmp_path):
 def test_session_amend_add_note(tmp_path):
     invoke("start", "Goal", project_root=tmp_path)
     CliRunner().invoke(cli, ["--project-root", str(tmp_path), "session", "amend", "add-note", "Changed scope"])
-    SpekConfig.initialize(tmp_path)
+    KanonConfig.initialize(tmp_path)
     state, _ = load_session()
     assert "Changed scope" in state.amendments
 
@@ -474,7 +474,7 @@ def test_session_clear_deletes_file(tmp_path):
     invoke("start", "Goal", project_root=tmp_path)
     result = invoke("clear", project_root=tmp_path)
     assert result.exit_code == 0
-    assert not (tmp_path / ".spek" / "session.yaml").exists()
+    assert not (tmp_path / ".kanon" / "session.yaml").exists()
 
 
 def test_session_clear_no_file_succeeds(tmp_path):
@@ -495,7 +495,7 @@ def test_session_start_stdin_stores_goal(tmp_path):
         cli, ["--project-root", str(tmp_path), "session", "start", "-"], input="piped goal\n"
     )
     assert result.exit_code == 0, result.output
-    SpekConfig.initialize(tmp_path)
+    KanonConfig.initialize(tmp_path)
     state, _ = load_session()
     assert state.goal == "piped goal"
 
@@ -508,6 +508,6 @@ def test_session_plan_add_step_stdin_stores_text(tmp_path):
         input="step from stdin\n",
     )
     assert result.exit_code == 0, result.output
-    SpekConfig.initialize(tmp_path)
+    KanonConfig.initialize(tmp_path)
     state, _ = load_session()
     assert state.plan.steps["s1"].text == "step from stdin"

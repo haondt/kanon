@@ -5,9 +5,9 @@ import json
 import pytest
 from click.testing import CliRunner
 
-from spek.cli import cli
-from spek.core.config import SpekConfig
-from spek.core.todo import (
+from kanon.cli import cli
+from kanon.core.config import KanonConfig
+from kanon.core.todo import (
     TodoSection,
     TodoState,
     create_todo,
@@ -31,7 +31,7 @@ def test_todo_section_strips_items():
 
 
 def test_todo_roundtrip(tmp_path):
-    SpekConfig.initialize(tmp_path)
+    KanonConfig.initialize(tmp_path)
     state = TodoState(sections={
         "cat1": TodoSection(name="Category 1", items=["Do thing A", "Do thing B"]),
         "cat2": TodoSection(name="Category 2", items=["Do thing C"]),
@@ -44,7 +44,7 @@ def test_todo_roundtrip(tmp_path):
 
 
 def test_create_todo_fails_if_exists(tmp_path):
-    SpekConfig.initialize(tmp_path)
+    KanonConfig.initialize(tmp_path)
     create_todo()
     with pytest.raises(FileExistsError):
         create_todo()
@@ -82,7 +82,7 @@ def _bootstrap(tmp_path, section_key="cat", section_name="Category"):
 def test_todo_section_add_creates_file(tmp_path):
     result = invoke("section", "add", "cat", "Category", project_root=tmp_path)
     assert result.exit_code == 0, result.output
-    assert (tmp_path / ".spek" / "todo.yaml").exists()
+    assert (tmp_path / ".kanon" / "todo.yaml").exists()
 
 
 def test_todo_section_add_fails_on_duplicate(tmp_path):

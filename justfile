@@ -13,10 +13,10 @@ install-dev: venv
     UV_PROJECT_ENVIRONMENT=.venv uv sync --extra dev
 
 sync:
-    .venv/bin/spek sync --pull
+    .venv/bin/kanon sync --pull
 
 test: venv
     .venv/bin/pytest
 
 test-cov: venv
-    .venv/bin/pytest --cov=spek --cov-report=term-missing
+    .venv/bin/pytest --cov=kanon --cov-report=term-missing

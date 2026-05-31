@@ -1,3 +1,3 @@
 description: "Documentation conventions"
-modules:
+kanons:
   - self::docs/structure

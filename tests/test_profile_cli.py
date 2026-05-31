@@ -2,19 +2,19 @@ from pathlib import Path
 import yaml
 from click.testing import CliRunner
 
-from spek.cli import cli
-from spek.core.config import SpekConfig
+from kanon.cli import cli
+from kanon.core.config import KanonConfig
 
 
 def make_config(root, profile=None):
-    spek_dir = root / ".spek"
-    spek_dir.mkdir(exist_ok=True)
-    meta = {"spek_version": "0.0.0", "spek_sha": "abc1234", "integrations": ["claude"]}
+    kanon_dir = root / ".kanon"
+    kanon_dir.mkdir(exist_ok=True)
+    meta = {"kanon_version": "0.0.0", "kanon_sha": "abc1234", "integrations": ["claude"]}
     if profile:
         meta["profile"] = profile
-    (spek_dir / "spek.yaml").write_text(yaml.dump({
+    (kanon_dir / "kanon.yaml").write_text(yaml.dump({
         "meta": meta,
-        "modules": ["git/commit-style"],
+        "kanons": ["git/commit-style"],
     }))
 
 
@@ -24,9 +24,9 @@ def test_profile_apply_updates_config(tmp_path: Path):
     result = CliRunner().invoke(cli, ["--project-root", str(tmp_path), "profile", "apply", "base/base"])
 
     assert result.exit_code == 0, result.output
-    config = SpekConfig.load(tmp_path / ".spek" / "spek.yaml")
+    config = KanonConfig.load(tmp_path / ".kanon" / "kanon.yaml")
     assert config.meta.profile == "base/base"
-    assert "workflow/base" in config.modules
+    assert "workflow/base" in config.kanons
 
 
 def test_profile_apply_uses_recorded_profile(tmp_path: Path):
@@ -35,14 +35,14 @@ def test_profile_apply_uses_recorded_profile(tmp_path: Path):
     result = CliRunner().invoke(cli, ["--project-root", str(tmp_path), "profile", "apply"])
 
     assert result.exit_code == 0, result.output
-    config = SpekConfig.load(tmp_path / ".spek" / "spek.yaml")
+    config = KanonConfig.load(tmp_path / ".kanon" / "kanon.yaml")
     assert config.meta.profile == "base/base"
 
 
 def test_profile_apply_no_config_exits(tmp_path):
     result = CliRunner().invoke(cli, ["--project-root", str(tmp_path), "profile", "apply", "base/git"])
     assert result.exit_code != 0
-    assert "spek init" in result.output
+    assert "kanon init" in result.output
 
 
 def test_profile_apply_no_name_no_recorded_profile_exits(tmp_path):

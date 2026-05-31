@@ -1,4 +1,4 @@
-"""Tests for gh::/gl:: source caching, spek source pull, and spek cache clear/status."""
+"""Tests for gh::/gl:: source caching, kanon source pull, and kanon cache clear/status."""
 from __future__ import annotations
 
 import shutil
@@ -11,18 +11,18 @@ import pytest
 import yaml
 from click.testing import CliRunner
 
-from spek.cli import cli
-from spek.core.config import (
+from kanon.cli import cli
+from kanon.core.config import (
     GITHUB_SCHEME,
     GITLAB_SCHEME,
-    SOURCED_MODULES_DIR,
+    SOURCED_KANONS_DIR,
     SourceReference,
     SourcedResource,
-    SpekConfig,
-    SpekEnv,
+    KanonConfig,
+    KanonEnv,
 )
-from spek.core.sources import GitHubSource, GitLabSource
-from spek.core.sources._base import ParsedSource, PullResult
+from kanon.core.sources import GitHubSource, GitLabSource
+from kanon.core.sources._base import ParsedSource, PullResult
 
 
 # ── helpers ───────────────────────────────────────────────────────────────────
@@ -44,11 +44,11 @@ def make_bare_repo(path: Path) -> git.Repo:
 
 
 def make_config(root: Path, **extra) -> None:
-    spek_dir = root / ".spek"
-    spek_dir.mkdir(exist_ok=True)
-    (spek_dir / "spek.yaml").write_text(yaml.dump({
-        "meta": {"spek_version": "0.0.0", "spek_sha": "abc1234", "integrations": ["claude"]},
-        "modules": [],
+    kanon_dir = root / ".kanon"
+    kanon_dir.mkdir(exist_ok=True)
+    (kanon_dir / "kanon.yaml").write_text(yaml.dump({
+        "meta": {"kanon_version": "0.0.0", "kanon_sha": "abc1234", "integrations": ["claude"]},
+        "kanons": [],
         **extra,
     }))
 
@@ -57,22 +57,22 @@ def make_config(root: Path, **extra) -> None:
 
 
 def test_cache_path_gh_no_ref(tmp_path: Path, monkeypatch):
-    monkeypatch.setenv("SPEK_SOURCES_CACHE_PATH", str(tmp_path / "cache"))
-    SpekEnv.reset()
+    monkeypatch.setenv("KANON_SOURCES_CACHE_PATH", str(tmp_path / "cache"))
+    KanonEnv.reset()
     src = GitHubSource.parse("org/repo")
     assert src.cache_path() == tmp_path / "cache" / GITHUB_SCHEME / "org%2Frepo"
 
 
 def test_cache_path_gh_with_ref(tmp_path, monkeypatch):
-    monkeypatch.setenv("SPEK_SOURCES_CACHE_PATH", str(tmp_path / "cache"))
-    SpekEnv.reset()
+    monkeypatch.setenv("KANON_SOURCES_CACHE_PATH", str(tmp_path / "cache"))
+    KanonEnv.reset()
     src = GitHubSource.parse("org/repo@main")
     assert src.cache_path() == tmp_path / "cache" / GITHUB_SCHEME / "org%2Frepo%40main"
 
 
 def test_cache_path_gl_groups(tmp_path, monkeypatch):
-    monkeypatch.setenv("SPEK_SOURCES_CACHE_PATH", str(tmp_path / "cache"))
-    SpekEnv.reset()
+    monkeypatch.setenv("KANON_SOURCES_CACHE_PATH", str(tmp_path / "cache"))
+    KanonEnv.reset()
     src = GitLabSource.parse("g1/g2/repo@abc")
     assert src.cache_path() == tmp_path / "cache" / GITLAB_SCHEME / "g1%2Fg2%2Frepo%40abc"
 
@@ -83,8 +83,8 @@ def test_cache_path_gl_groups(tmp_path, monkeypatch):
 def test_pull_clones_when_missing(tmp_path, monkeypatch):
     remote = tmp_path / "remote.git"
     make_bare_repo(remote)
-    monkeypatch.setenv("SPEK_SOURCES_CACHE_PATH", str(tmp_path / "cache"))
-    SpekEnv.reset()
+    monkeypatch.setenv("KANON_SOURCES_CACHE_PATH", str(tmp_path / "cache"))
+    KanonEnv.reset()
 
     src = GitHubSource.parse("org/repo")
 
@@ -103,8 +103,8 @@ def test_pull_clones_when_missing(tmp_path, monkeypatch):
 def test_pull_noop_when_present_force_false(tmp_path, monkeypatch):
     remote = tmp_path / "remote.git"
     make_bare_repo(remote)
-    monkeypatch.setenv("SPEK_SOURCES_CACHE_PATH", str(tmp_path / "cache"))
-    SpekEnv.reset()
+    monkeypatch.setenv("KANON_SOURCES_CACHE_PATH", str(tmp_path / "cache"))
+    KanonEnv.reset()
 
     src = GitHubSource.parse( "org/repo")  # type: ignore[arg-type]
     cache_path = src.cache_path()
@@ -122,8 +122,8 @@ def test_pull_noop_when_present_force_false(tmp_path, monkeypatch):
 def test_pull_fetches_when_present_force_true(tmp_path, monkeypatch):
     remote = tmp_path / "remote.git"
     make_bare_repo(remote)
-    monkeypatch.setenv("SPEK_SOURCES_CACHE_PATH", str(tmp_path / "cache"))
-    SpekEnv.reset()
+    monkeypatch.setenv("KANON_SOURCES_CACHE_PATH", str(tmp_path / "cache"))
+    KanonEnv.reset()
 
     src = GitHubSource.parse("org/repo")
     cache_path = src.cache_path()
@@ -137,12 +137,12 @@ def test_pull_fetches_when_present_force_true(tmp_path, monkeypatch):
     assert result == PullResult.PULLED
 
 
-# ── spek source pull CLI ──────────────────────────────────────────────────────
+# ── kanon source pull CLI ──────────────────────────────────────────────────────
 
 
 def test_source_pull_no_args(tmp_path, monkeypatch):
-    monkeypatch.setenv("SPEK_SOURCES_CACHE_PATH", str(tmp_path / "cache"))
-    SpekEnv.reset()
+    monkeypatch.setenv("KANON_SOURCES_CACHE_PATH", str(tmp_path / "cache"))
+    KanonEnv.reset()
     make_config(tmp_path)
 
     result = CliRunner().invoke(cli, ["--project-root", str(tmp_path), "source", "pull"])
@@ -150,8 +150,8 @@ def test_source_pull_no_args(tmp_path, monkeypatch):
 
 
 def test_source_pull_by_alias(tmp_path, monkeypatch):
-    monkeypatch.setenv("SPEK_SOURCES_CACHE_PATH", str(tmp_path / "cache"))
-    SpekEnv.reset()
+    monkeypatch.setenv("KANON_SOURCES_CACHE_PATH", str(tmp_path / "cache"))
+    KanonEnv.reset()
     local_src = tmp_path / "ext"
     local_src.mkdir()
     make_config(tmp_path, sources={"mywork": f"local::{local_src}"})
@@ -161,8 +161,8 @@ def test_source_pull_by_alias(tmp_path, monkeypatch):
 
 
 def test_source_pull_unknown_name(tmp_path, monkeypatch):
-    monkeypatch.setenv("SPEK_SOURCES_CACHE_PATH", str(tmp_path / "cache"))
-    SpekEnv.reset()
+    monkeypatch.setenv("KANON_SOURCES_CACHE_PATH", str(tmp_path / "cache"))
+    KanonEnv.reset()
     make_config(tmp_path)
 
     result = CliRunner().invoke(cli, ["--project-root", str(tmp_path), "source", "pull", "alias::doesnotexist"])
@@ -170,8 +170,8 @@ def test_source_pull_unknown_name(tmp_path, monkeypatch):
 
 
 def test_source_pull_by_direct_ref(tmp_path, monkeypatch):
-    monkeypatch.setenv("SPEK_SOURCES_CACHE_PATH", str(tmp_path / "cache"))
-    SpekEnv.reset()
+    monkeypatch.setenv("KANON_SOURCES_CACHE_PATH", str(tmp_path / "cache"))
+    KanonEnv.reset()
     make_config(tmp_path)
 
     cloned = []
@@ -188,12 +188,12 @@ def test_source_pull_by_direct_ref(tmp_path, monkeypatch):
     assert cloned
 
 
-# ── spek cache clear CLI ──────────────────────────────────────────────────────
+# ── kanon cache clear CLI ──────────────────────────────────────────────────────
 
 
 def test_cache_clear_all(tmp_path, monkeypatch):
-    monkeypatch.setenv("SPEK_SOURCES_CACHE_PATH", str(tmp_path / "cache"))
-    SpekEnv.reset()
+    monkeypatch.setenv("KANON_SOURCES_CACHE_PATH", str(tmp_path / "cache"))
+    KanonEnv.reset()
     cache_dir = tmp_path / "cache"
     cache_dir.mkdir()
     (cache_dir / "gh" / "org" / "repo").mkdir(parents=True)
@@ -205,8 +205,8 @@ def test_cache_clear_all(tmp_path, monkeypatch):
 
 
 def test_cache_clear_named(tmp_path, monkeypatch):
-    monkeypatch.setenv("SPEK_SOURCES_CACHE_PATH", str(tmp_path / "cache"))
-    SpekEnv.reset()
+    monkeypatch.setenv("KANON_SOURCES_CACHE_PATH", str(tmp_path / "cache"))
+    KanonEnv.reset()
 
     remote = tmp_path / "remote.git"
     make_bare_repo(remote)
@@ -227,8 +227,8 @@ def test_cache_clear_named(tmp_path, monkeypatch):
 
 
 def test_cache_clear_named_no_cache(tmp_path, monkeypatch):
-    monkeypatch.setenv("SPEK_SOURCES_CACHE_PATH", str(tmp_path / "cache"))
-    SpekEnv.reset()
+    monkeypatch.setenv("KANON_SOURCES_CACHE_PATH", str(tmp_path / "cache"))
+    KanonEnv.reset()
     local_src = tmp_path / "ext"
     local_src.mkdir()
     make_config(tmp_path, sources={"mywork": f"local::{local_src}"})
@@ -238,23 +238,23 @@ def test_cache_clear_named_no_cache(tmp_path, monkeypatch):
     assert "no cache" in result.output
 
 
-# ── spek sync --pull calls pull on all sources ────────────────────────────────
+# ── kanon sync --pull calls pull on all sources ────────────────────────────────
 
 
 def test_sync_pull_calls_pull_on_all_sources(tmp_path, monkeypatch):
-    monkeypatch.setenv("SPEK_SOURCES_CACHE_PATH", str(tmp_path / "cache"))
-    SpekEnv.reset()
+    monkeypatch.setenv("KANON_SOURCES_CACHE_PATH", str(tmp_path / "cache"))
+    KanonEnv.reset()
 
     ext_dir = tmp_path / "ext"
     ext_dir.mkdir()
-    (ext_dir / "specs" / "python").mkdir(parents=True)
-    (ext_dir / "specs" / "python" / "style.md").write_text("Style rule.")
+    (ext_dir / "kanons" / "python").mkdir(parents=True)
+    (ext_dir / "kanons" / "python" / "style.md").write_text("Style rule.")
 
-    make_config(tmp_path, sources={"mywork": f"local::{ext_dir}"}, modules=["mywork::python/style"])
+    make_config(tmp_path, sources={"mywork": f"local::{ext_dir}"}, kanons=["mywork::python/style"])
 
-    spek_dir = tmp_path / ".spek"
-    (spek_dir / "modules").mkdir()
-    (spek_dir / "stances").mkdir()
+    kanon_dir = tmp_path / ".kanon"
+    (kanon_dir / "kanons").mkdir()
+    (kanon_dir / "stances").mkdir()
 
     pulled_sources: list[tuple[object, bool]] = []
 
@@ -271,12 +271,12 @@ def test_sync_pull_calls_pull_on_all_sources(tmp_path, monkeypatch):
     assert any(force for _, force in pulled_sources)
 
 
-# ── spek source add clones remote ─────────────────────────────────────────────
+# ── kanon source add clones remote ─────────────────────────────────────────────
 
 
 def test_source_add_clones_remote(tmp_path, monkeypatch):
-    monkeypatch.setenv("SPEK_SOURCES_CACHE_PATH", str(tmp_path / "cache"))
-    SpekEnv.reset()
+    monkeypatch.setenv("KANON_SOURCES_CACHE_PATH", str(tmp_path / "cache"))
+    KanonEnv.reset()
     make_config(tmp_path)
 
     remote = tmp_path / "remote.git"
@@ -301,12 +301,12 @@ def test_source_add_clones_remote(tmp_path, monkeypatch):
     assert pull_called
 
 
-# ── spek module add clones remote source ─────────────────────────────────────
+# ── kanon add clones remote source ───────────────────────────────────────────
 
 
-def test_module_add_clones_remote_source(tmp_path, monkeypatch):
-    monkeypatch.setenv("SPEK_SOURCES_CACHE_PATH", str(tmp_path / "cache"))
-    SpekEnv.reset()
+def test_kanon_add_clones_remote_source(tmp_path, monkeypatch):
+    monkeypatch.setenv("KANON_SOURCES_CACHE_PATH", str(tmp_path / "cache"))
+    KanonEnv.reset()
 
     cache_path = tmp_path / "cache" / GITHUB_SCHEME / "org%2Frepo"
     cloned = []
@@ -315,34 +315,34 @@ def test_module_add_clones_remote_source(tmp_path, monkeypatch):
         p = Path(path)
         p.mkdir(parents=True, exist_ok=True)
         (p / ".git").mkdir()
-        specs_dir = p / SOURCED_MODULES_DIR / "python"
-        specs_dir.mkdir(parents=True)
-        (specs_dir / "style.md").write_text("Style rule.")
+        kanons_dir = p / SOURCED_KANONS_DIR / "python"
+        kanons_dir.mkdir(parents=True)
+        (kanons_dir / "style.md").write_text("Style rule.")
         cloned.append(path)
         return MagicMock()
 
     monkeypatch.setattr(git.Repo, "clone_from", staticmethod(fake_clone_from))
 
     make_config(tmp_path, sources={"upstream": "gh::org/repo"})
-    spek_dir = tmp_path / ".spek"
-    (spek_dir / "modules").mkdir()
-    (spek_dir / "stances").mkdir()
+    kanon_dir = tmp_path / ".kanon"
+    (kanon_dir / "kanons").mkdir()
+    (kanon_dir / "stances").mkdir()
 
     result = CliRunner().invoke(cli, [
         "--project-root", str(tmp_path),
-        "module", "add", "upstream::python/style",
+        "add", "upstream::python/style",
     ])
     assert result.exit_code == 0, result.output
     assert cloned
     assert cache_path.exists()
 
 
-# ── spek cache status ─────────────────────────────────────────────────────────
+# ── kanon cache status ─────────────────────────────────────────────────────────
 
 
 def test_cache_status_empty(tmp_path, monkeypatch):
-    monkeypatch.setenv("SPEK_SOURCES_CACHE_PATH", str(tmp_path / "cache"))
-    SpekEnv.reset()
+    monkeypatch.setenv("KANON_SOURCES_CACHE_PATH", str(tmp_path / "cache"))
+    KanonEnv.reset()
     make_config(tmp_path)
     result = CliRunner().invoke(cli, ["--project-root", str(tmp_path), "cache", "status"])
     assert result.exit_code == 0, result.output
@@ -350,8 +350,8 @@ def test_cache_status_empty(tmp_path, monkeypatch):
 
 
 def test_cache_status_shows_cloned_repo(tmp_path, monkeypatch):
-    monkeypatch.setenv("SPEK_SOURCES_CACHE_PATH", str(tmp_path / "cache"))
-    SpekEnv.reset()
+    monkeypatch.setenv("KANON_SOURCES_CACHE_PATH", str(tmp_path / "cache"))
+    KanonEnv.reset()
     remote = tmp_path / "remote.git"
     make_bare_repo(remote)
     repo_path = tmp_path / "cache" / "gh" / "org%2Frepo"
@@ -363,50 +363,50 @@ def test_cache_status_shows_cloned_repo(tmp_path, monkeypatch):
     assert "org%2Frepo" in result.output
 
 
-# ── list_synced_modules round-trip ────────────────────────────────────────────
+# ── list_synced_kanons round-trip ─────────────────────────────────────────────
 
 
-def _make_spek_dir(root: Path) -> None:
-    spek_dir = root / ".spek"
-    spek_dir.mkdir(exist_ok=True)
-    (spek_dir / "modules").mkdir(exist_ok=True)
-    (spek_dir / "spek.yaml").write_text(yaml.dump({
-        "meta": {"spek_version": "0.0.0", "spek_sha": "abc1234", "integrations": ["claude"]},
-        "modules": [],
+def _make_kanon_dir(root: Path) -> None:
+    kanon_dir = root / ".kanon"
+    kanon_dir.mkdir(exist_ok=True)
+    (kanon_dir / "kanons").mkdir(exist_ok=True)
+    (kanon_dir / "kanon.yaml").write_text(yaml.dump({
+        "meta": {"kanon_version": "0.0.0", "kanon_sha": "abc1234", "integrations": ["claude"]},
+        "kanons": [],
     }))
 
 
-def test_list_synced_modules_roundtrip_gh_source(tmp_path):
-    from spek.commands.sync._synced import list_synced_modules, write_synced_module
-    from spek.core.modules import Module
-    _make_spek_dir(tmp_path)
-    SpekConfig.initialize(tmp_path)
+def test_list_synced_kanons_roundtrip_gh_source(tmp_path):
+    from kanon.commands.sync._synced import list_synced_kanons, write_synced_kanon
+    from kanon.core.kanons import Kanon
+    _make_kanon_dir(tmp_path)
+    KanonConfig.initialize(tmp_path)
 
     resource = SourcedResource(SourceReference("gh", "org/repo"), "python/style")
-    write_synced_module(resource, Module.load("Style rule."))
+    write_synced_kanon(resource, Kanon.load("Style rule."))
 
-    assert resource in list_synced_modules()
-
-
-def test_list_synced_modules_roundtrip_local_absolute_path(tmp_path):
-    from spek.commands.sync._synced import list_synced_modules, write_synced_module
-    from spek.core.modules import Module
-    _make_spek_dir(tmp_path)
-    SpekConfig.initialize(tmp_path)
-
-    resource = SourcedResource(SourceReference("local", "/home/user/my-specs"), "python/style")
-    write_synced_module(resource, Module.load("Style rule."))
-
-    assert resource in list_synced_modules()
+    assert resource in list_synced_kanons()
 
 
-def test_list_synced_modules_roundtrip_gl_with_groups(tmp_path):
-    from spek.commands.sync._synced import list_synced_modules, write_synced_module
-    from spek.core.modules import Module
-    _make_spek_dir(tmp_path)
-    SpekConfig.initialize(tmp_path)
+def test_list_synced_kanons_roundtrip_local_absolute_path(tmp_path):
+    from kanon.commands.sync._synced import list_synced_kanons, write_synced_kanon
+    from kanon.core.kanons import Kanon
+    _make_kanon_dir(tmp_path)
+    KanonConfig.initialize(tmp_path)
+
+    resource = SourcedResource(SourceReference("local", "/home/user/my-kanons"), "python/style")
+    write_synced_kanon(resource, Kanon.load("Style rule."))
+
+    assert resource in list_synced_kanons()
+
+
+def test_list_synced_kanons_roundtrip_gl_with_groups(tmp_path):
+    from kanon.commands.sync._synced import list_synced_kanons, write_synced_kanon
+    from kanon.core.kanons import Kanon
+    _make_kanon_dir(tmp_path)
+    KanonConfig.initialize(tmp_path)
 
     resource = SourcedResource(SourceReference("gl", "group/subgroup/repo@main"), "conventions/commits")
-    write_synced_module(resource, Module.load("Commit rule."))
+    write_synced_kanon(resource, Kanon.load("Commit rule."))
 
-    assert resource in list_synced_modules()
+    assert resource in list_synced_kanons()

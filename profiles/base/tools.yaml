@@ -1,7 +1,7 @@
 description: "CLI tools available to the AI during implementation"
-modules:
-  - self::tools/spek/ref
-  - self::tools/spek/module
-  - self::tools/spek/todo
-  - self::tools/spek/source
-  - self::tools/spek/session
+kanons:
+  - self::tools/kanon/ref
+  - self::tools/kanon/kanons
+  - self::tools/kanon/todo
+  - self::tools/kanon/source
+  - self::tools/kanon/session

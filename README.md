@@ -1,8 +1,8 @@
-# spek
+# kanon
 
-A package manager for AI coding conventions — subscribe to spec modules from any source, sync them into every project.
+A package manager for AI coding conventions — subscribe to kanons from any source, sync them into every project.
 
-Most AI coding tools let you drop a rules file into each project. That works until you have a dozen projects and the rules drift apart. spek lets projects declare which spec modules they want via `spek.yaml` — pulling from external sources like GitHub repos or local directories — and `spek sync` copies them locally and generates AI tool integrations for each configured tool.
+Most AI coding tools let you drop a rules file into each project. That works until you have a dozen projects and the rules drift apart. kanon lets projects declare which kanons they want via `kanon.yaml` — pulling from external sources like GitHub repos or local directories — and `kanon sync` copies them locally and generates AI tool integrations for each configured tool.
 
 ## Prerequisites
 
@@ -13,46 +13,46 @@ Most AI coding tools let you drop a rules file into each project. That works unt
 
 ```bash
 git clone <this repo>
-cd spek
+cd kanon
 uv tool install --editable .
 ```
 
 ```bash
 # In a new project directory
-spek init
-spek sync
+kanon init
+kanon sync
 ```
 
-Commit `.spek/spek.yaml` — your project's spec config is now self-contained. Synced module files are gitignored and regenerated on demand.
+Commit `.kanon/kanon.yaml` — your project's kanon config is now self-contained. Synced kanon files are gitignored and regenerated on demand.
 
 ## Onboarding an existing project
 
-To adopt spek in a project that already has code:
+To adopt kanon in a project that already has code:
 
 ```bash
-spek init      # select integrations, profile, and modules
-spek sync      # copy spec files and generate AI tool output
+kanon init      # select integrations, profile, and kanons
+kanon sync      # copy kanon files and generate AI tool output
 ```
 
 Then in your AI coding tool:
 
 ```
-/spek-onboard
+/kanon-onboard
 ```
 
-`/spek-onboard` crawls the project to understand the tech stack and structure, writes `.spek/STRUCTURE.md`, proposes an appropriate module selection for your approval, applies it, and adds any inline `TODO:` comments it finds to `.spek/todo.yaml`.
+`/kanon-onboard` crawls the project to understand the tech stack and structure, writes `.kanon/STRUCTURE.md`, proposes an appropriate kanon selection for your approval, applies it, and adds any inline `TODO:` comments it finds to `.kanon/todo.yaml`.
 
 ## Concepts
 
-spek manages spec modules — markdown files covering coding conventions, git behavior, AI behavioral rules, and more. Projects declare which modules they want in `.spek/spek.yaml`; `spek sync` fetches them from their sources and generates AI tool integrations. The same source modules produce `.claude/rules/` for Claude Code, `.windsurf/rules/` for Windsurf, and so on — one config, multiple tools.
+kanon manages kanons — markdown files covering coding conventions, git behavior, AI behavioral rules, and more. Projects declare which kanons they want in `.kanon/kanon.yaml`; `kanon sync` fetches them from their sources and generates AI tool integrations. The same source kanons produce `.claude/rules/` for Claude Code, `.windsurf/rules/` for Windsurf, and so on — one config, multiple tools.
 
 | Term | Meaning |
 |---|---|
-| **module** | A single markdown spec file, identified by a reference `scheme::address::path` (e.g. `gh::org/specs::git/commit-base`); bare paths default to the built-in spek source |
-| **source** | A named directory of spec modules — local path, `gh::org/repo`, or `gl::group/repo`; declared in `spek.yaml` or `~/.spek/settings.yaml` |
-| **profile** | A named bundle of modules and stances — useful for consistent bootstrapping across projects of the same type |
-| **stance** | A named set of modules activatable on demand via `/spek-stance`; use when you need the AI to behave differently for a specific task without permanently changing your config |
-| **integration** | The AI tool output files that spek generates from your specs (`claude`, `windsurf`, etc.) |
+| **kanon** | A single markdown file representing an AI rule or skill. Identified by a reference `scheme::address::path` (e.g. `gh::org/kanons::git/commit-base`); bare paths default to the built-in kanon source |
+| **source** | A named directory of kanons — local path, `gh::org/repo`, or `gl::group/repo`; declared in `kanon.yaml` or `~/.kanon/settings.yaml` |
+| **stance** | A named set of kanons activatable on demand via `/kanon-stance`; use when you need the AI to behave differently for a specific task without permanently changing your config |
+| **profile** | A named bundle of kanons and stances — useful for consistent bootstrapping across projects of the same type |
+| **integration** | The AI tool output files that kanon generates from your kanons (`claude`, `windsurf`, etc.) |
 
 ## Skills
 
@@ -62,28 +62,28 @@ The workflow skills enforce a structured session lifecycle. Each step is a check
 
 | Command | Description |
 |---|---|
-| `/spek-sketch` | (Optional) Clarify a fuzzy goal — skip if the goal is already concrete |
-| `/spek-plan` | Design the approach; get approval before writing code |
-| `/spek-build` | Execute the agreed plan |
-| `/spek-reconcile` | (Optional) Sync session state after work done outside `/spek-build` — marks plan steps done based on git diff |
-| `/spek-review` | (Optional) Review the implementation for problems before closing the session |
-| `/spek-fix` | (Optional) Evaluate and fix findings surfaced by `/spek-review` |
-| `/spek-retro` | Repo housekeeping (update `README.md`, todos, `STRUCTURE.md`); clear `session.yaml` |
+| `/kanon-sketch` | (Optional) Clarify a fuzzy goal — skip if the goal is already concrete |
+| `/kanon-plan` | Design the approach; get approval before writing code |
+| `/kanon-build` | Execute the agreed plan |
+| `/kanon-reconcile` | (Optional) Sync session state after work done outside `/kanon-build` — marks plan steps done based on git diff |
+| `/kanon-review` | (Optional) Review the implementation for problems before closing the session |
+| `/kanon-fix` | (Optional) Evaluate and fix findings surfaced by `/kanon-review` |
+| `/kanon-retro` | Repo housekeeping (update `README.md`, todos, `STRUCTURE.md`); clear `session.yaml` |
 
 **Extras**
 
 | Command | Description |
 |---|---|
-| `/spek-stance` | Activate a behavioral stance for the session |
-| `/spek-think` | Enter brainstorm mode — AI discusses ideas without taking action |
-| `/spek-detour` | Make a quick out-of-scope edit without going through the full workflow |
-| `/spek-amend` | Amend the current session goal or plan in place |
-| `/spek-todo` | Add an item to the project backlog |
-| `/spek-onboard` | Onboard an existing project: write STRUCTURE.md, select modules, extract TODOs |
+| `/kanon-stance` | Activate a behavioral stance for the session |
+| `/kanon-think` | Enter brainstorm mode — AI discusses ideas without taking action |
+| `/kanon-detour` | Make a quick out-of-scope edit without going through the full workflow |
+| `/kanon-amend` | Amend the current session goal or plan in place |
+| `/kanon-todo` | Add an item to the project backlog |
+| `/kanon-onboard` | Onboard an existing project: write STRUCTURE.md, select kanons, extract TODOs |
 
 ## Object references
 
-Every module, stance, and profile is identified by a three-part reference:
+Every kanon, stance, and profile is identified by a three-part reference:
 
 ```
 scheme::address::path
@@ -91,64 +91,64 @@ scheme::address::path
 
 | Part | Meaning |
 |---|---|
-| `scheme` | How the source is located (`spek`, `alias`, `gh`, `gl`, `local`) |
+| `scheme` | How the source is located (`kanon`, `alias`, `gh`, `gl`, `local`) |
 | `address` | The source identifier within the scheme (repo path, alias name, etc.) |
-| `path` | Path to the file within the source, relative to `specs/` |
+| `path` | Path to the file within the source, relative to `kanons/` |
 
 **Abbreviated forms** — most references can be shortened:
 
 | Written | Expands to | Meaning |
 |---|---|---|
-| `git/commit-base` | `spek::spek::git/commit-base` | Built-in spek source |
+| `git/commit-base` | `kanon::kanon::git/commit-base` | Built-in kanon source |
 | `mywork::python/style` | `alias::mywork::python/style` | Registered source by alias |
 | `gh::org/repo::python/style` | *(already full)* | GitHub source, no alias needed |
-| `project::my-module` | `spek::project::my-module` | Project-local file under `.spek/project/` |
-| `self::python/style` | `spek::self::python/style` | Profile-internal: same source as the profile file |
+| `project::my-kanon` | `kanon::project::my-kanon` | Project-local file under `.kanon/project/` |
+| `self::python/style` | `kanon::self::python/style` | Profile-internal: same source as the profile file |
 
-**Special addresses** under the `spek` scheme:
+**Special addresses** under the `kanon` scheme:
 
 | Reference | Points to |
 |---|---|
-| `spek::spek` | The built-in spek module library (`specs/` in this repo) |
-| `spek::project` | The consuming project's own local content (`.spek/project/`) |
-| `spek::self` | The profile's own source — only valid inside profile YAML files; rewritten to the profile's actual source at load time |
+| `kanon::kanon` | The built-in kanon library (`kanons/` in this repo) |
+| `kanon::project` | The consuming project's own local content (`.kanon/project/`) |
+| `kanon::self` | The profile's own source — only valid inside profile YAML files; rewritten to the profile's actual source at load time |
 
-`self::` is how profiles in an external library reference their own sibling modules without hardcoding a source name:
+`self::` is how profiles in an external library reference their own sibling kanons without hardcoding a source name:
 
 ```yaml
-# profiles/python/cli.yaml in gh::myorg/myspecs
+# profiles/python/cli.yaml in gh::myorg/mykanons
 extends:
-  - self::profiles/base        # → gh::myorg/myspecs::profiles/base
-modules:
-  - self::python/style         # → gh::myorg/myspecs::python/style
+  - self::profiles/base        # → gh::myorg/mykanons::profiles/base
+kanons:
+  - self::python/style         # → gh::myorg/mykanons::python/style
   - self::python/testing/pytest
 ```
 
-## Spec libraries
+## Kanon libraries
 
-A spec library is any directory with this layout:
+A kanon library is any directory with this layout:
 
 ```
-specs/        # modules (.md files, may be nested)
+kanons/       # kanons (.md files, may be nested)
 references/   # on-demand reference entries
-profiles/     # named module+stance bundles
-stances/      # named module sets for on-demand activation
+profiles/     # named kanon+stance bundles
+stances/      # named kanon sets for on-demand activation
 ```
 
-The built-in spek library follows the same layout. You can create your own and share it across projects.
+The built-in kanon library follows the same layout. You can create your own and share it across projects.
 
 ### Authoring a library
 
-Create the directory structure above and add `.md` files under `specs/`. Each file is a module. The filename (relative to `specs/`, without extension) is the module path, e.g. `specs/python/style.md` → path `python/style`.
+Create the directory structure above and add `.md` files under `kanons/`. Each file is a kanon. The filename (relative to `kanons/`, without extension) is the kanon path, e.g. `kanons/python/style.md` → path `python/style`.
 
-Modules can include YAML frontmatter with spek metadata:
+Kanons can include YAML frontmatter with kanon metadata:
 
 ```markdown
 ---
-spek:
+kanon:
   output: rule              # rule (default) or skill
   name: my-skill            # output name; required for skills, optional for rules
-  description: "..."        # shown in skill picker and module list
+  description: "..."        # shown in skill picker and kanon list
   template: jinja           # omit unless you need Jinja2 templating
   needs_context: true       # false: inject ## Project structure block into body
   preapproved_tools:        # tool patterns added to Claude skill's allowed-tools
@@ -164,46 +164,46 @@ spek:
 ...
 ```
 
-When `template: jinja` is set, the body is rendered as a Jinja2 template before output. Available context variables: `modules` (set of active module refs), `integrations` (set of configured integration names).
+When `template: jinja` is set, the body is rendered as a Jinja2 template before output. Available context variables: `kanons` (set of active kanon refs), `integrations` (set of configured integration names).
 
-Profiles and stances reference modules using `self::` to stay portable:
+Profiles and stances reference kanons using `self::` to stay portable:
 
 ```yaml
 # profiles/base.yaml
 description: "Base conventions for all projects"
-modules:
+kanons:
   - self::git/commit-base
   - self::python/style
 ```
 
 ### Importing a library
 
-Register the library as a named source, then activate modules from it:
+Register the library as a named source, then activate kanons from it:
 
 ```bash
 # Local directory
-spek source add mywork ~/shared-specs
+kanon source add mywork ~/shared-kanons
 
-# GitHub repo (cloned to ~/.spek/sources/ automatically)
-spek source add mywork gh::org/specs
+# GitHub repo (cloned to ~/.kanon/sources/ automatically)
+kanon source add mywork gh::org/kanons
 
 # Specific tag or branch
-spek source add mywork gh::org/specs@v1.0.0
+kanon source add mywork gh::org/kanons@v1.0.0
 
-# Activate modules
-spek module add mywork::python/style mywork::git/commit-base
+# Activate kanons
+kanon add mywork::python/style mywork::git/commit-base
 
 # Or apply a profile from the library
-spek profile apply mywork::python/cli
+kanon profile apply mywork::python/cli
 
 # Sync
-spek sync
+kanon sync
 ```
 
-Sources can also be declared globally in `~/.spek/settings.yaml` so they're available in every project without re-registering:
+Sources can also be declared globally in `~/.kanon/settings.yaml` so they're available in every project without re-registering:
 
 ```bash
-spek source add --global mywork gh::org/specs
+kanon source add --global mywork gh::org/kanons
 ```
 
 ## Usage
@@ -212,57 +212,57 @@ spek source add --global mywork gh::org/specs
 <summary>Command reference</summary>
 
 ```bash
-spek init                       # set up a project
-spek sync                       # fetch missing modules from sources and regenerate integrations
-spek sync --pull                # force-refresh all remote sources, then regenerate
-spek profile list               # list available profiles
-spek profile apply [name]       # re-resolve and apply a profile
-spek module edit                # re-select modules interactively
-spek module list                # list all available modules with descriptions
-spek module set <module>...     # non-interactively set modules (full replacement)
-spek module add <module>...     # append modules to the active list
-spek module remove <module>...  # remove modules from the active list
-spek module search <term>...    # keyword search across available modules
-spek source add <name> <path>   # register a named source (local path or gh::/gl:: shorthand)
-spek source pull [name]         # clone/refresh a remote source cache (all sources if no name)
-spek source remove <name>       # remove a source
-spek source status              # show all sources and their resolution status
-spek cache status               # show disk usage of the local source cache
-spek cache clear [name]         # clear the entire cache, or just one source's cache
-spek check                      # validate that all modules and sources resolve
-spek local module <name>        # create a project-local spec module
-spek local stance <name>        # create a project-local stance
-spek local ref <name>           # create a project-local reference entry
-spek destroy                    # remove all spek-managed files from a project
-spek ref search [--json] [-n N] [--match-all] <term>...  # search the reference library (upstream + .spek/project/references/)
-spek ref read [--json] <name>                            # read a reference entry
+kanon init                        # set up a project
+kanon sync                        # fetch missing kanons from sources and regenerate integrations
+kanon sync --pull                 # force-refresh all remote sources, then regenerate
+kanon profile list                # list available profiles
+kanon profile apply [name]        # re-resolve and apply a profile
+kanon edit                        # re-select kanons interactively
+kanon list                        # list all available kanons with descriptions
+kanon set <kanon>...              # non-interactively set kanons (full replacement)
+kanon add <kanon>...              # append kanons to the active list
+kanon remove <kanon>...           # remove kanons from the active list
+kanon search <term>...            # keyword search across available kanons
+kanon source add <name> <path>    # register a named source (local path or gh::/gl:: shorthand)
+kanon source pull [name]          # clone/refresh a remote source cache (all sources if no name)
+kanon source remove <name>        # remove a source
+kanon source status               # show all sources and their resolution status
+kanon cache status                # show disk usage of the local source cache
+kanon cache clear [name]          # clear the entire cache, or just one source's cache
+kanon check                       # validate that all kanons and sources resolve
+kanon local kanon <name>          # create a project-local kanon
+kanon local stance <name>         # create a project-local stance
+kanon local ref <name>            # create a project-local reference entry
+kanon destroy                     # remove all kanon-managed files from a project
+kanon ref search [--json] [-n N] [--match-all] <term>...  # search the reference library (upstream + .kanon/project/references/)
+kanon ref read [--json] <name>                            # read a reference entry
 ```
 
-See `spek --help` or `spek <command> --help` for full options.
+See `kanon --help` or `kanon <command> --help` for full options.
 
 </details>
 
 <details>
-<summary>spek.yaml format</summary>
+<summary>kanon.yaml format</summary>
 
 ```yaml
 meta:
-  spek_version: "1.0.0"
-  spek_sha: "abc1234"      # SHA at last sync — informational only
+  kanon_version: "1.0.0"
+  kanon_sha: "abc1234"     # SHA at last sync — informational only
   integrations:
     - claude
   profile: "base"          # omitted if no profile was used
-modules:                   # always-active rules/skills
-  - workflow/base          # bare path → built-in spek source
-  - mywork::git/commit-base   # module from an external source (alias::path shorthand)
-  - gh::org/specs::python/style  # fully-qualified remote module
-  - project::my-conventions  # project-local module under .spek/project/
+kanons:                    # always-active rules/skills
+  - workflow/base          # bare path → built-in kanon source
+  - mywork::git/commit-base   # kanon from an external source (alias::path shorthand)
+  - gh::org/kanons::python/style  # fully-qualified remote kanon
+  - project::my-conventions  # project-local kanon under .kanon/project/
 stances:                   # omitted if empty
   - mywork::autonomous
-  - gh::org/specs::collaborative
+  - gh::org/kanons::collaborative
 sources:                   # omitted if empty; project-scoped sources
-  mywork: /home/user/shared-specs    # local path (expanded to absolute at add time)
-  upstream: gh::org/specs            # remote (cloned to ~/.spek/sources/ cache on first use)
+  mywork: /home/user/shared-kanons    # local path (expanded to absolute at add time)
+  upstream: gh::org/kanons            # remote (cloned to ~/.kanon/sources/ cache on first use)
 ```
 
 </details>
@@ -272,9 +272,9 @@ sources:                   # omitted if empty; project-scoped sources
 
 | Variable | Default | Description |
 |---|---|---|
-| `SPEK_SETTINGS_PATH` | `~/.spek/settings.yaml` | Override the global settings file path |
-| `SPEK_REPO_PATH` | auto-detected from package location | Override the spek repo root (mainly for development) |
-| `SPEK_SOURCES_CACHE_PATH` | `~/.spek/sources` | Override the remote source cache directory |
+| `KANON_SETTINGS_PATH` | `~/.kanon/settings.yaml` | Override the global settings file path |
+| `KANON_REPO_PATH` | auto-detected from package location | Override the kanon repo root (mainly for development) |
+| `KANON_SOURCES_CACHE_PATH` | `~/.kanon/sources` | Override the remote source cache directory |
 
 </details>
 
@@ -282,16 +282,16 @@ sources:                   # omitted if empty; project-scoped sources
 
 ### AI tool allowlists
 
-To allow the AI to run spek commands without confirmation, add the following patterns to your tool's allowlist.
+To allow the AI to run kanon commands without confirmation, add the following patterns to your tool's allowlist.
 
 **Windsurf:**
 
-- `spek ref *`
-- `spek session *`
-- `spek todo *`
-- `spek module list`
+- `kanon ref *`
+- `kanon session *`
+- `kanon todo *`
+- `kanon list`
 
-This enables the AI to auto-execute these spek commands during workflow skills without requiring approval for each invocation.
+This enables the AI to auto-execute these kanon commands during workflow skills without requiring approval for each invocation.
 
 ## Development
 
@@ -302,7 +302,7 @@ just install-dev   # create .venv and install dev dependencies
 # Common tasks
 just test          # run the test suite
 just test-cov      # run tests with coverage report
-just sync          # spek sync --pull (refresh this repo's own spec modules)
+just sync          # kanon sync --pull (refresh this repo's own kanons)
 ```
 
-The project dogfoods spek — `.spek/` contains its own session files and module config. `just sync` re-syncs the rules and skills used during development.
+The project dogfoods kanon — `.kanon/` contains its own session files and kanon config. `just sync` re-syncs the rules and skills used during development.

@@ -3,8 +3,8 @@ from pathlib import Path
 import pytest
 import yaml
 
-from spek.core.config import LOCAL_SCHEME, SourceReference, SourcedResource
-from spek.core.profiles import ProfileSpec
+from kanon.core.config import LOCAL_SCHEME, SourceReference, SourcedResource
+from kanon.core.profiles import Profile
 
 
 def write_profile(profiles_dir: Path, name: str, **fields) -> None:
@@ -20,14 +20,14 @@ def make_factory(profiles_dir: Path):
 
 
 def test_resolve_profile_inheritance(tmp_path: Path):
-    write_profile(tmp_path, "base", modules=["tools/spek/module", "tools/spek/session"])
-    write_profile(tmp_path, "source", extends=["base"], modules=["tools/spek/source", "tools/spek/session"])
+    write_profile(tmp_path, "base", kanons=["tools/kanon/kanons", "tools/kanon/session"])
+    write_profile(tmp_path, "source", extends=["base"], kanons=["tools/kanon/source", "tools/kanon/session"])
 
     content = (tmp_path / "source.yaml").read_text()
     profile_res = SourcedResource(SourceReference(LOCAL_SCHEME, str(tmp_path)), "source")
-    result = ProfileSpec.load(content, make_factory(tmp_path), profile_res.source, frozenset({profile_res}))
+    result = Profile.load(content, make_factory(tmp_path), profile_res.source, frozenset({profile_res}))
 
-    assert set(result.modules) == {"tools/spek/module", "tools/spek/session", "tools/spek/source"}
+    assert set(result.kanons) == {"tools/kanon/kanons", "tools/kanon/session", "tools/kanon/source"}
     assert result.stances == []
 
 
@@ -37,7 +37,7 @@ def test_resolve_profile_stances(tmp_path: Path):
 
     content = (tmp_path / "child.yaml").read_text()
     profile_res = SourcedResource(SourceReference(LOCAL_SCHEME, str(tmp_path)), "child")
-    result = ProfileSpec.load(content, make_factory(tmp_path), profile_res.source, frozenset({profile_res}))
+    result = Profile.load(content, make_factory(tmp_path), profile_res.source, frozenset({profile_res}))
 
     assert set(result.stances) == {"autonomous", "collaborative"}
 
@@ -49,11 +49,11 @@ def test_resolve_profile_circular_raises(tmp_path: Path):
     content = (tmp_path / "a.yaml").read_text()
     with pytest.raises(ValueError, match="Circular"):
         profile_res = SourcedResource(SourceReference(LOCAL_SCHEME, str(tmp_path)), "a")
-        ProfileSpec.load(content, make_factory(tmp_path), profile_res.source, frozenset({profile_res}))
+        Profile.load(content, make_factory(tmp_path), profile_res.source, frozenset({profile_res}))
 
 
 def test_resolve_profile_missing_raises(tmp_path: Path):
     content = yaml.dump({"extends": ["nonexistent"]})
     with pytest.raises(FileNotFoundError):
         profile_res = SourcedResource(SourceReference(LOCAL_SCHEME, str(tmp_path)), "root")
-        ProfileSpec.load(content, make_factory(tmp_path), profile_res.source, frozenset({profile_res}))
+        Profile.load(content, make_factory(tmp_path), profile_res.source, frozenset({profile_res}))

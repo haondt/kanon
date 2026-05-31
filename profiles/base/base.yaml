@@ -3,5 +3,5 @@ extends:
   - self::base/docs
   - self::base/workflow
   - self::base/tools
-modules:
+kanons:
   - self::systems/base

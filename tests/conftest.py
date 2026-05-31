@@ -3,18 +3,18 @@ from pathlib import Path
 
 import pytest
 
-from spek.core.config import SpekConfig, SpekEnv
-from spek.core.settings import GlobalSettings
-from spek.core.sources import SourceResolver
-from spek.core.sources._resolve import resolve_sources, hydrate_source_reference, initialize
+from kanon.core.config import KanonConfig, KanonEnv
+from kanon.core.settings import GlobalSettings
+from kanon.core.sources import SourceResolver
+from kanon.core.sources._resolve import resolve_sources, hydrate_source_reference, initialize
 
 
 @pytest.fixture(autouse=True)
 def reset_singletons(tmp_path: Path, monkeypatch):
-    monkeypatch.setenv("SPEK_SETTINGS_PATH", str(tmp_path / "settings.yaml"))
-    SpekConfig.reset()
+    monkeypatch.setenv("KANON_SETTINGS_PATH", str(tmp_path / "settings.yaml"))
+    KanonConfig.reset()
     GlobalSettings.reset()
-    SpekEnv.reset()
+    KanonEnv.reset()
     SourceResolver.reset()
     initialize()
     resolve_sources.cache_clear()

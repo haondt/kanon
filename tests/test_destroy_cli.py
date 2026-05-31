@@ -3,28 +3,28 @@ from pathlib import Path
 import yaml
 from click.testing import CliRunner
 
-from spek.cli import cli
+from kanon.cli import cli
 
 
 def make_project(root: Path, integrations: list[str] = ["claude"]) -> None:
-    spek_dir = root / ".spek"
-    spek_dir.mkdir()
-    (spek_dir / "spek.yaml").write_text(yaml.dump({
+    kanon_dir = root / ".kanon"
+    kanon_dir.mkdir()
+    (kanon_dir / "kanon.yaml").write_text(yaml.dump({
         "meta": {
-            "spek_version": "0.0.0",
-            "spek_sha": "abc1234",
+            "kanon_version": "0.0.0",
+            "kanon_sha": "abc1234",
             "integrations": integrations,
         },
-        "modules": [],
+        "kanons": [],
     }))
 
 
-def test_destroy_removes_spek_dir(tmp_path):
+def test_destroy_removes_kanon_dir(tmp_path):
     make_project(tmp_path)
 
     CliRunner().invoke(cli, ["--project-root", str(tmp_path), "destroy", "--yes"])
 
-    assert not (tmp_path / ".spek").exists()
+    assert not (tmp_path / ".kanon").exists()
 
 
 def test_destroy_removes_integration_output_dirs(tmp_path):
@@ -65,7 +65,7 @@ def test_destroy_confirms_before_removing(tmp_path):
     )
 
     assert result.exit_code == 0
-    assert not (tmp_path / ".spek").exists()
+    assert not (tmp_path / ".kanon").exists()
 
 
 def test_destroy_abort_on_no(tmp_path):
@@ -76,7 +76,7 @@ def test_destroy_abort_on_no(tmp_path):
     )
 
     assert result.exit_code != 0
-    assert (tmp_path / ".spek").exists()
+    assert (tmp_path / ".kanon").exists()
 
 
 def test_destroy_removes_settings_file(tmp_path):

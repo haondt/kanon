@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "haondt-spek"
+name = "haondt-kanon"
 dynamic = ["version"]
 description = "CLI for managing AI-assisted development conventions across projects"
 readme = "README.md"
@@ -20,7 +20,7 @@ dependencies = [
 
 
 [project.scripts]
-spek = "spek.cli:cli"
+kanon = "kanon.cli:cli"
 
 [project.optional-dependencies]
 dev = [
@@ -29,8 +29,8 @@ dev = [
 ]
 
 [tool.hatch.version]
-path = "src/spek/_metadata.py"
+path = "src/kanon/_metadata.py"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/spek"]
+packages = ["src/kanon"]
 

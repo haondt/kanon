@@ -1,0 +1,38 @@
+meta:
+  kanon_version: 0.0.0
+  kanon_sha: d32c16f43f623ca3603fb462d49903899b798108
+  integrations:
+  - claude
+  - windsurf
+  profile: haondt::python/cli
+kanons:
+- haondt::ai/coding/prefer-reuse
+- haondt::git/commit-short
+- docs/kanons
+- docs/references
+- docs/structure
+- systems/base
+- tools/kanon/kanons
+- tools/kanon/ref
+- tools/kanon/session
+- tools/kanon/todo
+- workflow/base
+- workflow/kanon-amend
+- workflow/kanon-build
+- workflow/kanon-detour
+- workflow/kanon-fix
+- workflow/kanon-onboard
+- workflow/kanon-plan
+- workflow/kanon-reconcile
+- workflow/kanon-retro
+- workflow/kanon-review
+- workflow/kanon-sketch
+- workflow/kanon-stance
+- workflow/kanon-think
+- workflow/kanon-todo
+stances:
+- haondt::autonomous
+- gh::haondt/kanons::collaborative
+- gh::haondt/kanons::critic
+sources:
+  haondt: gh::haondt/kanons

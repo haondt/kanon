@@ -1,8 +1,8 @@
 ---
-spek:
-  description: "How to write a reference entry for the spek reference library"
+kanon:
+  description: "How to write a reference entry for the kanon reference library"
   keywords:
-    - spek
+    - kanon
     - reference
     - authoring
 ---
@@ -38,7 +38,7 @@ Keep entries under ~200 lines. If an entry is growing beyond that, either split 
 ## Frontmatter
 
 ```yaml
-spek:
+kanon:
   description: "Short description — what it does, not what it is"
   keywords:
     - tool name
@@ -54,4 +54,4 @@ Keywords are what an implementer would type when searching — include the tools
 references/<topic>/<entry-name>.md
 ```
 
-The file path (without extension) is the name passed to `spek ref read`. Group by tool or domain (`htmx/live-input`, `bulma/list-page`).
+The file path (without extension) is the name passed to `kanon ref read`. Group by tool or domain (`htmx/live-input`, `bulma/list-page`).
