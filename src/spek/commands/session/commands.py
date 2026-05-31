@@ -5,11 +5,21 @@ from typing import Any
 
 import click
 
+from spek.core.plan import (
+    SplitEntry,
+    load_plan,
+    load_split_index,
+    parse_plan_ref,
+    save_split_index,
+)
 from spek.core.session import (
     SESSION_FILE,
+    PlanStep,
+    SessionState,
     create_session,
     delete_session,
     lint_session,
+    save_session,
 )
 from ._helpers import _load, _root
 from spek.commands._utils import read_text_arg
@@ -164,3 +174,50 @@ def session_clear(project_root: str, as_json: bool) -> None:
         click.echo(json_mod.dumps({"cleared": True}))
     else:
         click.echo("Session cleared.")
+
+
+@click.command("load")
+@click.argument("path")
+@click.option("--project-root", default=".", type=click.Path(file_okay=False))
+@click.option("--json", "as_json", is_flag=True)
+def session_load(path: str, project_root: str, as_json: bool) -> None:
+    """Load a plan file into a new session."""
+    root = _root(project_root)
+    session_path = root / SESSION_FILE
+    if session_path.exists():
+        click.echo(f"{SESSION_FILE} already exists. Use 'spek session clear' first.", err=True)
+        raise SystemExit(1)
+
+    try:
+        split, bare = parse_plan_ref(path)
+    except ValueError as e:
+        click.echo(str(e), err=True)
+        raise SystemExit(1)
+
+    try:
+        plan_obj, _ = load_plan(root, path)
+    except FileNotFoundError:
+        click.echo(f"Plan {path!r} not found.", err=True)
+        raise SystemExit(1)
+
+    state = SessionState(goal=plan_obj.goal)
+    for k, s in plan_obj.steps.items():
+        state.plan.steps[k] = PlanStep(text=s.text, done=False)
+    state.plan.notes = dict(plan_obj.notes)
+    state._meta.next_key = dict(plan_obj._meta.next_key)
+
+    _, h = save_session(state, root)
+
+    if split is not None:
+        try:
+            index, _ = load_split_index(root, split)
+            if bare in index.plans and index.plans[bare].status != "done":
+                index.plans[bare] = SplitEntry(status="in_progress")
+                save_split_index(index, root, split)
+        except FileNotFoundError:
+            pass
+
+    if as_json:
+        click.echo(json_mod.dumps({"hash": h, "goal": state.goal}))
+    else:
+        click.echo(f"Session loaded from plan {path!r}. hash: {h}")

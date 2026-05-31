@@ -31,6 +31,8 @@ To allow the AI to run spek commands without confirmation, add the following to 
 - `spek ref *`
 - `spek session *`
 - `spek todo *`
+- `spek plan *`
+- `spek split *`
 - `spek module list`
 
 This enables the AI to auto-execute these spek commands during workflow skills without requiring approval for each invocation.
@@ -68,6 +70,8 @@ The workflow skills enforce a structured session lifecycle. Each step is a check
 | Command | Description |
 |---|---|
 | `/spek-stance` | Activate a behavioral stance for the session |
+| `/spek-freeze` | Freeze the current session plan to a named plan file for later use |
+| `/spek-split` | Decompose a plan into named sub-plans tracked in a split index |
 | `/spek-think` | Enter brainstorm mode — AI discusses ideas without taking action |
 | `/spek-detour` | Make a quick out-of-scope edit without going through the full workflow |
 | `/spek-amend` | Amend the current session goal or plan in place |
@@ -90,6 +94,14 @@ spek local stance <name>        # create a project-local stance
 spek destroy                    # remove all spek-managed files from a project
 spek ref search [--json] [-n N] [--match-all] <term>...  # search the reference library (upstream + .spek/local/references/)
 spek ref read [--json] <name>                            # read a reference entry
+spek plan create <name> <goal>   # create a named plan file
+spek plan read <name>            # print goal, steps, notes
+spek plan add-step <name> <key> <text>  # add a step
+spek split create <name> <goal>  # create a split index for a group of sub-plans
+spek split list                  # list all splits
+spek split status <name>         # show sub-plan statuses for a split
+spek session freeze <name>       # freeze the session plan to a named plan file
+spek session load <path>         # load a plan file into a new session
 ```
 
 See `spek --help` or `spek <command> --help` for full options.

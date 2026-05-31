@@ -489,3 +489,163 @@ def test_session_plan_add_step_stdin_stores_text(tmp_path):
     assert result.exit_code == 0, result.output
     state, _ = load_session(tmp_path)
     assert state.plan.steps["s1"].text == "step from stdin"
+
+
+# ── freeze / load tests ───────────────────────────────────────────────────────
+
+
+def test_session_freeze_writes_plan_and_deletes_session(tmp_path):
+    invoke("start", "My goal", project_root=tmp_path)
+    CliRunner().invoke(cli, ["session", "plan", "add-step", "s1", "A step", "--project-root", str(tmp_path)])
+    result = invoke("freeze", "myplan", project_root=tmp_path)
+    assert result.exit_code == 0, result.output
+    assert not (tmp_path / ".spek" / "session.yaml").exists()
+    assert (tmp_path / ".spek" / "plans" / "myplan.yaml").exists()
+
+
+def test_session_freeze_preserves_steps_and_notes(tmp_path):
+    from spek.core.plan import load_plan
+    invoke("start", "Goal", project_root=tmp_path)
+    CliRunner().invoke(cli, ["session", "plan", "add-step", "s1", "Step one", "--project-root", str(tmp_path)])
+    CliRunner().invoke(cli, ["session", "plan", "note", "A plan note", "--project-root", str(tmp_path)])
+    invoke("freeze", "frozenplan", project_root=tmp_path)
+    plan, _ = load_plan(tmp_path, "frozenplan")
+    assert plan.goal == "Goal"
+    assert "s1" in plan.steps
+    assert plan.steps["s1"].text == "Step one"
+    assert "pn1" in plan.notes
+
+
+def test_session_freeze_fails_if_no_plan_steps(tmp_path):
+    invoke("start", "Goal", project_root=tmp_path)
+    result = invoke("freeze", "myplan", project_root=tmp_path)
+    assert result.exit_code != 0
+
+
+def test_session_freeze_fails_if_build_notes_present(tmp_path):
+    invoke("start", "Goal", project_root=tmp_path)
+    CliRunner().invoke(cli, ["session", "plan", "add-step", "s1", "A step", "--project-root", str(tmp_path)])
+    CliRunner().invoke(cli, ["session", "build", "note", "A build note", "--project-root", str(tmp_path)])
+    result = invoke("freeze", "myplan", project_root=tmp_path)
+    assert result.exit_code != 0
+
+
+def test_session_freeze_fails_if_step_done(tmp_path):
+    invoke("start", "Goal", project_root=tmp_path)
+    CliRunner().invoke(cli, ["session", "plan", "add-step", "s1", "A step", "--project-root", str(tmp_path)])
+    CliRunner().invoke(cli, ["session", "plan", "check", "s1", "--project-root", str(tmp_path)])
+    result = invoke("freeze", "myplan", project_root=tmp_path)
+    assert result.exit_code != 0
+
+
+def test_session_freeze_json(tmp_path):
+    invoke("start", "Goal", project_root=tmp_path)
+    CliRunner().invoke(cli, ["session", "plan", "add-step", "s1", "Step", "--project-root", str(tmp_path)])
+    result = CliRunner().invoke(cli, ["session", "freeze", "myplan", "--json", "--project-root", str(tmp_path)])
+    assert result.exit_code == 0
+    data = json.loads(result.output)
+    assert data["frozen"] is True
+    assert data["plan"] == "myplan"
+
+
+def test_session_freeze_registers_in_split_index(tmp_path):
+    from spek.core.plan import create_split, load_split_index
+    create_split("Big goal", tmp_path, "mysplit")
+    invoke("start", "Sub-plan goal", project_root=tmp_path)
+    CliRunner().invoke(cli, ["session", "plan", "add-step", "s1", "Step", "--project-root", str(tmp_path)])
+    invoke("freeze", "mysplit/part1", project_root=tmp_path)
+    index, _ = load_split_index(tmp_path, "mysplit")
+    assert "part1" in index.plans
+    assert index.plans["part1"].status == "pending"
+
+
+def test_session_load_creates_session_from_plan(tmp_path):
+    from spek.core.plan import create_plan
+    plan, _ = create_plan("Loaded goal", tmp_path, "myplan")
+    from spek.core.plan import PlanStep, save_plan
+    plan.steps["s1"] = PlanStep(text="A step")
+    save_plan(plan, tmp_path, "myplan")
+
+    result = invoke("load", "myplan", project_root=tmp_path)
+    assert result.exit_code == 0, result.output
+    assert (tmp_path / ".spek" / "session.yaml").exists()
+    state, _ = load_session(tmp_path)
+    assert state.goal == "Loaded goal"
+    assert "s1" in state.plan.steps
+    assert state.plan.steps["s1"].done is False
+
+
+def test_session_load_resets_done_flag(tmp_path):
+    from spek.core.plan import PlanStep, create_plan, save_plan
+    plan, _ = create_plan("Goal", tmp_path, "myplan")
+    plan.steps["s1"] = PlanStep(text="Step", done=True)
+    save_plan(plan, tmp_path, "myplan")
+
+    invoke("load", "myplan", project_root=tmp_path)
+    state, _ = load_session(tmp_path)
+    assert state.plan.steps["s1"].done is False
+
+
+def test_session_load_fails_if_session_exists(tmp_path):
+    from spek.core.plan import create_plan
+    create_plan("Goal", tmp_path, "myplan")
+    invoke("start", "Existing session", project_root=tmp_path)
+    result = invoke("load", "myplan", project_root=tmp_path)
+    assert result.exit_code != 0
+
+
+def test_session_load_updates_split_index_to_in_progress(tmp_path):
+    from spek.core.plan import PlanStep, create_plan, create_split, load_split_index, save_plan
+    create_split("Big goal", tmp_path, "mysplit")
+    plan, _ = create_plan("Part goal", tmp_path, "mysplit/part1")
+    plan.steps["s1"] = PlanStep(text="A step")
+    save_plan(plan, tmp_path, "mysplit/part1")
+    from spek.core.plan import SplitEntry, save_split_index
+    index, _ = load_split_index(tmp_path, "mysplit")
+    index.plans["part1"] = SplitEntry(status="pending")
+    save_split_index(index, tmp_path, "mysplit")
+
+    invoke("load", "mysplit/part1", project_root=tmp_path)
+    index, _ = load_split_index(tmp_path, "mysplit")
+    assert index.plans["part1"].status == "in_progress"
+
+
+def test_session_load_json(tmp_path):
+    from spek.core.plan import create_plan
+    create_plan("My goal", tmp_path, "myplan")
+    result = CliRunner().invoke(cli, ["session", "load", "myplan", "--json", "--project-root", str(tmp_path)])
+    assert result.exit_code == 0
+    data = json.loads(result.output)
+    assert "hash" in data
+    assert data["goal"] == "My goal"
+
+
+def test_session_load_preserves_meta_next_key(tmp_path):
+    from spek.core.plan import PlanMeta, PlanStep, create_plan, save_plan
+    plan, _ = create_plan("Goal", tmp_path, "myplan")
+    plan.notes["pn1"] = "first"
+    plan.notes["pn2"] = "second"
+    plan._meta = PlanMeta(next_key={"pn": 3})
+    save_plan(plan, tmp_path, "myplan")
+
+    invoke("load", "myplan", project_root=tmp_path)
+    result = CliRunner().invoke(cli, ["session", "plan", "note", "third", "--json", "--project-root", str(tmp_path)])
+    assert result.exit_code == 0
+    data = json.loads(result.output)
+    assert data["key"] == "pn3"
+
+
+def test_session_load_does_not_reset_done_split_entry(tmp_path):
+    from spek.core.plan import PlanStep, create_plan, create_split, load_split_index, save_plan
+    from spek.core.plan import SplitEntry, save_split_index
+    create_split("Big goal", tmp_path, "mysplit")
+    plan, _ = create_plan("Part goal", tmp_path, "mysplit/part1")
+    plan.steps["s1"] = PlanStep(text="A step")
+    save_plan(plan, tmp_path, "mysplit/part1")
+    index, _ = load_split_index(tmp_path, "mysplit")
+    index.plans["part1"] = SplitEntry(status="done")
+    save_split_index(index, tmp_path, "mysplit")
+
+    invoke("load", "mysplit/part1", project_root=tmp_path)
+    index, _ = load_split_index(tmp_path, "mysplit")
+    assert index.plans["part1"].status == "done"

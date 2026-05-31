@@ -77,4 +77,9 @@ Create **Pydantic** models for the user schema with proper field validation
 EOF
 ```
 
+## Freeze and load
+
+- `spek session freeze <name>` — write the session plan to `.spek/plans/<name>.yaml` and delete the session; fails if: no plan steps, build notes present, or any step is marked done; supports `<split>/<name>` addressing (split must exist)
+- `spek session load <path>` — create a new session from a plan file; fails if a session already exists; if `<split>/<name>`, updates that entry in `index.yaml` to `in_progress`
+
 All commands accept `--json` for machine-readable output. See `spek session --help` for the full command list.

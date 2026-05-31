@@ -6,6 +6,7 @@ CLI tool for managing AI-assisted development conventions across projects.
 - Initializes target projects via Q&A (`spek init`), stamping a resolved set of modules and stances into `.spek/`
 - Syncs spec files into committed local copies (`spek sync`) and generates AI tool output (rules, skills)
 - Provides a session workflow: `/spek-sketch` (optional) → `/spek-plan` → `/spek-build` → `/spek-retro`
+- Plans can be frozen to files (`/spek-freeze`) and reloaded (`spek session load`); large plans can be decomposed into splits (`/spek-split`)
 - Supports on-demand behavioral stances via `/spek-stance`
 - `/spek-think` enters a non-actionary brainstorming mode for the remainder of the conversation
 - `/spek-detour` makes a quick out-of-scope edit without going through the full workflow
@@ -37,9 +38,10 @@ stances/         # YAML files — each lists module paths; activated via /spek-s
 profiles/        # YAML files — named module+stance bundles; base/ and python/
 src/spek/
   cli.py         # Click entrypoint; registers all command groups
-  commands/      # one file per subcommand: init, sync, profile, local, module, destroy, ref; session/ and todo/ are packages; _utils.py holds shared helpers (read_text_arg, read_text_arg_json for stdin/JSON input support)
+  commands/      # one file per subcommand: init, sync, profile, local, module, destroy, ref; session/, todo/, plan/, and split/ are packages; _utils.py holds shared helpers (read_text_arg, read_text_arg_json for stdin/JSON input support)
   core/          # pure logic, no CLI dependency
 .spek/           # spek's own session/project files (dogfooding)
+  plans/         # frozen plan files and splits (committed)
 ```
 
 ## Core modules (`src/spek/core/`)
@@ -51,6 +53,7 @@ src/spek/
 - `modules.py` — `list_modules(specs_dir)` enumerates all spec files in a given directory; `parse_module_ref(name)` splits on `::`, defaults namespace to `"spek"`; `resolve_sources(repo_path, global_sources, project_sources)` merges global + project (project wins), adds `"spek" → repo_path / "specs"` as fallback when `repo_path` is not None
 - `profiles.py` — `resolve_profile()` recursive resolution with deduplication; `ProfileSpec` model
 - `references.py` — `search_references(repo_path, terms, project_root?)` keyword search; `read_reference(repo_path, name, project_root?)` retrieves content; local refs in `.spek/local/references/` shadow upstream on name collision; `ReferenceResult` model
+- `plan.py` — `PlanFile(BaseModel)` (goal, steps, notes, `_meta`); `SplitIndex(BaseModel)` (goal, `plans: dict[str, SplitEntry]`); `SplitEntry` has `status: Literal["pending","in_progress","done"]`; `parse_plan_ref(name)` splits bare vs `<split>/<name>`; `plan_path`/`index_path` resolve `.spek/plans/` layout; load/save/create helpers for both PlanFile and SplitIndex; `next_note_key(plan)` for pn namespace; backing files `.spek/plans/<name>.yaml` and `.spek/plans/<split>/index.yaml`
 - `session.py` — `SessionState` Pydantic model (goal, plan, build, review, amendments, detours, stance, `_meta`); load/save/lint; `_meta.next_key` tracks next stable key per namespace (`pn`, `bn`, `f`, `p`); `Finding` has required `type: FindingType` and `severity: FindingSeverity` fields; `ReviewPass` has `status: Literal['open','approved']`; YAML serialization helpers moved to `yaml_utils.py`; backing file `.spek/session.yaml`
 - `todo.py` — `TodoState` / `TodoSection` Pydantic models; load/save/lint; backing file `.spek/todo.yaml`
 - `utils.py` — `deep_merge(d1, d2, conflicts?)` — recursive dict merge with three conflict modes (`new`/`old`/`err`); list deduplication safe for unhashable types
@@ -79,6 +82,26 @@ Full `spek session` command group. Reads/writes `.spek/session.yaml`. All reads 
 - `stance set/clear/status`
 - `review start/add-finding/close-finding/reopen-finding/set-fix-note/approve/status`
 - `lint` / `clear` — validate schema / delete session.yaml
+- `freeze <name>` — write plan to `.spek/plans/<name>.yaml` and delete session; fails if no steps, build notes present, or any step done
+- `load <path>` — create session from plan file; updates split index to `in_progress` if sub-plan path
+
+## spek plan subcommands
+
+`spek plan` command group. Reads/writes `.spek/plans/<name>.yaml`. Name can be bare or `<split>/<name>`.
+
+- `create <name> <goal>` — create plan file; registers in split index if sub-plan path
+- `read <name>` — print goal, steps, notes
+- `goal <name> <text>` — overwrite goal
+- `add-step <name> <key> <text>` / `edit-step` / `remove-step`
+- `note <name> <text>` / `edit-note` / `remove-note` (auto-keyed pn1/pn2/…)
+
+## spek split subcommands
+
+`spek split` command group. Reads/writes `.spek/plans/<name>/index.yaml`.
+
+- `create <name> <goal>` — create split with index.yaml
+- `list` — enumerate splits in `.spek/plans/`
+- `status <name>` — show goal and each sub-plan's status
 
 ## spek todo subcommands
 

@@ -9,6 +9,8 @@ from spek.commands.destroy import destroy
 from spek.commands.ref import ref
 from spek.commands.session import session
 from spek.commands.todo import todo
+from spek.commands.plan import plan
+from spek.commands.split import split
 
 
 @click.group()
@@ -26,3 +28,5 @@ cli.add_command(destroy)
 cli.add_command(ref)
 cli.add_command(session)
 cli.add_command(todo)
+cli.add_command(plan)
+cli.add_command(split)

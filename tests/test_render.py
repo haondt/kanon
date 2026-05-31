@@ -8,7 +8,7 @@ import pytest
 
 import jinja2
 
-from spek.core.render import collect_hooks, collect_preapproved_tools, render_module, render_settings, render_windsurf_structure_rule
+from spek.core.render import collect_hooks, collect_preapproved_tools, render_module, render_settings, render_tool_specific_rules
 
 
 def _hooks_content(*entries: dict) -> str:
@@ -139,13 +139,11 @@ def test_render_module_fork_skill_appends_preload_command(tmp_path):
     assert "Bash(cat .spek/STRUCTURE.md)" in skill_md
 
 
-def test_render_module_windsurf_fork_skill_gets_preload(tmp_path):
+def test_render_module_windsurf_fork_skill_written_as_workflow(tmp_path):
     content = _fork_skill_content("windsurf")
     render_module(content, "workflow/my-skill", "windsurf", tmp_path)
-    skill_md = (tmp_path / ".windsurf/skills/my-skill/SKILL.md").read_text()
-    assert "## Project structure\n\n!`test -f .spek/STRUCTURE.md && cat .spek/STRUCTURE.md`" in skill_md
-    assert "Bash(test .spek/STRUCTURE.md)" in skill_md
-    assert "Bash(cat .spek/STRUCTURE.md)" in skill_md
+    workflow_md = (tmp_path / ".windsurf/workflows/my-skill.md").read_text()
+    assert "Do the thing." in workflow_md
 
 
 def test_render_module_skill_merges_preapproved_and_integration_allowed_tools(tmp_path):
@@ -272,10 +270,9 @@ def test_render_module_jinja_with_skill_output(tmp_path):
 
 
 def test_render_windsurf_structure_rule(tmp_path):
-    out = render_windsurf_structure_rule(tmp_path)
-    assert out == tmp_path / ".windsurf" / "rules" / "spek" / "project-structure.md"
+    out = render_tool_specific_rules("windsurf", tmp_path)
+    assert out == tmp_path / ".windsurf" / "rules" / "spek--windsurf-rules.md"
     content = out.read_text()
     assert "---" in content
     assert "trigger: always_on" in content
     assert "## Project structure" in content
-    assert "CRITICAL: At a session start, you MUST read @.spek/STRUCTURE.md before doing anything else." in content

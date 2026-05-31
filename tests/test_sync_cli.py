@@ -159,11 +159,10 @@ def test_sync_windsurf_command_still_flat(tmp_path):
 
     CliRunner().invoke(cli, ["sync", "--project-root", str(tmp_path)])
 
-    skill = tmp_path / ".windsurf" / "skills" / "spek-sketch" / "SKILL.md"
+    skill = tmp_path / ".windsurf" / "workflows" / "spek-sketch.md"
     assert skill.exists()
     content = skill.read_text()
     assert "---" in content
-    assert "name: spek-sketch" in content
     assert "Sketch the goal." in content
 
 

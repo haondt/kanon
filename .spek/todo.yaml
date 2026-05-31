@@ -70,15 +70,6 @@ sections:
     items:
     - |-
       Add /spek-audit skill: AI pass checking repository against specs writes findings to .spek/audit.yaml, triage phase walks findings one-by-one with resolution options, retro phase closes and deletes audit file.
-  spek-split:
-    name: Plan splitting
-    items:
-    - |-
-      Add /spek-split skill: decompose a large plan into sub-plans stored in .spek/plans/<group>/, with index.yaml tracking group goal and per-plan status.
-    - |-
-      Add ## Group convention to session.yaml for linking sub-plans back to their group; extend retro to mark sub-plan entries done in index.yaml.
-    - |-
-      Loading a sub-plan: user manually moves a plan file to session.yaml; no new skill needed.
   cleanup:
     name: Cleanup
     items:
