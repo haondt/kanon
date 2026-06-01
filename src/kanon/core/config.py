@@ -81,7 +81,8 @@ AI_TOOL_SPECIFIC_RULES: dict[Integration, list[IntegrationSpecificRule]] = {
             frontmatter={"trigger": "always_on"},
             content="""## Project structure
 - CRITICAL: The first action in every conversation is reading @.kanon/STRUCTURE.md. Do not respond to the user, write any files or plan any actions until this is complete.
-- When running shell commands, prefer using the bash tool over interactive shell execution for better syntax highlighting in the chat window.""",
+- When running shell commands, prefer using the bash tool over interactive shell execution for better syntax highlighting in the chat window.
+- Run `kanon` commands via blocking `run_command` calls; never background + `command_status`.""",
         )
     ]
 }
