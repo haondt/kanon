@@ -11,6 +11,7 @@ CLI tool for managing AI-assisted development conventions across projects.
 - `/kanon-detour` makes a quick out-of-scope edit without going through the full workflow
 - `/kanon-todo` adds an item to `.kanon/todo.yaml`
 - `/kanon-onboard` onboards an existing project: writes STRUCTURE.md, selects kanons via `kanon list --json` + user approval, applies with `kanon set --sync`, adds inline TODOs to `.kanon/todo.yaml`
+- `/kanon-why` explains a specific AI decision (quotes the driving kanon or names the gap) and suggests a concrete fix to prevent recurrence
 
 ## Tech stack
 

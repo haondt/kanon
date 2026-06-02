@@ -80,8 +80,6 @@ sections:
     items:
     - |-
       Add /kanon-audit skill: AI pass checking repository against kanons writes findings to .kanon/audit.yaml, triage phase walks findings one-by-one with resolution options, retro phase closes and deletes audit file.
-    - |-
-      Add /kanon-why skill: given a specific AI decision the user questions, explain the rule or gap that drove it (without reverting the change), then suggest a concrete spec edit or new kanon module to prevent it in future sessions.
   kanon-split:
     name: Plan splitting
     items:

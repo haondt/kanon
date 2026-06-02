@@ -1,6 +1,6 @@
 meta:
   kanon_version: 0.0.0
-  kanon_sha: d32c16f43f623ca3603fb462d49903899b798108
+  kanon_sha: 83621d466dced71687ad91fc14381ace0963cd5b
   integrations:
   - claude
   - windsurf
@@ -8,6 +8,7 @@ meta:
 kanons:
 - haondt::ai/coding/prefer-reuse
 - haondt::git/commit-short
+- haondt::git/commit-base
 - docs/kanons
 - docs/references
 - docs/structure
@@ -30,6 +31,7 @@ kanons:
 - workflow/kanon-stance
 - workflow/kanon-think
 - workflow/kanon-todo
+- workflow/kanon-why
 stances:
 - haondt::autonomous
 - gh::haondt/kanons::collaborative

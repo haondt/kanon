@@ -14,3 +14,4 @@ kanons:
   - self::workflow/kanon-amend
   - self::workflow/kanon-todo
   - self::workflow/kanon-onboard
+  - self::workflow/kanon-why

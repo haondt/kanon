@@ -80,6 +80,7 @@ The workflow skills enforce a structured session lifecycle. Each step is a check
 | `/kanon-amend` | Amend the current session goal or plan in place |
 | `/kanon-todo` | Add an item to the project backlog |
 | `/kanon-onboard` | Onboard an existing project: write STRUCTURE.md, select kanons, extract TODOs |
+| `/kanon-why` | Explain a specific AI decision and suggest a kanon fix to prevent recurrence |
 
 ## Object references
 
