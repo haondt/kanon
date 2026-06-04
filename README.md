@@ -1,8 +1,8 @@
 # kanon
 
-A package manager for AI coding conventions — subscribe to kanons from any source, sync them into every project.
+A tool for managing granular AI rules and syncing them across projects.
 
-Most AI coding tools let you drop a rules file into each project. That works until you have a dozen projects and the rules drift apart. kanon lets projects declare which kanons they want via `kanon.yaml` — pulling from external sources like GitHub repos or local directories — and `kanon sync` copies them locally and generates AI tool integrations for each configured tool.
+Projects declare which kanons they use in `.kanon/kanon.yaml`, pulling from shared libraries on GitHub, GitLab, or local directories, and `kanon sync` generates AI tool config for each configured integration.
 
 ## Prerequisites
 
