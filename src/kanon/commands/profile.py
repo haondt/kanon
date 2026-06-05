@@ -50,7 +50,7 @@ def profile_apply(name: str | None, run_sync: bool) -> None:
 
     try:
         profile_ref = SourcedResource.parse(profile_ref)
-        profile = SourceResolver.instance()[profile_ref.source].hydrate_profile(profile_ref.path)
+        profile = SourceResolver.instance()[profile_ref.source].hydrate_profile(profile_ref)
     except FileNotFoundError as e:
         click.echo(str(e))
         raise SystemExit(1)

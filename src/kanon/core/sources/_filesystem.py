@@ -75,13 +75,13 @@ class FilesystemSource(ParsedSource, ABC):
         return file_path.read_text()
 
     @override
-    def hydrate_profile(self, path: str) -> Profile:
+    def hydrate_profile(self, ref: SourcedResource) -> Profile:
         def _retrieve_profile_content_from_ref(parsed_ref: SourcedResource) -> str:
             source = SourceResolver.instance()[parsed_ref.source]
             return source._retrieve_profile_content(parsed_ref.path)
-        profile_content = self._retrieve_profile_content(path)
-        self_reference = SourcedResource(self.get_reference(), path)
-        return Profile.load(profile_content, _retrieve_profile_content_from_ref, self_reference.source, frozenset({self_reference}))
+        profile_content = self._retrieve_profile_content(ref.path)
+        self_reference = SourcedResource(self.get_reference(), path=ref.path, args=ref.args)
+        return Profile.load(profile_content, _retrieve_profile_content_from_ref, ref.source, frozenset({self_reference}))
 
     @override
     def shallow_hydrate_profile(self, path: str) -> ShallowProfile:

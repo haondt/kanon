@@ -79,7 +79,7 @@ sections:
     name: kanon-audit
     items:
     - |-
-      Add /kanon-audit skill: AI pass checking repository against kanons writes findings to .kanon/audit.yaml, triage phase walks findings one-by-one with resolution options, retro phase closes and deletes audit file.
+      Add /kanon-audit skill: AI pass checking repository against kanons writes findings to .kanon/audit.md, triage phase walks findings one-by-one with resolution options, retro phase closes and deletes audit file.
   kanon-split:
     name: Plan splitting
     items:

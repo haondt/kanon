@@ -83,7 +83,7 @@ class ParsedSource(ABC):
     def _retrieve_profile_content(self, path: str) -> str:
         ...
     @abstractmethod
-    def hydrate_profile(self, path: str) -> Profile:
+    def hydrate_profile(self, ref: SourcedResource) -> Profile:
         ...
     @abstractmethod
     def shallow_hydrate_profile(self, path: str) -> ShallowProfile:

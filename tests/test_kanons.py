@@ -78,6 +78,73 @@ def test_parse_too_many_separators_raises():
         SourcedResource.parse("a::b::c::d")
 
 
+# ── SourcedResource args ──────────────────────────────────────────────────────
+
+
+def test_parse_args_flag():
+    sr = SourcedResource.parse("foo/bar[baz]")
+    assert sr.path == "foo/bar"
+    assert sr.args == {"baz": True}
+
+
+def test_parse_args_key_value():
+    sr = SourcedResource.parse("foo/bar[baz=qux]")
+    assert sr.path == "foo/bar"
+    assert sr.args == {"baz": "qux"}
+
+
+def test_parse_args_multiple():
+    sr = SourcedResource.parse("foo/bar[baz,qux=corge]")
+    assert sr.path == "foo/bar"
+    assert sr.args == {"baz": True, "qux": "corge"}
+
+
+def test_parse_args_with_source_prefix():
+    sr = SourcedResource.parse("gh::org/repo::foo/bar[baz=qux]")
+    assert sr.source.scheme == "gh"
+    assert sr.path == "foo/bar"
+    assert sr.args == {"baz": "qux"}
+
+
+def test_parse_args_no_args_is_empty_dict():
+    sr = SourcedResource.parse("foo/bar")
+    assert sr.args == {}
+
+
+def test_as_string_with_flag_arg():
+    sr = SourcedResource.parse("foo/bar[baz]")
+    assert sr.as_string == "foo/bar[baz]"
+
+
+def test_as_string_with_key_value_arg():
+    sr = SourcedResource.parse("gh::org/repo::foo/bar[baz=qux]")
+    assert sr.as_string == "gh::org/repo::foo/bar[baz=qux]"
+
+
+def test_as_path_string_excludes_args():
+    sr = SourcedResource.parse("foo/bar[baz]")
+    assert sr.as_path_string == "kanon::kanon::foo/bar"
+
+
+def test_as_fully_qualified_string_includes_args():
+    sr = SourcedResource.parse("foo/bar[baz]")
+    assert sr.as_fully_qualified_string == "kanon::kanon::foo/bar[baz]"
+
+
+def test_args_included_in_identity():
+    a = SourcedResource.parse("foo/bar[baz]")
+    b = SourcedResource.parse("foo/bar")
+    assert a != b
+    assert hash(a) != hash(b)
+
+
+def test_same_args_equal():
+    a = SourcedResource.parse("foo/bar[baz]")
+    b = SourcedResource.parse("foo/bar[baz]")
+    assert a == b
+    assert hash(a) == hash(b)
+
+
 def test_as_string_kanon_kanon_is_bare():
     sr = SourcedResource(SourceReference("kanon", "kanon"), "git/commit-base")
     assert sr.as_string == "git/commit-base"

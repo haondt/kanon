@@ -38,7 +38,7 @@ class FullSourceResolver(SourceResolver):
             return self[ref].get_reference()
         if ref.source.scheme != ALIAS_SCHEME:
             return ref
-        return SourcedResource(self[ref.source].get_reference(), ref.path)
+        return SourcedResource(self[ref.source].get_reference(), path=ref.path, args=ref.args)
     @override
     def resolve(self, ref: SourceReference) -> ParsedSource:
         result = self.try_resolve(ref)

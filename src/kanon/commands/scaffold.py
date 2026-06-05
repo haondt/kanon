@@ -53,7 +53,7 @@ def init() -> None:
         if profile_choice != "none":
             chosen_profile = profile_choice
             ref = SourcedResource.parse(profile_choice)
-            resolved = sources[ref.source].hydrate_profile(ref.path)
+            resolved = sources[ref.source].hydrate_profile(ref)
             selected_kanons = resolved.kanons
             selected_stances = resolved.stances
             click.echo(f"Loaded {len(selected_kanons)} kanons and {len(selected_stances)} stances from '{profile_choice}'.")

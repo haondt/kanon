@@ -14,9 +14,15 @@ from kanon.core.kanons import Kanon
 from kanon.core.yaml_utils import dump_yaml
 
 
+class _ArgsDict(dict):
+    """Returns False for missing keys so absent template args are falsy without raising."""
+    def __missing__(self, key: str) -> bool:
+        return False
+
+
 def _apply_jinja(body: str, context: dict[str, Any]) -> str:
     env = jinja2.Environment(undefined=jinja2.StrictUndefined, keep_trailing_newline=True)
-    return env.from_string(body).render(**context)
+    return env.from_string(body).render(context)
 
 
 def output_dir_for(integration: Integration, out_type: OutputType) -> Path:
@@ -48,7 +54,12 @@ class KanonRenderer(ABC):
     def _base_render_body(self):
         config = KanonConfig.instance()
         if self._meta.template == "jinja":
-            return _apply_jinja(self.kanon.content, {"kanons": config.kanons, "integrations": config.meta.integrations})
+            return _apply_jinja(self.kanon.content, {
+                "kanons": config.kanons,
+                "integrations": config.meta.integrations,
+                "args": _ArgsDict(self.resource.args),
+                "source": self.resource.source.as_string,
+            })
         return self.kanon.content
 
     @abstractmethod

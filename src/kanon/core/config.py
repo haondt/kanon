@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.resources
 import os
+import re
 from dataclasses import dataclass, field
 from enum import StrEnum
 from pathlib import Path
@@ -58,6 +59,7 @@ class IntegrationSpecificRule:
     path: str
     content: str
     frontmatter: dict[str, Any] = field(default_factory=dict)
+    args: dict[str, str | bool] = field(default_factory=dict)
 
 AI_TOOL_OUTPUT_DIRS: dict[Integration, dict[OutputType, str]] = {
     Integration.CLAUDE: {
@@ -317,10 +319,14 @@ SourceReference.KANON_SOURCE_REFERENCE = SourceReference(KANON_SCHEME, KANON_ADD
 SourceReference.PROJECT_SOURCE_REFERENCE = SourceReference(KANON_SCHEME, PROJECT_ADDRESS)
 SourceReference.SELF_SOURCE_REFERENCE = SourceReference(KANON_SCHEME, SELF_ADDRESS)
 
+_ARGS_RE = re.compile(r'\[([^\]]*)\]$')
+
+
 @dataclass(eq=False)
 class SourcedResource:
     source: SourceReference
     path: str
+    args: dict[str, str | bool] = field(default_factory=dict)
 
     @classmethod
     def parse(cls, ref: str) -> SourcedResource:
@@ -332,35 +338,68 @@ class SourcedResource:
             else                            → (alias, foo, bar)
         - 2 separators scheme::address::path → (scheme, address, path)
         - >2 separators → ValueError
+
+        An optional [...] suffix on the path encodes rendering args:
+            foo/bar[flag]       → args={"flag": True}
+            foo/bar[key=val]    → args={"key": "val"}
         """
+        args: dict[str, str | bool] = {}
+        if m := _ARGS_RE.search(ref):
+            for part in m.group(1).split(','):
+                part = part.strip()
+                if not part:
+                    continue
+                if '=' in part:
+                    k, v = part.split('=', 1)
+                    args[k.strip()] = v.strip()
+                else:
+                    args[part] = True
+            ref = ref[:m.start()]
+
         sep_count = ref.count(REFERENCE_SEP)
         if sep_count > 2:
             raise ValueError(f"Invalid kanon reference: {ref!r} — too many '::' separators (max 2)")
         parts = ref.split(REFERENCE_SEP)
         if len(parts) == 1:
-            return SourcedResource(SourceReference.KANON_SOURCE_REFERENCE, path=ref)
+            return SourcedResource(SourceReference.KANON_SOURCE_REFERENCE, path=ref, args=args)
         if len(parts) == 2:
             prefix, bare = parts
             if prefix in KANON_BUILTIN_ADDRESSES:
-                return SourcedResource(SourceReference(KANON_SCHEME, prefix), path=bare)
-            return SourcedResource(SourceReference(ALIAS_SCHEME, prefix), path=bare)
+                return SourcedResource(SourceReference(KANON_SCHEME, prefix), path=bare, args=args)
+            return SourcedResource(SourceReference(ALIAS_SCHEME, prefix), path=bare, args=args)
         scheme, address, path = parts
-        return SourcedResource(SourceReference(scheme, address), path=path)
+        return SourcedResource(SourceReference(scheme, address), path=path, args=args)
+
+    def _format_args(self) -> str:
+        if not self.args:
+            return ""
+        parts: list[str] = []
+        for k in sorted(self.args):
+            v = self.args[k]
+            parts.append(k if v is True else f"{k}={v}")
+        return f"[{','.join(parts)}]"
 
     @cached_property
     def as_string(self) -> str:
-        """Shortest unambiguous form."""
+        """Shortest unambiguous form, including any args suffix."""
+        args_suffix = self._format_args()
         if self.source.scheme == KANON_SCHEME and self.source.address == KANON_ADDRESS:
-            return self.path
+            return self.path + args_suffix
         if self.source.scheme == KANON_SCHEME and self.source.address in KANON_BUILTIN_ADDRESSES:
-            return f"{self.source.address}{REFERENCE_SEP}{self.path}"
+            return f"{self.source.address}{REFERENCE_SEP}{self.path}" + args_suffix
         if self.source.scheme == ALIAS_SCHEME:
-            return f"{self.source.address}{REFERENCE_SEP}{self.path}"
+            return f"{self.source.address}{REFERENCE_SEP}{self.path}" + args_suffix
         return self.as_fully_qualified_string
 
     @cached_property
-    def as_fully_qualified_string(self) -> str:
+    def as_path_string(self) -> str:
+        """Source + path without args — used for file paths and sync identity."""
         return f"{self.source.as_fully_qualified_string}{REFERENCE_SEP}{self.path}"
+
+    @cached_property
+    def as_fully_qualified_string(self) -> str:
+        """Complete canonical form including args."""
+        return self.as_path_string + self._format_args()
 
     @override
     def __eq__(self, other: object) -> bool:
@@ -385,6 +424,6 @@ class SourcedResource:
         for r in resources:
             r = r.strip()
             r = SourcedResource.parse(r)
-            sanitized[r.as_fully_qualified_string] = r.as_string
+            sanitized[r.as_path_string] = r.as_string
         sanitized_sorted = sorted(sanitized.items(), key=lambda f: f[0])
         return [i[1] for i in sanitized_sorted]

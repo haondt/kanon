@@ -46,13 +46,13 @@ class Profile:
         for kanon_ref in profile.kanons:
             kanon_res: SourcedResource = SourcedResource.parse(kanon_ref)
             if kanon_res.source == SourceReference.SELF_SOURCE_REFERENCE:
-                kanon_res = SourcedResource(self_reference, kanon_res.path)
+                kanon_res = SourcedResource(self_reference, kanon_res.path, kanon_res.args)
             kanons_set.add(kanon_res)
         stances_set: set[SourcedResource] = set()
         for stance_ref in profile.stances:
             stance_res: SourcedResource = SourcedResource.parse(stance_ref)
             if stance_res.source == SourceReference.SELF_SOURCE_REFERENCE:
-                stance_res = SourcedResource(self_reference, stance_res.path)
+                stance_res = SourcedResource(self_reference, stance_res.path, stance_res.args)
             stances_set.add(stance_res)
         final_profile = Profile(
             description=profile.description,
@@ -62,7 +62,7 @@ class Profile:
 
         for parent_ref in [SourcedResource.parse(r) for r in profile.extends]:
             if parent_ref.source == SourceReference.SELF_SOURCE_REFERENCE:
-                parent_ref = SourcedResource(self_reference, parent_ref.path)
+                parent_ref = SourcedResource(self_reference, parent_ref.path, parent_ref.args)
             if parent_ref in seen:
                 raise ValueError(f"Circular profile dependency: {parent_ref}")
             parent_content = content_factory(parent_ref)

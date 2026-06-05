@@ -260,10 +260,52 @@ def test_render_kanon_no_template_unaffected(project):
     assert "{{ literal braces }}" in out.read_text()
 
 
+def test_render_kanon_jinja_absent_arg_is_falsy(project):
+    body = "{% if args.missing %}present{% else %}absent{% endif %}"
+    out = _render(_jinja_rule(body), "test/jinja-args", Integration.CLAUDE)
+    assert "absent" in out.read_text()
+
+
+def test_render_kanon_jinja_branches_on_flag_arg(project):
+    body = "{% if args.baz %}baz set{% else %}baz unset{% endif %}"
+    out = _render(_jinja_rule(body), "test/jinja-args[baz]", Integration.CLAUDE)
+    assert "baz set" in out.read_text()
+
+
+def test_render_kanon_jinja_branches_on_key_value_arg(project):
+    body = "{% if args.mode == 'short' %}short mode{% else %}long mode{% endif %}"
+    out = _render(_jinja_rule(body), "test/jinja-args[mode=short]", Integration.CLAUDE)
+    assert "short mode" in out.read_text()
+
+
+def test_render_kanon_jinja_args_empty_when_none(project):
+    body = "{{ args }}"
+    out = _render(_jinja_rule(body), "test/jinja-args", Integration.CLAUDE)
+    assert out.read_text().strip() == "{}"
+
+
 def test_render_kanon_jinja_unknown_variable_raises(project):
     body = "{{ undefined_var }}"
     with pytest.raises(jinja2.UndefinedError):
         _render(_jinja_rule(body), "test/jinja-undef", Integration.CLAUDE)
+
+
+def test_render_kanon_jinja_source_builtin_kanon(project):
+    body = "{{ source }}"
+    out = _render(_jinja_rule(body), "test/jinja-source", Integration.CLAUDE)
+    assert out.read_text().strip() == "kanon::kanon"
+
+
+def test_render_kanon_jinja_source_alias(project):
+    body = "{{ source }}"
+    out = _render(_jinja_rule(body), "myalias::test/jinja-source", Integration.CLAUDE)
+    assert out.read_text().strip() == "myalias"
+
+
+def test_render_kanon_jinja_source_external_library(project):
+    body = "{{ source }}"
+    out = _render(_jinja_rule(body), "gh::haondt/kanons::test/jinja-source", Integration.CLAUDE)
+    assert out.read_text().strip() == "gh::haondt/kanons"
 
 
 def test_render_kanon_jinja_with_skill_output(project):

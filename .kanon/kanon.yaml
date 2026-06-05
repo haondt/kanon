@@ -1,21 +1,37 @@
 meta:
   kanon_version: 0.0.0
-  kanon_sha: 83621d466dced71687ad91fc14381ace0963cd5b
+  kanon_sha: 019aed017dedce6c379ea27b984d27be4827822e
   integrations:
   - claude
   - windsurf
   profile: haondt::python/cli
 kanons:
 - haondt::ai/coding/prefer-reuse
-- haondt::git/commit-short
+- haondt::ai/coding/verify-before-use
+- haondt::ai/communication/prefer-brevity
+- haondt::ai/style/confirm-before-acting
+- haondt::ai/style/stay-in-scope
+- haondt::build/just
+- haondt::code/hygiene
+- haondt::docs/readme
+- haondt::git/branch-base
 - haondt::git/commit-base
-- docs/kanons
-- docs/references
+- haondt::git/commit-long
+- haondt::python/build
+- haondt::python/config[lazy]
+- haondt::python/dependencies/base
+- haondt::python/dependencies/uv
+- haondt::python/models/pydantic
+- haondt::python/style
+- haondt::python/testing/base
+- haondt::python/testing/pytest
+- haondt::python/venv
 - docs/structure
 - systems/base
 - tools/kanon/kanons
 - tools/kanon/ref
 - tools/kanon/session
+- tools/kanon/source
 - tools/kanon/todo
 - workflow/base
 - workflow/kanon-amend
@@ -34,7 +50,7 @@ kanons:
 - workflow/kanon-why
 stances:
 - haondt::autonomous
-- gh::haondt/kanons::collaborative
-- gh::haondt/kanons::critic
+- haondt::collaborative
+- haondt::critic
 sources:
-  haondt: gh::haondt/kanons
+  haondt: local::~/projects/kanons

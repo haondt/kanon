@@ -165,7 +165,7 @@ kanon:
 ...
 ```
 
-When `template: jinja` is set, the body is rendered as a Jinja2 template before output. Available context variables: `kanons` (set of active kanon refs), `integrations` (set of configured integration names).
+When `template: jinja` is set, the body is rendered as a Jinja2 template before output. Available context variables: `kanons` (set of active kanon refs), `integrations` (set of configured integration names), `args` (dict of rendering args parsed from the kanon reference suffix, e.g. `foo/bar[flag,key=val]`; missing keys are falsy), `source` (shortest unambiguous source identifier for the kanon, e.g. `kanon::kanon`, `myalias`, or `gh::org/repo`).
 
 Profiles and stances reference kanons using `self::` to stay portable:
 

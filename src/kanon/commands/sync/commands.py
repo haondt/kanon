@@ -7,7 +7,7 @@ from kanon.commands.sync._kanons import sync_kanons
 from kanon.commands.sync._render import render_all
 from kanon.commands.sync._stances import sync_stances
 from kanon.commands.sync._synced import read_synced_stance
-from kanon.core.config import SourceReference, KanonConfig
+from kanon.core.config import SourceReference, KanonConfig, SourcedResource
 from kanon.core.sources import SourceResolver
 
 
@@ -21,12 +21,17 @@ def do_sync(pull: bool = False) -> None:
     explicit_kanons = {sources.dealias(r) for r in config.kanons_sr}
     all_kanons_needed = set(explicit_kanons)
     for res in config.stances_sr:
-        all_kanons_needed = all_kanons_needed | {sources.dealias(r) for r in read_synced_stance(res).kanons_sr}
+        for r in read_synced_stance(res).kanons_sr:
+            if r.source == SourceReference.SELF_SOURCE_REFERENCE:
+                r = SourcedResource(source=res.source, path=r.path, args=r.args)
+            all_kanons_needed = all_kanons_needed | {sources.dealias(r)}
 
 
     if pull:
         needed_refs = {sr.source for sr in all_kanons_needed}
         for ref in needed_refs:
+            if ref == SourceReference.SELF_SOURCE_REFERENCE:
+                continue
             sources[ref].pull(force=True)
 
         kanon_source = sources[SourceReference.KANON_SOURCE_REFERENCE]

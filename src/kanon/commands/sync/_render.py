@@ -49,7 +49,7 @@ def render_all(to_render: Sequence[SourcedResource] | set[SourcedResource]) -> N
         rules = AI_TOOL_SPECIFIC_RULES.get(integration, [])
         for rule in rules:
             tool_rule_path = render_rule(
-                SourcedResource(SourceReference.KANON_SOURCE_REFERENCE, path=rule.path),
+                SourcedResource(SourceReference.KANON_SOURCE_REFERENCE, path=rule.path, args=rule.args),
                 rule.frontmatter,
                 rule.content,
                 integration

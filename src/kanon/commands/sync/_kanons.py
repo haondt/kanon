@@ -10,12 +10,15 @@ def sync_kanons(all_kanons_needed: set[SourcedResource], pull: bool):
     create_synced_kanons_dir()
     sources = SourceResolver.instance()
 
-    synced_kanons = set(list_synced_kanons())
+    synced_kanons = list_synced_kanons()
     all_kanons_needed = {sources.dealias(r) for r in all_kanons_needed}
+    synced_paths = {s.as_path_string for s in synced_kanons}
+    needed_paths = {r.as_path_string for r in all_kanons_needed}
+
     if pull:
-        to_pull = [s for s in all_kanons_needed]
+        to_pull = list(all_kanons_needed)
     else:
-        to_pull = [s for s in all_kanons_needed if s not in synced_kanons]
+        to_pull = [s for s in all_kanons_needed if s.as_path_string not in synced_paths]
 
     if pull:
         click.echo("Pulling kanons from upstream:")
@@ -31,5 +34,5 @@ def sync_kanons(all_kanons_needed: set[SourcedResource], pull: bool):
         write_synced_kanon(resource, kanon)
         click.echo(f"  kanon:{resource.as_string} ← upstream")
 
-    for resource in [s for s in synced_kanons if s not in all_kanons_needed]:
+    for resource in [s for s in synced_kanons if s.as_path_string not in needed_paths]:
         remove_synced_kanon(resource)
