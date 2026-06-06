@@ -1,6 +1,6 @@
 meta:
   kanon_version: 0.0.0
-  kanon_sha: cd7b0c6a7c022dd74128d4d19a11f4ce7fbbe46c
+  kanon_sha: fbf548423d968f208e524ec3d0f3d02b150d3da7
   integrations:
   - claude
   - windsurf
@@ -54,4 +54,4 @@ stances:
 - haondt::collaborative
 - haondt::critic
 sources:
-  haondt: local::~/projects/kanons
+  haondt: gh::haondt/kanons
