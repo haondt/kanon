@@ -12,6 +12,7 @@ CLI tool for managing AI-assisted development conventions across projects.
 - `/kanon-todo` adds an item to `.kanon/todo.yaml`
 - `/kanon-onboard` onboards an existing project: writes STRUCTURE.md, selects kanons via `kanon list --json` + user approval, applies with `kanon set --sync`, adds inline TODOs to `.kanon/todo.yaml`
 - `/kanon-why` explains a specific AI decision (quotes the driving kanon or names the gap) and suggests a concrete fix to prevent recurrence
+- `/kanon-audit` checks the repository against active kanons, writes findings to `.kanon/audit.md`, and walks triage one-by-one; retro cleans up the audit file
 
 ## Tech stack
 
@@ -43,7 +44,7 @@ src/kanon/
 - `yaml_utils.py` — all YAML I/O: `load_yaml(path, model?)`, `save_yaml(data, path)`; also exports `FRONTMATTER_RE` (shared frontmatter regex); exports `_literal_representer`, `_enum_str_representer`, `_make_dumper(*enum_types)` for YAML serialization with block-literal strings and str-enum support
 - `render/` — package; reads local kanon copies, strips frontmatter, writes AI tool output files; `KanonFrontmatter` parses `kanon.description/output/name/args/integrations/preapproved_tools/template`; `output` and `template` are `Literal`-typed (`Literal["rule","skill"]` and `Literal["jinja"] | None`); when `template: jinja`, body is rendered through `_apply_jinja(body, context)` (Jinja2 `StrictUndefined`, `keep_trailing_newline=True`) with `kanons`, `integrations`, `args` (`_ArgsDict` — returns `False` for missing keys), and `source` (shortest unambiguous source identifier) as context before rule/skill branching; for `output: skill`, writes `<name>/SKILL.md` with generated YAML frontmatter (`description`, `argument-hint`/`args`, plus any keys from `integrations.<tool>` except `hooks`); Windsurf converts skills to workflows (`.windsurf/workflows/<name>.md` with description frontmatter); skills require an explicit `kanon.name` — `ValueError` raised at render time if absent; `preapproved_tools` from kanon frontmatter are merged into `allowed-tools` in the skill frontmatter; when `context: fork`, appends STRUCTURE.md preload commands to `allowed-tools` and injects a `## Project structure` shell-expansion block into the skill body; Windsurf rules are flattened (path separators replaced with `--`) and require a `trigger` field in frontmatter (defaults to `always_on`, override via `integrations.windsurf.trigger`); tool-specific rules declared in `config.AI_TOOL_SPECIFIC_RULES`; `render_tool_specific_rules(ai_tool, project_root)` writes the tool-specific rule file; `collect_hooks(content, ai_tool)` extracts hook declarations from frontmatter; `collect_preapproved_tools(content)` extracts kanon `preapproved_tools`; `render_settings(hooks_by_event, project_root, ai_tool, preapproved_tools?)` writes `.claude/settings.json` with `permissions.allow` + hooks
 - `kanons.py` — `list_kanons(kanons_dir)` enumerates all kanon files in a given directory
-- `profiles.py` — `resolve_profile()` recursive resolution with deduplication; `ProfileSpec` model; built-in profiles under `profiles/base/` only (base, docs, workflow, tools)
+- `profiles.py` — `resolve_profile()` recursive resolution with deduplication; `ProfileSpec` model; built-in profiles under `profiles/base/` only (base, docs, workflow, tools); `Profile.load()` now accepts a `dealias: Callable[[SourcedResource], SourcedResource]` parameter for alias-aware circular-dependency detection
 - `references.py` — `search_references(repo_path, terms, project_root?)` keyword search; `read_reference(repo_path, name, project_root?)` retrieves content; project refs in `.kanon/project/references/` shadow upstream on name collision; `ReferenceResult` model
 - `session.py` — `SessionState` Pydantic model (goal, plan, build, review, amendments, detours, stance, `_meta`); load/save/lint; `_meta.next_key` tracks next stable key per namespace (`pn`, `bn`, `f`, `p`); `Finding` has required `type: FindingType` and `severity: FindingSeverity` fields; `ReviewPass` has `status: Literal['open','approved']`; YAML serialization helpers moved to `yaml_utils.py`; backing file `.kanon/session.yaml`
 - `todo.py` — `TodoState` / `TodoSection` Pydantic models; load/save/lint; backing file `.kanon/todo.yaml`
@@ -83,6 +84,12 @@ Full `kanon todo` command group. Reads/writes `.kanon/todo.yaml`. `section add` 
 - `add --section <key> <text>` / `remove --section <key> <text>`
 - `section status/search/add [--allow-exists] <key> <name>`
 - `lint`
+
+## kanon profile subcommands
+
+- `kanon profile list` — list all available profiles across all sources
+- `kanon profile search <terms>...` — keyword search across available profiles; all terms must match (case-insensitive); `--source` filters to one source; `--json` outputs `[{name, description}]`
+- `kanon profile apply [name] [--replace]` — merge profile kanons/stances into kanon.yaml (additive by default); `--replace` discards existing kanons/stances and uses only the profile
 
 ## kanon top-level subcommands
 

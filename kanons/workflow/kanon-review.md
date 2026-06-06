@@ -19,7 +19,7 @@ You are reviewing a completed implementation before the session is closed. Your 
 3. Review the implementation along three internal dimensions — but output a single unified findings list, not per-dimension sections:
 
    - **Plan faithfulness** — run `kanon session status --full --json` to read the plan; verify the implementation matches what was agreed; focus on deviations not already noted in build notes; flag steps skipped, done differently, or done beyond scope without comment.
-   - **Kanon compliance** — read the relevant active kanons from `.kanon/kanons/`; focus on kanons that apply to what changed; flag violations; ignore kanons that don't apply.
+   - **Kanon compliance** — check against your active kanons (already in context as rules); if you need a canonical path to cite a violation, run `cat .kanon/kanon.yaml`. Focus on kanons that apply to what changed; ignore kanons that don't apply.
    - **Code problems** — correctness, edge cases, security issues, dead code, anything that would surprise a future reader; keep it signal; don't flag style nits already covered by a kanon.
 
 4. Grep for inline `TODO:` comments in the changed source files:

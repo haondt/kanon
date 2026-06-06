@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import click
 from kanon import __version__
 from kanon.core.config import KanonConfig

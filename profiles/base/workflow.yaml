@@ -15,3 +15,4 @@ kanons:
   - self::workflow/kanon-todo
   - self::workflow/kanon-onboard
   - self::workflow/kanon-why
+  - self::workflow/kanon-audit

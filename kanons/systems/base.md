@@ -8,6 +8,14 @@ kanon:
     - Bash(kanon list)
 ---
 
+# kanons
+
+Kanons are named conventions (e.g. `python/style`, `git/commit-base`) that were compiled into the rules already loaded into your context. You know their content — you do not need to re-read any rule files. If you need the canonical kanon path to cite or reference a specific rule, run `cat .kanon/kanon.yaml` to get the active list.
+
+# references
+
+kanons are behavioral rules that govern how you work; references are on-demand implementation guides you search when building something.
+
 # kanon reference library
 
 Before implementing anything from scratch — a UI component, a library integration, an architectural pattern — search the reference library first.

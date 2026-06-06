@@ -217,7 +217,8 @@ kanon init                        # set up a project
 kanon sync                        # fetch missing kanons from sources and regenerate integrations
 kanon sync --pull                 # force-refresh all remote sources, then regenerate
 kanon profile list                # list available profiles
-kanon profile apply [name]        # re-resolve and apply a profile
+kanon profile search <term>...    # keyword search across available profiles
+kanon profile apply [name]        # merge profile kanons/stances into kanon.yaml (additive by default; --replace for full replacement)
 kanon edit                        # re-select kanons interactively
 kanon list                        # list all available kanons with descriptions
 kanon set <kanon>...              # non-interactively set kanons (full replacement)

@@ -81,7 +81,7 @@ class FilesystemSource(ParsedSource, ABC):
             return source._retrieve_profile_content(parsed_ref.path)
         profile_content = self._retrieve_profile_content(ref.path)
         self_reference = SourcedResource(self.get_reference(), path=ref.path, args=ref.args)
-        return Profile.load(profile_content, _retrieve_profile_content_from_ref, ref.source, frozenset({self_reference}))
+        return Profile.load(profile_content, _retrieve_profile_content_from_ref, ref.source, SourceResolver.instance().dealias, frozenset({self_reference}))
 
     @override
     def shallow_hydrate_profile(self, path: str) -> ShallowProfile:

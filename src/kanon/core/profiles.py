@@ -40,7 +40,7 @@ class Profile:
         return [i.as_string for i in sorted(self.stances_set, key=lambda r: r.as_fully_qualified_string)]
 
     @classmethod
-    def load(cls,  content: str, content_factory: Callable[[SourcedResource], str], self_reference: SourceReference,  seen: frozenset[SourcedResource]) -> Profile:
+    def load(cls,  content: str, content_factory: Callable[[SourcedResource], str], self_reference: SourceReference, dealias: Callable[[SourcedResource], SourcedResource], seen: frozenset[SourcedResource]) -> Profile:
         profile = ShallowProfile.load(content)
         kanons_set: set[SourcedResource] = set()
         for kanon_ref in profile.kanons:
@@ -63,10 +63,11 @@ class Profile:
         for parent_ref in [SourcedResource.parse(r) for r in profile.extends]:
             if parent_ref.source == SourceReference.SELF_SOURCE_REFERENCE:
                 parent_ref = SourcedResource(self_reference, parent_ref.path, parent_ref.args)
-            if parent_ref in seen:
+            dealiased_parent_ref = dealias(parent_ref)
+            if dealiased_parent_ref in seen:
                 raise ValueError(f"Circular profile dependency: {parent_ref}")
             parent_content = content_factory(parent_ref)
-            parent = Profile.load(parent_content, content_factory, parent_ref.source, seen | {parent_ref})
+            parent = Profile.load(parent_content, content_factory, parent_ref.source, dealias, seen | {dealiased_parent_ref})
             final_profile.kanons_set = final_profile.kanons_set | parent.kanons_set
             final_profile.stances_set = final_profile.stances_set | parent.stances_set
 

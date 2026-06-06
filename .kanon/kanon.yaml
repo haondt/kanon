@@ -1,10 +1,10 @@
 meta:
   kanon_version: 0.0.0
-  kanon_sha: 019aed017dedce6c379ea27b984d27be4827822e
+  kanon_sha: cd7b0c6a7c022dd74128d4d19a11f4ce7fbbe46c
   integrations:
   - claude
   - windsurf
-  profile: haondt::python/cli
+  profile: base/base
 kanons:
 - haondt::ai/coding/prefer-reuse
 - haondt::ai/coding/verify-before-use
@@ -16,7 +16,7 @@ kanons:
 - haondt::docs/readme
 - haondt::git/branch-base
 - haondt::git/commit-base
-- haondt::git/commit-long
+- haondt::git/commit-short
 - haondt::python/build
 - haondt::python/config[lazy]
 - haondt::python/dependencies/base
@@ -35,6 +35,7 @@ kanons:
 - tools/kanon/todo
 - workflow/base
 - workflow/kanon-amend
+- workflow/kanon-audit
 - workflow/kanon-build
 - workflow/kanon-detour
 - workflow/kanon-fix

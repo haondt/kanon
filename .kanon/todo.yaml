@@ -53,6 +53,8 @@ sections:
       Add kanons/refactoring/python.md — Python extraction patterns, naming, avoiding over-abstraction.
     - |-
       Refactor SessionState to follow the same singleton pattern as KanonConfig: add initialize(), instance()/current(), and get() classmethods so session state can be accessed without passing it through every call.
+    - |-
+      Convert relative imports to absolute in commands/session/ and commands/todo/ subpackages (violates python/style)
   external-sources:
     name: External kanon sources
     items:
@@ -75,11 +77,6 @@ sections:
     items:
     - |-
       Add kanons/systems/basic-crud.md with full CRUD pattern conventions and matching reference entries for frontend/backend/htmx variants; use Jinja templating for conditional htmx content.
-  kanon-audit:
-    name: kanon-audit
-    items:
-    - |-
-      Add /kanon-audit skill: AI pass checking repository against kanons writes findings to .kanon/audit.md, triage phase walks findings one-by-one with resolution options, retro phase closes and deletes audit file.
   kanon-split:
     name: Plan splitting
     items:
