@@ -137,6 +137,7 @@ Full `kanon todo` command group. Reads/writes `.kanon/todo.yaml`. `section add` 
 - `skill` output for Claude is written as `.claude/skills/<name>/SKILL.md` with a YAML frontmatter block (`description`, `argument-hint`, and any `integrations.claude` keys except `hooks`)
 - Windsurf converts skills to workflows: `.windsurf/workflows/<name>.md` with `description` frontmatter only (no `argument-hint`/`args`)
 - Windsurf rules are flattened (path separators replaced with `--`) and require a `trigger` field in frontmatter (defaults to `always_on`, override via `integrations.windsurf.trigger`)
+- Devin integration mirrors Windsurf (output dirs `.devin/rules` and `.devin/workflows`, flattened rule paths, `trigger: always_on` frontmatter) — implemented in `DevinKanonRenderer` in `render/_kanon.py`
 - Hook declarations in `integrations.claude.hooks` frontmatter accumulate across all kanons and are written to `.claude/settings.json` by `render_settings`; the file is fully kanon-managed (overwritten each sync, deleted by `kanon destroy`) — user-managed overrides belong in `.claude/settings.local.json`
 - Whether a kanon is always-active or stance-only is determined entirely by its presence in `kanon.yaml.kanons`, not by anything in the file itself
 - `_metadata.py` version is `"0.0.0"` in the repo — CI rewrites it from the git tag at build time; do not edit manually

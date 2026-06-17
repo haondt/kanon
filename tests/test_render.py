@@ -68,6 +68,11 @@ def test_render_settings_windsurf_skips(project):
     assert not (project / ".windsurf").exists()
 
 
+def test_render_settings_devin_skips(project):
+    render_settings(Integration.DEVIN, [])
+    assert not (project / ".devin").exists()
+
+
 # ── render_kanon: rules ──────────────────────────────────────────────────────
 
 
@@ -92,6 +97,30 @@ def test_render_kanon_windsurf_rule_has_trigger_always_on(project):
     assert "trigger: always_on" in text
     assert "This is a Windsurf rule." in text
 
+
+def test_render_kanon_devin_rule_has_trigger_always_on(project):
+    content = "---\nkanon: {}\n---\nThis is a Devin rule.\n"
+    out = _render(content, "test/devin-rule", Integration.DEVIN)
+    text = out.read_text()
+    assert "trigger: always_on" in text
+    assert "This is a Devin rule." in text
+
+
+def test_render_kanon_devin_skill_writes_workflow(project):
+    content = dedent("""\
+        ---
+        kanon:
+          output: skill
+          name: my-skill
+          description: A test skill
+        ---
+        Do the thing.
+        """)
+    out = _render(content, "workflow/my-skill", Integration.DEVIN)
+    assert out == project / ".devin" / "workflows" / "my-skill.md"
+    text = out.read_text()
+    assert "description: A test skill" in text
+    assert "Do the thing." in text
 
 
 # ── render_kanon: skills ─────────────────────────────────────────────────────

@@ -196,9 +196,64 @@ class WindsurfKanonRenderer(KanonRenderer):
             out_path.write_text(content)
         return out_path
 
+class DevinRuleFrontmatter(BaseModel):
+    trigger: str = "always_on"
+
+
+class DevinSkillFrontmatter(BaseModel):
+    description: str | None = None
+
+
+@dataclass
+class DevinKanonRenderer(KanonRenderer):
+
+    @classmethod
+    @override
+    def create(cls, kanon_resource: SourcedResource, kanon: Kanon) -> Self:
+        renderer = cls(
+            kanon=kanon,
+            resource=kanon_resource,
+        )
+        renderer._validate()
+        return renderer
+
+    @override
+    def render(self) -> Path:
+        body = self._base_render_body()
+        out_dir = output_dir_for(Integration.DEVIN, self._meta.output)
+
+        if self._meta.output == OutputType.SKILL:
+            frontmatter = DevinSkillFrontmatter(description=self._meta.description)
+            out_path = out_dir / Path(self._name()).with_suffix(".md")
+            out_path.parent.mkdir(parents=True, exist_ok=True)
+            out_path.write_text(f"---\n{dump_yaml(frontmatter)}\n---\n{body}")
+            return out_path
+        else:
+            return DevinKanonRenderer.render_rule(
+                self.resource,
+                DevinRuleFrontmatter(),
+                body
+            )
+
+    @override
+    @classmethod
+    def render_rule(cls, resource: SourcedResource, frontmatter: dict[str, Any] | BaseModel | None, content: str) -> Path:
+        out_dir = output_dir_for(Integration.DEVIN, OutputType.RULE)
+        path_infix = f'{resource.source.cache_subpath()}/{resource.path}'
+        flattened = path_infix.replace("/", "--")
+        out_path = out_dir / Path(flattened).with_suffix(".md")
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        if frontmatter:
+            out_path.write_text(f"---\n{dump_yaml(frontmatter)}\n---\n{content}")
+        else:
+            out_path.write_text(content)
+        return out_path
+
+
 _RENDERERS: dict[Integration, type[KanonRenderer]] = {
     Integration.CLAUDE: ClaudeKanonRenderer,
     Integration.WINDSURF: WindsurfKanonRenderer,
+    Integration.DEVIN: DevinKanonRenderer,
 }
 
 def render_rule(

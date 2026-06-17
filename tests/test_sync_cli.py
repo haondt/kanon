@@ -175,6 +175,33 @@ def test_sync_windsurf_command_still_flat(tmp_path):
 
 
 
+def test_sync_devin_command_still_flat(tmp_path):
+    kanon_dir = tmp_path / ".kanon"
+    kanon_dir.mkdir()
+    (kanon_dir / "kanon.yaml").write_text(yaml.dump({
+        "meta": {
+            "kanon_version": "0.0.0",
+            "kanon_sha": "abc1234",
+            "integrations": ["devin"],
+        },
+        "kanons": ["workflow/kanon-sketch"],
+    }))
+    (kanon_dir / "kanons").mkdir()
+    (kanon_dir / "stances").mkdir()
+    dest = kanon_dir / "kanons" / "kanon" / "kanon" / "workflow" / "kanon-sketch.md"
+    dest.parent.mkdir(parents=True)
+    dest.write_text("---\nkanon:\n  output: skill\n  name: kanon-sketch\n---\nSketch the goal.\n")
+
+    CliRunner().invoke(cli, ["--project-root", str(tmp_path), "sync"
+    ])
+
+    workflow = tmp_path / ".devin" / "workflows" / "kanon-sketch.md"
+    assert workflow.exists()
+    content = workflow.read_text()
+    assert "---" in content
+    assert "Sketch the goal." in content
+
+
 def test_sync_pull_external_namespace(tmp_path):
     """--pull copies external-namespace kanons from their configured source."""
     ext_kanons = tmp_path / "mywork-kanons"

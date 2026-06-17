@@ -1,6 +1,6 @@
 meta:
   kanon_version: 0.0.0
-  kanon_sha: fbf548423d968f208e524ec3d0f3d02b150d3da7
+  kanon_sha: 8740e27bbc2fb76c918fd9c77db2182bb1f45f2f
   integrations:
   - claude
   - windsurf

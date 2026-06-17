@@ -53,6 +53,7 @@ class OutputType(StrEnum):
 class Integration(StrEnum):
     CLAUDE = "claude"
     WINDSURF = "windsurf"
+    DEVIN = "devin"
 
 @dataclass
 class IntegrationSpecificRule:
@@ -70,6 +71,10 @@ AI_TOOL_OUTPUT_DIRS: dict[Integration, dict[OutputType, str]] = {
         OutputType.RULE: ".windsurf/rules",
         OutputType.SKILL: ".windsurf/workflows",
     },
+    Integration.DEVIN: {
+        OutputType.RULE: ".devin/rules",
+        OutputType.SKILL: ".devin/workflows",
+    },
 }
 
 AI_TOOL_SETTINGS_FILES: dict[Integration, str] = {
@@ -86,7 +91,17 @@ AI_TOOL_SPECIFIC_RULES: dict[Integration, list[IntegrationSpecificRule]] = {
 - When running shell commands, prefer using the bash tool over interactive shell execution for better syntax highlighting in the chat window.
 - Run `kanon` commands via blocking `run_command` calls; never background + `command_status`.""",
         )
-    ]
+    ],
+    Integration.DEVIN: [
+        IntegrationSpecificRule(
+            path="devin-rules",
+            frontmatter={"trigger": "always_on"},
+            content="""## Project structure
+- CRITICAL: The first action in every conversation is reading @.kanon/STRUCTURE.md. Do not respond to the user, write any files or plan any actions until this is complete.
+- When running shell commands, prefer using the bash tool over interactive shell execution for better syntax highlighting in the chat window.
+- Run `kanon` commands via blocking `run_command` calls; never background + `command_status`.""",
+        )
+    ],
 }
 
 class KanonEnv:
