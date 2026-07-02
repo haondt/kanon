@@ -2,7 +2,12 @@ from __future__ import annotations
 
 from typing import Any
 
-from kanon.core.config import AI_TOOL_SETTINGS_FILES, PROJECT_KANON_DIR, Integration, KanonConfig
+from kanon.core.config import (
+    AI_TOOL_SETTINGS_FILES,
+    PROJECT_KANON_DIR,
+    Integration,
+    KanonConfig,
+)
 from kanon.core.yaml_utils import save_json
 from kanon.core.utils import deep_merge
 
@@ -13,16 +18,34 @@ AI_TOOL_ADDITIONAL_SETTINGS: dict[Integration, dict[str, Any]] = {
             "SessionStart": [
                 {
                     "matcher": "startup",
-                    "hooks": [{ "type": "command", "command": f"bash -c 'test -f {PROJECT_KANON_DIR}/STRUCTURE.md && cat {PROJECT_KANON_DIR}/STRUCTURE.md'" }]
+                    "hooks": [
+                        {
+                            "type": "command",
+                            "command": f"bash -c 'test -f {PROJECT_KANON_DIR}/STRUCTURE.md && cat {PROJECT_KANON_DIR}/STRUCTURE.md'",
+                        }
+                    ],
                 },
                 {
                     "matcher": "clear",
-                    "hooks": [{ "type": "command", "command": f"bash -c 'test -f {PROJECT_KANON_DIR}/STRUCTURE.md && cat {PROJECT_KANON_DIR}/STRUCTURE.md'" }]
-                }
+                    "hooks": [
+                        {
+                            "type": "command",
+                            "command": f"bash -c 'test -f {PROJECT_KANON_DIR}/STRUCTURE.md && cat {PROJECT_KANON_DIR}/STRUCTURE.md'",
+                        }
+                    ],
+                },
             ]
-        }
-    }
+        },
+    },
+    Integration.OPENCODE: {
+        "$schema": "https://opencode.ai/config.json",
+        "instructions": [
+            f"{PROJECT_KANON_DIR}/STRUCTURE.md",
+            ".opencode/rules/**/*.md",
+        ],
+    },
 }
+
 
 def render_settings(
     integration: Integration,
@@ -33,11 +56,15 @@ def render_settings(
         return
     settings_path = KanonConfig.project_root() / rel
     settings_path.parent.mkdir(parents=True, exist_ok=True)
-    tools = sorted(preapproved_tools) if isinstance(preapproved_tools, set) else preapproved_tools
+    tools = (
+        sorted(preapproved_tools)
+        if isinstance(preapproved_tools, set)
+        else preapproved_tools
+    )
     settings_object: dict[str, Any] = {}
-    if tools:
-        settings_object["permissions"] = {"allow": tools}
     additional = AI_TOOL_ADDITIONAL_SETTINGS.get(integration)
     if additional:
         settings_object = deep_merge(additional, settings_object)
+    if tools and integration == Integration.CLAUDE:
+        settings_object["permissions"] = {"allow": tools}
     save_json(settings_object, settings_path)

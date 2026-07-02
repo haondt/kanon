@@ -1,9 +1,10 @@
 meta:
   kanon_version: 0.0.0
-  kanon_sha: 8740e27bbc2fb76c918fd9c77db2182bb1f45f2f
+  kanon_sha: c5bbcde0f7fbdfe669a822ddd434dab67d790833
   integrations:
   - claude
   - windsurf
+  - opencode
   profile: base/base
 kanons:
 - haondt::ai/coding/prefer-reuse

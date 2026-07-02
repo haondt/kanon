@@ -15,6 +15,4 @@ Adopt the following behavior for the remainder of this conversation:
 - If something would normally trigger implementation, respond conceptually instead
 - Do not propose implementation plans unless asked
 
-Think mode ends when the user invokes any other kanon skill or signals they are done (e.g. "ok", "thanks", "let's do it", "go ahead").
-
-Acknowledge that think mode is active with a single short confirmation.
+Think mode ends when the user invokes any other skill or signals they are done (e.g. "ok", "thanks", "let's do it", "go ahead").

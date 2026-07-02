@@ -37,13 +37,18 @@ KANON_SCHEME = "kanon"
 GITHUB_SCHEME = "gh"
 GITLAB_SCHEME = "gl"
 LOCAL_SCHEME = "local"
-VALID_SCHEMES: frozenset[str] = frozenset({KANON_SCHEME, ALIAS_SCHEME, GITHUB_SCHEME, GITLAB_SCHEME, LOCAL_SCHEME})
-KANON_BUILTIN_ADDRESSES: frozenset[str] = frozenset({KANON_ADDRESS, PROJECT_ADDRESS, SELF_ADDRESS})
+VALID_SCHEMES: frozenset[str] = frozenset(
+    {KANON_SCHEME, ALIAS_SCHEME, GITHUB_SCHEME, GITLAB_SCHEME, LOCAL_SCHEME}
+)
+KANON_BUILTIN_ADDRESSES: frozenset[str] = frozenset(
+    {KANON_ADDRESS, PROJECT_ADDRESS, SELF_ADDRESS}
+)
 
 SOURCED_KANONS_DIR = "kanons"
 SOURCED_REFS_DIR = "references"
 SOURCED_PROFILES_DIR = "profiles"
 SOURCED_STANCES_DIR = "stances"
+
 
 class OutputType(StrEnum):
     RULE = "rule"
@@ -54,6 +59,8 @@ class Integration(StrEnum):
     CLAUDE = "claude"
     WINDSURF = "windsurf"
     DEVIN = "devin"
+    OPENCODE = "opencode"
+
 
 @dataclass
 class IntegrationSpecificRule:
@@ -61,6 +68,7 @@ class IntegrationSpecificRule:
     content: str
     frontmatter: dict[str, Any] = field(default_factory=dict)
     args: dict[str, str | bool] = field(default_factory=dict)
+
 
 AI_TOOL_OUTPUT_DIRS: dict[Integration, dict[OutputType, str]] = {
     Integration.CLAUDE: {
@@ -75,10 +83,15 @@ AI_TOOL_OUTPUT_DIRS: dict[Integration, dict[OutputType, str]] = {
         OutputType.RULE: ".devin/rules",
         OutputType.SKILL: ".devin/workflows",
     },
+    Integration.OPENCODE: {
+        OutputType.RULE: ".opencode/rules",
+        OutputType.SKILL: ".opencode/skills",
+    },
 }
 
 AI_TOOL_SETTINGS_FILES: dict[Integration, str] = {
     Integration.CLAUDE: ".claude/settings.json",
+    Integration.OPENCODE: "opencode.json",
 }
 
 AI_TOOL_SPECIFIC_RULES: dict[Integration, list[IntegrationSpecificRule]] = {
@@ -101,11 +114,13 @@ AI_TOOL_SPECIFIC_RULES: dict[Integration, list[IntegrationSpecificRule]] = {
 - When running shell commands, prefer using the bash tool over interactive shell execution for better syntax highlighting in the chat window.
 - Run `kanon` commands via blocking `run_command` calls; never background + `command_status`.""",
         )
-    ],
+    ]
 }
+
 
 class KanonEnv:
     """Environment-sourced configuration singleton. Values are lazily cached per instance."""
+
     _instance: ClassVar[KanonEnv | None] = None
 
     @classmethod
@@ -141,7 +156,6 @@ class KanonEnv:
         if val := os.environ.get("KANON_SOURCES_CACHE_PATH"):
             return Path(val)
         return Path.home() / ".kanon" / "sources"
-
 
 
 class KanonMeta(BaseModel):
@@ -192,14 +206,18 @@ class KanonConfig(BaseModel):
     def root(cls) -> Path:
         """Path to projects .kanon directory"""
         if cls._root is None:
-            raise RuntimeError("KanonConfig has not been initialized. Call KanonConfig.initialize() first.")
+            raise RuntimeError(
+                "KanonConfig has not been initialized. Call KanonConfig.initialize() first."
+            )
         return cls._root
 
     @classmethod
     def project_root(cls) -> Path:
         """Path to projects root directory"""
         if cls._root is None:
-            raise RuntimeError("KanonConfig has not been initialized. Call KanonConfig.initialize() first.")
+            raise RuntimeError(
+                "KanonConfig has not been initialized. Call KanonConfig.initialize() first."
+            )
         return cls._root.parent
 
     @classmethod
@@ -215,7 +233,10 @@ class KanonConfig(BaseModel):
         save_yaml(self, self.root() / CONFIG_FILE)
 
 
-_cache_path_safe: str = '-_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+_cache_path_safe: str = (
+    "-_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+)
+
 
 @dataclass
 class SourceReference:
@@ -227,7 +248,9 @@ class SourceReference:
     SELF_SOURCE_REFERENCE: ClassVar[SourceReference]
 
     @classmethod
-    def parse(cls, ref: str, *, sanitize: bool = False, validate_as_key: bool = False) -> SourceReference:
+    def parse(
+        cls, ref: str, *, sanitize: bool = False, validate_as_key: bool = False
+    ) -> SourceReference:
         """Parse a source reference string into scheme and address.
 
         Structural split only by default. Bare strings default to the alias scheme.
@@ -249,7 +272,9 @@ class SourceReference:
         else:
             prefix, rest = ref.split(sep, 1)
             if REFERENCE_SEP in rest:
-                raise ValueError(f"Invalid source reference {ref!r}: must be in the format scheme{REFERENCE_SEP}address")
+                raise ValueError(
+                    f"Invalid source reference {ref!r}: must be in the format scheme{REFERENCE_SEP}address"
+                )
             result = SourceReference(prefix, rest)
         if validate_as_key:
             result.validate_as_key()
@@ -264,22 +289,22 @@ class SourceReference:
         if self.scheme == KANON_SCHEME:
             if self.address != KANON_ADDRESS:
                 raise ValueError(
-                    f"Invalid source key {self.as_fully_qualified_string!r}: " +
-                    f"only '{KANON_SCHEME}{REFERENCE_SEP}{KANON_ADDRESS}' is allowed under the '{KANON_SCHEME}' scheme; " +
-                    f"'{KANON_SCHEME}{REFERENCE_SEP}{PROJECT_ADDRESS}' and '{KANON_SCHEME}{REFERENCE_SEP}{SELF_ADDRESS}' are reserved and non-shadowable"
+                    f"Invalid source key {self.as_fully_qualified_string!r}: "
+                    + f"only '{KANON_SCHEME}{REFERENCE_SEP}{KANON_ADDRESS}' is allowed under the '{KANON_SCHEME}' scheme; "
+                    + f"'{KANON_SCHEME}{REFERENCE_SEP}{PROJECT_ADDRESS}' and '{KANON_SCHEME}{REFERENCE_SEP}{SELF_ADDRESS}' are reserved and non-shadowable"
                 )
         elif self.scheme != ALIAS_SCHEME:
             raise ValueError(
-                f"Invalid source key {self.as_fully_qualified_string!r}: " +
-                f"prefixed keys must use '{ALIAS_SCHEME}{REFERENCE_SEP}' or '{KANON_SCHEME}{REFERENCE_SEP}{KANON_ADDRESS}'; " +
-                f"got scheme {self.scheme!r}"
+                f"Invalid source key {self.as_fully_qualified_string!r}: "
+                + f"prefixed keys must use '{ALIAS_SCHEME}{REFERENCE_SEP}' or '{KANON_SCHEME}{REFERENCE_SEP}{KANON_ADDRESS}'; "
+                + f"got scheme {self.scheme!r}"
             )
 
     @cached_property
     def as_string(self) -> str:
         """Shortest unambiguous form."""
         if self.scheme == KANON_SCHEME and self.address == KANON_ADDRESS:
-            return f'{self.scheme}{REFERENCE_SEP}{self.address}'
+            return f"{self.scheme}{REFERENCE_SEP}{self.address}"
         if self.scheme == KANON_SCHEME and self.address in KANON_BUILTIN_ADDRESSES:
             return f"{self.address}"
         if self.scheme == ALIAS_SCHEME:
@@ -318,7 +343,7 @@ class SourceReference:
         return [i[1] for i in sanitized_sorted]
 
     def cache_subpath(self) -> str:
-        return f'{urllib.parse.quote(self.scheme, _cache_path_safe)}/{urllib.parse.quote(self.address, _cache_path_safe)}'
+        return f"{urllib.parse.quote(self.scheme, _cache_path_safe)}/{urllib.parse.quote(self.address, _cache_path_safe)}"
 
     @classmethod
     def from_cache_subpath(cls, scheme_part: str, address_part: str) -> SourceReference:
@@ -330,11 +355,14 @@ class SourceReference:
     def cache_path(self) -> Path:
         return KanonEnv.instance().sources_cache_path / self.cache_subpath()
 
+
 SourceReference.KANON_SOURCE_REFERENCE = SourceReference(KANON_SCHEME, KANON_ADDRESS)
-SourceReference.PROJECT_SOURCE_REFERENCE = SourceReference(KANON_SCHEME, PROJECT_ADDRESS)
+SourceReference.PROJECT_SOURCE_REFERENCE = SourceReference(
+    KANON_SCHEME, PROJECT_ADDRESS
+)
 SourceReference.SELF_SOURCE_REFERENCE = SourceReference(KANON_SCHEME, SELF_ADDRESS)
 
-_ARGS_RE = re.compile(r'\[([^\]]*)\]$')
+_ARGS_RE = re.compile(r"\[([^\]]*)\]$")
 
 
 @dataclass(eq=False)
@@ -360,28 +388,36 @@ class SourcedResource:
         """
         args: dict[str, str | bool] = {}
         if m := _ARGS_RE.search(ref):
-            for part in m.group(1).split(','):
+            for part in m.group(1).split(","):
                 part = part.strip()
                 if not part:
                     continue
-                if '=' in part:
-                    k, v = part.split('=', 1)
+                if "=" in part:
+                    k, v = part.split("=", 1)
                     args[k.strip()] = v.strip()
                 else:
                     args[part] = True
-            ref = ref[:m.start()]
+            ref = ref[: m.start()]
 
         sep_count = ref.count(REFERENCE_SEP)
         if sep_count > 2:
-            raise ValueError(f"Invalid kanon reference: {ref!r} — too many '::' separators (max 2)")
+            raise ValueError(
+                f"Invalid kanon reference: {ref!r} — too many '::' separators (max 2)"
+            )
         parts = ref.split(REFERENCE_SEP)
         if len(parts) == 1:
-            return SourcedResource(SourceReference.KANON_SOURCE_REFERENCE, path=ref, args=args)
+            return SourcedResource(
+                SourceReference.KANON_SOURCE_REFERENCE, path=ref, args=args
+            )
         if len(parts) == 2:
             prefix, bare = parts
             if prefix in KANON_BUILTIN_ADDRESSES:
-                return SourcedResource(SourceReference(KANON_SCHEME, prefix), path=bare, args=args)
-            return SourcedResource(SourceReference(ALIAS_SCHEME, prefix), path=bare, args=args)
+                return SourcedResource(
+                    SourceReference(KANON_SCHEME, prefix), path=bare, args=args
+                )
+            return SourcedResource(
+                SourceReference(ALIAS_SCHEME, prefix), path=bare, args=args
+            )
         scheme, address, path = parts
         return SourcedResource(SourceReference(scheme, address), path=path, args=args)
 
@@ -400,7 +436,10 @@ class SourcedResource:
         args_suffix = self._format_args()
         if self.source.scheme == KANON_SCHEME and self.source.address == KANON_ADDRESS:
             return self.path + args_suffix
-        if self.source.scheme == KANON_SCHEME and self.source.address in KANON_BUILTIN_ADDRESSES:
+        if (
+            self.source.scheme == KANON_SCHEME
+            and self.source.address in KANON_BUILTIN_ADDRESSES
+        ):
             return f"{self.source.address}{REFERENCE_SEP}{self.path}" + args_suffix
         if self.source.scheme == ALIAS_SCHEME:
             return f"{self.source.address}{REFERENCE_SEP}{self.path}" + args_suffix

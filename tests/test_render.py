@@ -18,10 +18,18 @@ from kanon.core.render import render_kanon, render_settings
 def project(tmp_path):
     kanon_dir = tmp_path / ".kanon"
     kanon_dir.mkdir()
-    (kanon_dir / "kanon.yaml").write_text(yaml.dump({
-        "meta": {"kanon_version": "0.0.0", "kanon_sha": "abc", "integrations": ["claude"]},
-        "kanons": [],
-    }))
+    (kanon_dir / "kanon.yaml").write_text(
+        yaml.dump(
+            {
+                "meta": {
+                    "kanon_version": "0.0.0",
+                    "kanon_sha": "abc",
+                    "integrations": ["claude"],
+                },
+                "kanons": [],
+            }
+        )
+    )
     KanonConfig.initialize(tmp_path)
     return tmp_path
 
@@ -73,13 +81,82 @@ def test_render_settings_devin_skips(project):
     assert not (project / ".devin").exists()
 
 
+def test_render_settings_opencode_writes_json(project):
+    render_settings(Integration.OPENCODE, [])
+    assert (project / "opencode.json").exists()
+
+
+def test_render_settings_opencode_has_schema_and_instructions(project):
+    render_settings(Integration.OPENCODE, [])
+    data = json.loads((project / "opencode.json").read_text())
+    assert data["$schema"] == "https://opencode.ai/config.json"
+    assert ".kanon/STRUCTURE.md" in data["instructions"]
+    assert ".opencode/rules/**/*.md" in data["instructions"]
+    # STRUCTURE.md should come first so it's loaded before rules
+    assert data["instructions"].index(".kanon/STRUCTURE.md") < data[
+        "instructions"
+    ].index(".opencode/rules/**/*.md")
+
+
+def test_render_settings_opencode_does_not_write_claude_permissions(project):
+    render_settings(Integration.OPENCODE, ["Bash(kanon ref *)"])
+    data = json.loads((project / "opencode.json").read_text())
+    assert "permissions" not in data
+
+
+# ── render_kanon: opencode ────────────────────────────────────────────────────
+
+
+def test_render_kanon_opencode_rule_writes_file(project):
+    content = "---\nkanon: {}\n---\nFollow the rule.\n"
+    out = _render(content, "test/my-rule", Integration.OPENCODE)
+    assert (
+        out
+        == project / ".opencode" / "rules" / "kanon" / "kanon" / "test" / "my-rule.md"
+    )
+    assert "Follow the rule." in out.read_text()
+
+
+def test_render_kanon_opencode_rule_strips_frontmatter(project):
+    content = "---\nkanon: {}\n---\nRule body.\n"
+    out = _render(content, "test/plain", Integration.OPENCODE)
+    assert "---" not in out.read_text()
+    assert "Rule body." in out.read_text()
+
+
+def test_render_kanon_opencode_skill_writes_skill_md(project):
+    content = dedent("""\
+        ---
+        kanon:
+          output: skill
+          name: my-skill
+          description: A test skill
+        ---
+        Do the thing.
+        """)
+    out = _render(content, "workflow/my-skill", Integration.OPENCODE)
+    assert out == project / ".opencode" / "skills" / "my-skill" / "SKILL.md"
+    text = out.read_text()
+    assert "name: my-skill" in text
+    assert "description: A test skill" in text
+    assert "Do the thing." in text
+
+
+def test_render_kanon_opencode_skill_without_name_raises(project):
+    content = "---\nkanon:\n  output: skill\n  description: No name set\n---\nBody.\n"
+    with pytest.raises(ValueError, match="kanon.name"):
+        _render(content, "workflow/unnamed", Integration.OPENCODE)
+
+
 # ── render_kanon: rules ──────────────────────────────────────────────────────
 
 
 def test_render_kanon_rule_writes_file(project):
     content = "---\nkanon: {}\n---\nFollow the rule.\n"
     out = _render(content, "test/my-rule", Integration.CLAUDE)
-    assert out == project / ".claude" / "rules" / "kanon" / "kanon" / "test" / "my-rule.md"
+    assert (
+        out == project / ".claude" / "rules" / "kanon" / "kanon" / "test" / "my-rule.md"
+    )
     assert "Follow the rule." in out.read_text()
 
 
@@ -126,7 +203,11 @@ def test_render_kanon_devin_skill_writes_workflow(project):
 # ── render_kanon: skills ─────────────────────────────────────────────────────
 
 
-def _skill_content(model_invokable: bool = True, needs_context: bool = True, preapproved: list | None = None) -> str:
+def _skill_content(
+    model_invokable: bool = True,
+    needs_context: bool = True,
+    preapproved: list | None = None,
+) -> str:
     skill_block = ""
     if not model_invokable or not needs_context:
         parts = []
@@ -260,10 +341,18 @@ def _jinja_rule(body: str) -> str:
 
 def test_render_kanon_jinja_branches_on_kanons(project):
     kanon_dir = project / ".kanon"
-    (kanon_dir / "kanon.yaml").write_text(yaml.dump({
-        "meta": {"kanon_version": "0.0.0", "kanon_sha": "abc", "integrations": ["claude"]},
-        "kanons": ["python/style"],
-    }))
+    (kanon_dir / "kanon.yaml").write_text(
+        yaml.dump(
+            {
+                "meta": {
+                    "kanon_version": "0.0.0",
+                    "kanon_sha": "abc",
+                    "integrations": ["claude"],
+                },
+                "kanons": ["python/style"],
+            }
+        )
+    )
     KanonConfig.initialize(project)
 
     body = "{% if 'python/style' in kanons %}python present{% else %}python absent{% endif %}"
@@ -333,7 +422,9 @@ def test_render_kanon_jinja_source_alias(project):
 
 def test_render_kanon_jinja_source_external_library(project):
     body = "{{ source }}"
-    out = _render(_jinja_rule(body), "gh::haondt/kanons::test/jinja-source", Integration.CLAUDE)
+    out = _render(
+        _jinja_rule(body), "gh::haondt/kanons::test/jinja-source", Integration.CLAUDE
+    )
     assert out.read_text().strip() == "gh::haondt/kanons"
 
 

@@ -9,19 +9,29 @@ from typing import Any, Self, override
 import jinja2
 from pydantic import BaseModel, Field
 
-from kanon.core.config import AI_TOOL_OUTPUT_DIRS, PROJECT_KANON_DIR, Integration, OutputType, SourcedResource, KanonConfig
+from kanon.core.config import (
+    AI_TOOL_OUTPUT_DIRS,
+    PROJECT_KANON_DIR,
+    Integration,
+    OutputType,
+    SourcedResource,
+    KanonConfig,
+)
 from kanon.core.kanons import Kanon
 from kanon.core.yaml_utils import dump_yaml
 
 
 class _ArgsDict(dict):
     """Returns False for missing keys so absent template args are falsy without raising."""
+
     def __missing__(self, key: str) -> bool:
         return False
 
 
 def _apply_jinja(body: str, context: dict[str, Any]) -> str:
-    env = jinja2.Environment(undefined=jinja2.StrictUndefined, keep_trailing_newline=True)
+    env = jinja2.Environment(
+        undefined=jinja2.StrictUndefined, keep_trailing_newline=True
+    )
     return env.from_string(body).render(context)
 
 
@@ -51,49 +61,56 @@ class KanonRenderer(ABC):
             raise ValueError(
                 f"Skill kanon '{self.resource.as_string}' is missing kanon.name — skills require an explicit name"
             )
+
     def _base_render_body(self):
         config = KanonConfig.instance()
         if self._meta.template == "jinja":
-            return _apply_jinja(self.kanon.content, {
-                "kanons": config.kanons,
-                "integrations": config.meta.integrations,
-                "args": _ArgsDict(self.resource.args),
-                "source": self.resource.source.as_string,
-            })
+            return _apply_jinja(
+                self.kanon.content,
+                {
+                    "kanons": config.kanons,
+                    "integrations": config.meta.integrations,
+                    "args": _ArgsDict(self.resource.args),
+                    "source": self.resource.source.as_string,
+                },
+            )
         return self.kanon.content
 
     @abstractmethod
-    def render(self) -> Path:
-        ...
+    def render(self) -> Path: ...
     @classmethod
     @abstractmethod
-    def render_rule(cls, resource: SourcedResource, frontmatter: dict[str, Any] | BaseModel | None, content: str) -> Path:
-        ...
+    def render_rule(
+        cls,
+        resource: SourcedResource,
+        frontmatter: dict[str, Any] | BaseModel | None,
+        content: str,
+    ) -> Path: ...
 
     @classmethod
     @abstractmethod
-    def create(cls, kanon_resource: SourcedResource, kanon: Kanon) -> Self:
-        ...
+    def create(cls, kanon_resource: SourcedResource, kanon: Kanon) -> Self: ...
 
 
 class ClaudeSkillFrontmatter(BaseModel):
     name: str | None = None
     description: str | None = None
-    argument_hint: str | None = Field(serialization_alias='argument-hint', default=None)
-    disable_model_invocation: bool | None = Field(serialization_alias='disable-model-invocation', default=None)
+    argument_hint: str | None = Field(serialization_alias="argument-hint", default=None)
+    disable_model_invocation: bool | None = Field(
+        serialization_alias="disable-model-invocation", default=None
+    )
     context: str | None = None
-    allowed_tools: list[str] | None = Field(serialization_alias='allowed-tools', default=None)
+    allowed_tools: list[str] | None = Field(
+        serialization_alias="allowed-tools", default=None
+    )
+
 
 @dataclass
 class ClaudeKanonRenderer(KanonRenderer):
-
     @classmethod
     @override
     def create(cls, kanon_resource: SourcedResource, kanon: Kanon) -> Self:
-        renderer = cls(
-            kanon=kanon,
-            resource=kanon_resource
-        )
+        renderer = cls(kanon=kanon, resource=kanon_resource)
 
         renderer._validate()
         return renderer
@@ -105,7 +122,6 @@ class ClaudeKanonRenderer(KanonRenderer):
         skill_preapproved_tools: set[str] = set(self._meta.preapproved_tools)
         out_dir = output_dir_for(Integration.CLAUDE, self._meta.output)
         if self._meta.output == OutputType.SKILL:
-
             frontmatter = ClaudeSkillFrontmatter(
                 name=self._name(),
                 description=self._meta.description,
@@ -116,8 +132,14 @@ class ClaudeKanonRenderer(KanonRenderer):
                 frontmatter.disable_model_invocation = True
 
             if not self._meta.skill.needs_context:
-                skill_preapproved_tools = skill_preapproved_tools | {f"Bash(test {PROJECT_KANON_DIR}/STRUCTURE.md)", f"Bash(cat {PROJECT_KANON_DIR}/STRUCTURE.md)"}
-                body = body.rstrip("\n") + f"\n\n## Project structure\n\n!`test -f {PROJECT_KANON_DIR}/STRUCTURE.md && cat {PROJECT_KANON_DIR}/STRUCTURE.md`\n"
+                skill_preapproved_tools = skill_preapproved_tools | {
+                    f"Bash(test {PROJECT_KANON_DIR}/STRUCTURE.md)",
+                    f"Bash(cat {PROJECT_KANON_DIR}/STRUCTURE.md)",
+                }
+                body = (
+                    body.rstrip("\n")
+                    + f"\n\n## Project structure\n\n!`test -f {PROJECT_KANON_DIR}/STRUCTURE.md && cat {PROJECT_KANON_DIR}/STRUCTURE.md`\n"
+                )
                 frontmatter.context = "fork"
                 frontmatter.allowed_tools = list(skill_preapproved_tools)
 
@@ -132,9 +154,16 @@ class ClaudeKanonRenderer(KanonRenderer):
 
     @override
     @classmethod
-    def render_rule(cls, resource: SourcedResource, frontmatter: dict[str, Any] | BaseModel | None, content: str) -> Path:
+    def render_rule(
+        cls,
+        resource: SourcedResource,
+        frontmatter: dict[str, Any] | BaseModel | None,
+        content: str,
+    ) -> Path:
         out_dir = output_dir_for(Integration.CLAUDE, OutputType.RULE)
-        out_path = (out_dir / resource.source.cache_subpath() / resource.path).with_suffix(".md")
+        out_path = (
+            out_dir / resource.source.cache_subpath() / resource.path
+        ).with_suffix(".md")
         out_path.parent.mkdir(parents=True, exist_ok=True)
         if frontmatter:
             out_path.write_text(f"---\n{dump_yaml(frontmatter)}\n---\n{content}")
@@ -153,7 +182,6 @@ class WindsurfSkillFrontmatter(BaseModel):
 
 @dataclass
 class WindsurfKanonRenderer(KanonRenderer):
-
     @classmethod
     @override
     def create(cls, kanon_resource: SourcedResource, kanon: Kanon) -> Self:
@@ -177,16 +205,19 @@ class WindsurfKanonRenderer(KanonRenderer):
             return out_path
         else:
             return WindsurfKanonRenderer.render_rule(
-                self.resource,
-                WindsurfRuleFrontmatter(),
-                body
+                self.resource, WindsurfRuleFrontmatter(), body
             )
 
     @override
     @classmethod
-    def render_rule(cls, resource: SourcedResource, frontmatter: dict[str, Any] | BaseModel | None, content: str) -> Path:
+    def render_rule(
+        cls,
+        resource: SourcedResource,
+        frontmatter: dict[str, Any] | BaseModel | None,
+        content: str,
+    ) -> Path:
         out_dir = output_dir_for(Integration.WINDSURF, OutputType.RULE)
-        path_infix = f'{resource.source.cache_subpath()}/{resource.path}'
+        path_infix = f"{resource.source.cache_subpath()}/{resource.path}"
         flattened = path_infix.replace("/", "--")
         out_path = out_dir / Path(flattened).with_suffix(".md")
         out_path.parent.mkdir(parents=True, exist_ok=True)
@@ -195,6 +226,7 @@ class WindsurfKanonRenderer(KanonRenderer):
         else:
             out_path.write_text(content)
         return out_path
+
 
 class DevinRuleFrontmatter(BaseModel):
     trigger: str = "always_on"
@@ -206,7 +238,6 @@ class DevinSkillFrontmatter(BaseModel):
 
 @dataclass
 class DevinKanonRenderer(KanonRenderer):
-
     @classmethod
     @override
     def create(cls, kanon_resource: SourcedResource, kanon: Kanon) -> Self:
@@ -230,18 +261,75 @@ class DevinKanonRenderer(KanonRenderer):
             return out_path
         else:
             return DevinKanonRenderer.render_rule(
-                self.resource,
-                DevinRuleFrontmatter(),
-                body
+                self.resource, DevinRuleFrontmatter(), body
             )
 
     @override
     @classmethod
-    def render_rule(cls, resource: SourcedResource, frontmatter: dict[str, Any] | BaseModel | None, content: str) -> Path:
+    def render_rule(
+        cls,
+        resource: SourcedResource,
+        frontmatter: dict[str, Any] | BaseModel | None,
+        content: str,
+    ) -> Path:
         out_dir = output_dir_for(Integration.DEVIN, OutputType.RULE)
-        path_infix = f'{resource.source.cache_subpath()}/{resource.path}'
+        path_infix = f"{resource.source.cache_subpath()}/{resource.path}"
         flattened = path_infix.replace("/", "--")
         out_path = out_dir / Path(flattened).with_suffix(".md")
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        if frontmatter:
+            out_path.write_text(f"---\n{dump_yaml(frontmatter)}\n---\n{content}")
+        else:
+            out_path.write_text(content)
+        return out_path
+
+
+class OpenCodeSkillFrontmatter(BaseModel):
+    name: str
+    description: str | None = None
+    license: str | None = None
+    compatibility: str | None = None
+    metadata: dict[str, str] | None = None
+
+
+@dataclass
+class OpenCodeKanonRenderer(KanonRenderer):
+    @classmethod
+    @override
+    def create(cls, kanon_resource: SourcedResource, kanon: Kanon) -> Self:
+        renderer = cls(kanon=kanon, resource=kanon_resource)
+        renderer._validate()
+        return renderer
+
+    @override
+    def render(self) -> Path:
+        body = self._base_render_body()
+        out_dir = output_dir_for(Integration.OPENCODE, self._meta.output)
+        if self._meta.output == OutputType.SKILL:
+            frontmatter = OpenCodeSkillFrontmatter(
+                name=self._name(),
+                description=self._meta.description,
+            )
+            skill_dir = out_dir / self._name()
+            skill_dir.mkdir(parents=True, exist_ok=True)
+            out_path = skill_dir / "SKILL.md"
+            out_path.write_text(f"---\n{dump_yaml(frontmatter)}\n---\n{body}")
+            return out_path
+        else:
+            return OpenCodeKanonRenderer.render_rule(self.resource, None, body)
+
+    @override
+    @classmethod
+    def render_rule(
+        cls,
+        resource: SourcedResource,
+        frontmatter: dict[str, Any] | BaseModel | None,
+        content: str,
+    ) -> Path:
+        out_dir = output_dir_for(Integration.OPENCODE, OutputType.RULE)
+        out_path = (
+            out_dir / resource.source.cache_subpath() / resource.path
+        ).with_suffix(".md")
         out_path.parent.mkdir(parents=True, exist_ok=True)
         if frontmatter:
             out_path.write_text(f"---\n{dump_yaml(frontmatter)}\n---\n{content}")
@@ -254,7 +342,9 @@ _RENDERERS: dict[Integration, type[KanonRenderer]] = {
     Integration.CLAUDE: ClaudeKanonRenderer,
     Integration.WINDSURF: WindsurfKanonRenderer,
     Integration.DEVIN: DevinKanonRenderer,
+    Integration.OPENCODE: OpenCodeKanonRenderer,
 }
+
 
 def render_rule(
     resource: SourcedResource,
@@ -263,6 +353,7 @@ def render_rule(
     integration: Integration,
 ) -> Path:
     return _RENDERERS[integration].render_rule(resource, frontmatter, content)
+
 
 def render_kanon(
     kanon_resource: SourcedResource,
