@@ -12,3 +12,6 @@ dist/
 .pytest_cache/
 .coverage
 htmlcov/
+.ruff_cache/
+AGENTS.md
+.agents

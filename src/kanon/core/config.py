@@ -57,10 +57,10 @@ class OutputType(StrEnum):
 
 class Integration(StrEnum):
     CLAUDE = "claude"
+    CODEX = "codex"
     WINDSURF = "windsurf"
     DEVIN = "devin"
     OPENCODE = "opencode"
-
 
 @dataclass
 class IntegrationSpecificRule:
@@ -68,54 +68,6 @@ class IntegrationSpecificRule:
     content: str
     frontmatter: dict[str, Any] = field(default_factory=dict)
     args: dict[str, str | bool] = field(default_factory=dict)
-
-
-AI_TOOL_OUTPUT_DIRS: dict[Integration, dict[OutputType, str]] = {
-    Integration.CLAUDE: {
-        OutputType.RULE: ".claude/rules",
-        OutputType.SKILL: ".claude/skills",
-    },
-    Integration.WINDSURF: {
-        OutputType.RULE: ".windsurf/rules",
-        OutputType.SKILL: ".windsurf/workflows",
-    },
-    Integration.DEVIN: {
-        OutputType.RULE: ".devin/rules",
-        OutputType.SKILL: ".devin/workflows",
-    },
-    Integration.OPENCODE: {
-        OutputType.RULE: ".opencode/rules",
-        OutputType.SKILL: ".opencode/skills",
-    },
-}
-
-AI_TOOL_SETTINGS_FILES: dict[Integration, str] = {
-    Integration.CLAUDE: ".claude/settings.json",
-    Integration.OPENCODE: "opencode.json",
-}
-
-AI_TOOL_SPECIFIC_RULES: dict[Integration, list[IntegrationSpecificRule]] = {
-    Integration.WINDSURF: [
-        IntegrationSpecificRule(
-            path="windsurf-rules",
-            frontmatter={"trigger": "always_on"},
-            content="""## Project structure
-- CRITICAL: The first action in every conversation is reading @.kanon/STRUCTURE.md. Do not respond to the user, write any files or plan any actions until this is complete.
-- When running shell commands, prefer using the bash tool over interactive shell execution for better syntax highlighting in the chat window.
-- Run `kanon` commands via blocking `run_command` calls; never background + `command_status`.""",
-        )
-    ],
-    Integration.DEVIN: [
-        IntegrationSpecificRule(
-            path="devin-rules",
-            frontmatter={"trigger": "always_on"},
-            content="""## Project structure
-- CRITICAL: The first action in every conversation is reading @.kanon/STRUCTURE.md. Do not respond to the user, write any files or plan any actions until this is complete.
-- When running shell commands, prefer using the bash tool over interactive shell execution for better syntax highlighting in the chat window.
-- Run `kanon` commands via blocking `run_command` calls; never background + `command_status`.""",
-        )
-    ]
-}
 
 
 class KanonEnv:

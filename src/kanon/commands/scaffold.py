@@ -5,11 +5,10 @@ import questionary
 from questionary import Choice
 
 from kanon import __version__
-from kanon.core.config import SourceReference, KanonConfig, KanonMeta, SourcedResource
-from kanon.core.config import AI_TOOL_OUTPUT_DIRS
+from kanon.core.config import Integration, SourceReference, KanonConfig, KanonMeta, SourcedResource
 from kanon.core.sources import SourceResolver
 
-INTEGRATIONS = list(AI_TOOL_OUTPUT_DIRS)
+INTEGRATIONS = list(Integration)
 
 
 @click.command()

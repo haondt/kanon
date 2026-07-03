@@ -88,3 +88,31 @@ def test_destroy_removes_settings_file(tmp_path):
     CliRunner().invoke(cli, ["--project-root", str(tmp_path), "destroy", "--yes"])
 
     assert not settings.exists()
+
+
+def test_destroy_codex_removes_managed_agents_block_only(tmp_path):
+    make_project(tmp_path, ["codex"])
+    agents = tmp_path / "AGENTS.md"
+    agents.write_text(
+        "# Project Instructions\n\nKeep this.\n\n<!-- kanon:codex:start -->\nGenerated.\n<!-- kanon:codex:end -->\n"
+    )
+    (tmp_path / ".agents" / "skills" / "my-skill").mkdir(parents=True)
+
+    CliRunner().invoke(cli, ["--project-root", str(tmp_path), "destroy", "--yes"])
+
+    assert agents.exists()
+    text = agents.read_text()
+    assert "# Project Instructions" in text
+    assert "Keep this." in text
+    assert "Generated." not in text
+    assert not (tmp_path / ".agents" / "skills").exists()
+
+
+def test_destroy_codex_removes_agents_file_when_only_managed(tmp_path):
+    make_project(tmp_path, ["codex"])
+    agents = tmp_path / "AGENTS.md"
+    agents.write_text("<!-- kanon:codex:start -->\nGenerated.\n<!-- kanon:codex:end -->\n")
+
+    CliRunner().invoke(cli, ["--project-root", str(tmp_path), "destroy", "--yes"])
+
+    assert not agents.exists()

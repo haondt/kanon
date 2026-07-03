@@ -102,6 +102,58 @@ def test_sync_routes_command_to_skill(tmp_path):
     assert "Turn a vague idea into a goal" in content
 
 
+def test_sync_codex_writes_agents_and_repo_skill(tmp_path):
+    kanon_dir = tmp_path / ".kanon"
+    kanon_dir.mkdir()
+    (kanon_dir / "kanon.yaml").write_text(yaml.dump({
+        "meta": {"kanon_version": "0.0.0", "kanon_sha": "abc1234", "integrations": ["codex"]},
+        "kanons": ["git/commit-style", "workflow/kanon-sketch"],
+    }))
+    (kanon_dir / "kanons" / "kanon" / "kanon" / "git").mkdir(parents=True)
+    (kanon_dir / "kanons" / "kanon" / "kanon" / "git" / "commit-style.md").write_text("Write good commits.")
+    (kanon_dir / "kanons" / "kanon" / "kanon" / "workflow").mkdir(parents=True)
+    (kanon_dir / "kanons" / "kanon" / "kanon" / "workflow" / "kanon-sketch.md").write_text(
+        "---\nkanon:\n  output: skill\n  name: kanon-sketch\n  description: Turn a vague idea into a goal\n---\nSketch the goal.\n"
+    )
+    (kanon_dir / "stances").mkdir()
+
+    result = CliRunner().invoke(cli, ["--project-root", str(tmp_path), "sync"])
+
+    assert result.exit_code == 0, result.output
+    agents = tmp_path / "AGENTS.md"
+    assert agents.exists()
+    agents_text = agents.read_text()
+    assert "Write good commits." in agents_text
+    assert "reading `.kanon/STRUCTURE.md`" in agents_text
+    skill = tmp_path / ".agents" / "skills" / "kanon-sketch" / "SKILL.md"
+    assert skill.exists()
+    assert "Sketch the goal." in skill.read_text()
+
+
+def test_sync_codex_refreshes_managed_agents_block(tmp_path):
+    kanon_dir = tmp_path / ".kanon"
+    kanon_dir.mkdir()
+    (kanon_dir / "kanon.yaml").write_text(yaml.dump({
+        "meta": {"kanon_version": "0.0.0", "kanon_sha": "abc1234", "integrations": ["codex"]},
+        "kanons": ["git/commit-style"],
+    }))
+    (kanon_dir / "kanons" / "kanon" / "kanon" / "git").mkdir(parents=True)
+    (kanon_dir / "kanons" / "kanon" / "kanon" / "git" / "commit-style.md").write_text("Write good commits.")
+    (kanon_dir / "stances").mkdir()
+    (tmp_path / "AGENTS.md").write_text(
+        "# Project Instructions\n\nKeep this.\n\n<!-- kanon:codex:start -->\nOld generated text.\n<!-- kanon:codex:end -->\n"
+    )
+
+    result = CliRunner().invoke(cli, ["--project-root", str(tmp_path), "sync"])
+
+    assert result.exit_code == 0, result.output
+    text = (tmp_path / "AGENTS.md").read_text()
+    assert "# Project Instructions" in text
+    assert "Keep this." in text
+    assert "Write good commits." in text
+    assert "Old generated text." not in text
+
+
 def test_sync_skill_name_override(tmp_path):
     make_project(tmp_path, ["workflow/kanon-sketch"], {
         "workflow/kanon-sketch": "---\nkanon:\n  output: skill\n  name: kanon-sketch\n  description: Turn a vague idea into a goal\n---\nSketch the goal.\n",

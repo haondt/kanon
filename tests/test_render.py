@@ -148,6 +148,56 @@ def test_render_kanon_opencode_skill_without_name_raises(project):
         _render(content, "workflow/unnamed", Integration.OPENCODE)
 
 
+# ── render_kanon: codex ──────────────────────────────────────────────────────
+
+
+def test_render_kanon_codex_rule_writes_agents_managed_block(project):
+    content = "---\nkanon: {}\n---\nFollow the rule.\n"
+    out = _render(content, "test/my-rule", Integration.CODEX)
+    assert out == project / "AGENTS.md"
+    text = out.read_text()
+    assert "<!-- kanon:codex:start -->" in text
+    assert "## test/my-rule" in text
+    assert "Follow the rule." in text
+    assert "<!-- kanon:codex:end -->" in text
+
+
+def test_render_kanon_codex_rule_preserves_existing_agents_content(project):
+    agents = project / "AGENTS.md"
+    agents.write_text("# Project Instructions\n\n- Keep this.\n")
+
+    _render("---\nkanon: {}\n---\nGenerated rule.\n", "test/generated", Integration.CODEX)
+
+    text = agents.read_text()
+    assert "# Project Instructions" in text
+    assert "- Keep this." in text
+    assert "Generated rule." in text
+
+
+def test_render_kanon_codex_skill_writes_repo_skill(project):
+    content = dedent("""\
+        ---
+        kanon:
+          output: skill
+          name: my-skill
+          description: A test skill
+        ---
+        Do the thing.
+        """)
+    out = _render(content, "workflow/my-skill", Integration.CODEX)
+    assert out == project / ".agents" / "skills" / "my-skill" / "SKILL.md"
+    text = out.read_text()
+    assert "name: my-skill" in text
+    assert "description: A test skill" in text
+    assert "Do the thing." in text
+
+
+def test_render_kanon_codex_skill_without_name_raises(project):
+    content = "---\nkanon:\n  output: skill\n  description: No name set\n---\nBody.\n"
+    with pytest.raises(ValueError, match="kanon.name"):
+        _render(content, "workflow/unnamed", Integration.CODEX)
+
+
 # ── render_kanon: rules ──────────────────────────────────────────────────────
 
 

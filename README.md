@@ -44,7 +44,7 @@ Then in your AI coding tool:
 
 ## Concepts
 
-kanon manages kanons — markdown files covering coding conventions, git behavior, AI behavioral rules, and more. Projects declare which kanons they want in `.kanon/kanon.yaml`; `kanon sync` fetches them from their sources and generates AI tool integrations. The same source kanons produce `.claude/rules/` for Claude Code, `.windsurf/rules/` for Windsurf, and so on — one config, multiple tools.
+kanon manages kanons — markdown files covering coding conventions, git behavior, AI behavioral rules, and more. Projects declare which kanons they want in `.kanon/kanon.yaml`; `kanon sync` fetches them from their sources and generates AI tool integrations. The same source kanons produce `.claude/rules/` for Claude Code, a managed `AGENTS.md` block plus `.agents/skills/` for Codex, `.windsurf/rules/` for Windsurf, and so on — one config, multiple tools.
 
 | Term | Meaning |
 |---|---|
@@ -52,7 +52,7 @@ kanon manages kanons — markdown files covering coding conventions, git behavio
 | **source** | A named directory of kanons — local path, `gh::org/repo`, or `gl::group/repo`; declared in `kanon.yaml` or `~/.kanon/settings.yaml` |
 | **stance** | A named set of kanons activatable on demand via `/kanon-stance`; use when you need the AI to behave differently for a specific task without permanently changing your config |
 | **profile** | A named bundle of kanons and stances — useful for consistent bootstrapping across projects of the same type |
-| **integration** | The AI tool output files that kanon generates from your kanons (`claude`, `windsurf`, `devin`, `opencode`, etc.) |
+| **integration** | The AI tool output files that kanon generates from your kanons (`claude`, `codex`, `windsurf`, `devin`, `opencode`, etc.) |
 
 ## Skills
 
@@ -253,6 +253,7 @@ meta:
   kanon_sha: "abc1234"     # SHA at last sync — informational only
   integrations:
     - claude
+    - codex
     - opencode
   profile: "base"          # omitted if no profile was used
 kanons:                    # always-active rules/skills
