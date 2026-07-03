@@ -19,9 +19,14 @@ from functools import cached_property
 REFERENCE_SEP = "::"
 PROJECT_KANON_DIR = ".kanon"
 CONFIG_FILE = "kanon.yaml"
+GITIGNORE_FILE = ".gitignore"
 
 SYNCED_KANONS_DIR = "kanons"
 SYNCED_STANCES_DIR = "stances"
+SYNCED_DIR_GITIGNORE_CONTENT = (
+    f"/{SYNCED_KANONS_DIR}\n"
+    f"/{SYNCED_STANCES_DIR}\n"
+)
 
 PROJECT_KANONS_DIR = "project/kanons"
 PROJECT_PROFILES_DIR = "project/profiles"
@@ -137,6 +142,10 @@ class KanonConfig(BaseModel):
     @classmethod
     def initialize(cls, project_root: Path | str | None = None) -> None:
         root = resolve_path(project_root) / PROJECT_KANON_DIR
+        root.mkdir(parents=True, exist_ok=True)
+        gitignore_path = root / GITIGNORE_FILE
+        if not gitignore_path.exists():
+            gitignore_path.write_text(SYNCED_DIR_GITIGNORE_CONTENT)
         cls._root = root
         cls._current = None
         config_path = root / CONFIG_FILE

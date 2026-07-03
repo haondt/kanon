@@ -35,3 +35,19 @@ def test_config_save_omits_null_profile(tmp_path: Path):
     kanon_dir = _setup(tmp_path)
     _minimal_config().save()
     assert "profile" not in (kanon_dir / "kanon.yaml").read_text()
+
+
+def test_initialize_creates_kanon_gitignore(tmp_path: Path):
+    KanonConfig.initialize(tmp_path)
+    assert (tmp_path / ".kanon" / ".gitignore").read_text() == "/kanons\n/stances\n"
+
+
+def test_initialize_preserves_existing_kanon_gitignore(tmp_path: Path):
+    kanon_dir = tmp_path / ".kanon"
+    kanon_dir.mkdir()
+    gitignore_path = kanon_dir / ".gitignore"
+    gitignore_path.write_text("custom\n")
+
+    KanonConfig.initialize(tmp_path)
+
+    assert gitignore_path.read_text() == "custom\n"
