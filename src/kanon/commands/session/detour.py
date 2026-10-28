@@ -4,8 +4,8 @@ import json
 
 import click
 
-from ._helpers import load_session_or_exit, save_session_and_emit_hashes
-from kanon.commands._utils import read_text_arg
+from kanon.commands.session._helpers import load_session_or_exit, save_session_and_emit_hashes
+from kanon.commands._utils import json_option, read_text_arg
 
 
 @click.group("detour")
@@ -16,7 +16,7 @@ def session_detour() -> None:
 @session_detour.command("add")
 @click.argument("text")
 
-@click.option("--json", "as_json", is_flag=True)
+@json_option
 def detour_add(text: str, as_json: bool) -> None:
     """Record a detour."""
     state, _ = load_session_or_exit()
@@ -26,7 +26,7 @@ def detour_add(text: str, as_json: bool) -> None:
 
 @session_detour.command("status")
 
-@click.option("--json", "as_json", is_flag=True)
+@json_option
 def detour_status(as_json: bool) -> None:
     """Show detours."""
     state, h = load_session_or_exit()

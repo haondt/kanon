@@ -6,7 +6,7 @@ from typing import Any, Callable, override
 
 from pydantic import BaseModel
 
-from kanon.core.config import IntegrationSpecificRule, KanonConfig, OutputType, SourceReference, SourcedResource
+from kanon.core.config import Integration, IntegrationSpecificRule, KanonConfig, OutputType, SourceReference, SourcedResource
 from kanon.core.kanons import Kanon
 from kanon.core.render._base import DryCleanResult, KanonRenderHelper, KanonRenderer
 from kanon.core.yaml_utils import dump_yaml
@@ -35,6 +35,7 @@ class WindsurfSkillFrontmatter(BaseModel):
 
 @dataclass
 class WindsurfKanonRenderer(KanonRenderer):
+    INTEGRATION: Integration = Integration.WINDSURF
     @classmethod
     def _get_rule_output_dir(cls) -> str:
         return _RULE_OUTPUT_DIR
@@ -49,7 +50,12 @@ class WindsurfKanonRenderer(KanonRenderer):
 
     @classmethod
     @override
-    def render_kanon(cls, kanon_resource: SourcedResource, kanon: Kanon) -> Path:
+    def render_kanon(
+        cls,
+        kanon_resource: SourcedResource,
+        kanon: Kanon,
+        on_progress: Callable[[str], None] | None = None,
+    ) -> Path:
         helper = KanonRenderHelper(kanon=kanon, resource=kanon_resource).validate()
         body = helper.base_render_body()
         out_dir = (
@@ -93,7 +99,7 @@ class WindsurfKanonRenderer(KanonRenderer):
     @override
     @classmethod
     def render_bespoke_rules(cls,
-        on_render_progress: Callable[[Path], None] | None = None
+        on_render_progress: Callable[[Path], None] | None = None,
     ):
         for rule in cls._get_specific_rules():
             resource = SourcedResource(SourceReference.KANON_SOURCE_REFERENCE, path=rule.path, args=rule.args)
@@ -117,5 +123,6 @@ class WindsurfKanonRenderer(KanonRenderer):
     def render_settings(
         cls,
         preapproved_tools: list[str],
+        on_progress: Callable[[str], None] | None = None,
     ) -> Path | None:
         return None

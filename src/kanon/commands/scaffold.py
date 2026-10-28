@@ -5,7 +5,9 @@ import questionary
 from questionary import Choice
 
 from kanon import __version__
+from kanon.commands._utils import fail, kanon_command
 from kanon.core.config import Integration, SourceReference, KanonConfig, KanonMeta, SourcedResource
+from kanon.core.render import roots
 from kanon.core.sources import SourceResolver
 
 INTEGRATIONS = list(Integration)
@@ -15,8 +17,7 @@ INTEGRATIONS = list(Integration)
 def init() -> None:
     """Interactively initialize a new project with kanon conventions."""
     if KanonConfig.get() is not None:
-        click.echo(".kanon/kanon.yaml already exists. Run 'kanon sync' to update.")
-        raise SystemExit(1)
+        fail(f".kanon/kanon.yaml already exists. Run '{kanon_command('sync')}' to update.")
 
     KanonConfig.root().mkdir(parents=True, exist_ok=True)
 
@@ -24,12 +25,11 @@ def init() -> None:
 
     integrations = questionary.checkbox(
         "Select integrations:",
-        choices=INTEGRATIONS,
+        choices=[i for i in INTEGRATIONS if roots(i).supports_global] if KanonConfig.is_global() else INTEGRATIONS,
         use_jk_keys=False,
     ).ask()
     if integrations is None:
-        click.echo("No integrations selected. Aborting.")
-        raise SystemExit(1)
+        fail("No integrations selected. Aborting.")
 
     selected_kanons: list[str] | None = []
     selected_stances: list[str] | None = []
@@ -72,8 +72,7 @@ def init() -> None:
     ).ask()
 
     if selected_kanons is None:
-        click.echo("No kanons selected. Aborting.")
-        raise SystemExit(1)
+        fail("No kanons selected. Aborting.")
 
     sha = sources[SourceReference.KANON_SOURCE_REFERENCE].get_sha()
     config = KanonConfig(
@@ -83,4 +82,4 @@ def init() -> None:
     )
     config.save()
     click.echo(f"\nWrote .kanon/kanon.yaml with {len(selected_kanons)} kanon(s) pinned at {sha[:8]}.")
-    click.echo("Run 'kanon sync' to copy kanon files and emit AI tool rules.")
+    click.echo(f"Run '{kanon_command('sync')}' to copy kanon files and emit AI tool rules.")

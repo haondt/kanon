@@ -3,8 +3,8 @@ from __future__ import annotations
 import click
 
 from kanon.core.session import PlanStep, next_plan_note_key
-from ._helpers import load_session_or_exit, save_session_and_emit_hashes
-from kanon.commands._utils import read_text_arg_json
+from kanon.commands.session._helpers import load_session_or_exit, save_session_and_emit_hashes
+from kanon.commands._utils import fail, input_json_option, json_option, read_text_arg_json
 
 
 @click.group("plan")
@@ -15,7 +15,7 @@ def session_plan() -> None:
 @session_plan.command("status")
 @click.option("--key", default=None)
 
-@click.option("--json", "as_json", is_flag=True)
+@json_option
 def plan_status(key: str | None, as_json: bool) -> None:
     """Show plan status."""
     import json
@@ -23,8 +23,7 @@ def plan_status(key: str | None, as_json: bool) -> None:
     if key:
         step = state.plan.steps.get(key)
         if step is None:
-            click.echo(f"Step {key!r} not found.", err=True)
-            raise SystemExit(1)
+            fail(f"Step {key!r} not found.")
         if as_json:
             click.echo(json.dumps({"hash": h, "key": key, **step.model_dump()}))
         else:
@@ -51,14 +50,13 @@ def plan_status(key: str | None, as_json: bool) -> None:
 @click.argument("key")
 @click.argument("text")
 
-@click.option("--json", "as_json", is_flag=True)
-@click.option("--input-json", "input_json", is_flag=True, help="Parse TEXT argument as JSON string")
+@json_option
+@input_json_option
 def plan_add_step(key: str, text: str, as_json: bool, input_json: bool) -> None:
     """Add a plan step."""
     state, _ = load_session_or_exit()
     if key in state.plan.steps:
-        click.echo(f"Step {key!r} already exists.", err=True)
-        raise SystemExit(1)
+        fail(f"Step {key!r} already exists.")
     state.plan.steps[key] = PlanStep(text=read_text_arg_json(text, input_json))
     save_session_and_emit_hashes(state, as_json, {"key": key})
 
@@ -66,14 +64,13 @@ def plan_add_step(key: str, text: str, as_json: bool, input_json: bool) -> None:
 @session_plan.command("check")
 @click.argument("key")
 
-@click.option("--json", "as_json", is_flag=True)
+@json_option
 def plan_check(key: str, as_json: bool) -> None:
     """Mark a plan step as done."""
     state, _ = load_session_or_exit()
     step = state.plan.steps.get(key)
     if step is None:
-        click.echo(f"Step {key!r} not found.", err=True)
-        raise SystemExit(1)
+        fail(f"Step {key!r} not found.")
     step.done = True
     save_session_and_emit_hashes(state, as_json, {"key": key, "done": True})
 
@@ -81,14 +78,13 @@ def plan_check(key: str, as_json: bool) -> None:
 @session_plan.command("uncheck")
 @click.argument("key")
 
-@click.option("--json", "as_json", is_flag=True)
+@json_option
 def plan_uncheck(key: str, as_json: bool) -> None:
     """Mark a plan step as not done."""
     state, _ = load_session_or_exit()
     step = state.plan.steps.get(key)
     if step is None:
-        click.echo(f"Step {key!r} not found.", err=True)
-        raise SystemExit(1)
+        fail(f"Step {key!r} not found.")
     step.done = False
     save_session_and_emit_hashes(state, as_json, {"key": key, "done": False})
 
@@ -96,8 +92,8 @@ def plan_uncheck(key: str, as_json: bool) -> None:
 @session_plan.command("note")
 @click.argument("text")
 
-@click.option("--json", "as_json", is_flag=True)
-@click.option("--input-json", "input_json", is_flag=True, help="Parse TEXT argument as JSON string")
+@json_option
+@input_json_option
 def plan_note(text: str, as_json: bool, input_json: bool) -> None:
     """Append a note to the plan."""
     state, _ = load_session_or_exit()

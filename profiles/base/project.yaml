@@ -1,0 +1,3 @@
+description: "Project-level base when core conventions are installed globally"
+extends:
+  - self::base/docs

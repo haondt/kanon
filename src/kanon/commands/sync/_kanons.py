@@ -5,6 +5,7 @@ import click
 from kanon.commands.sync._synced import list_synced_kanons, remove_synced_kanon, write_synced_kanon, create_synced_kanons_dir
 from kanon.core.config import SourcedResource
 from kanon.core.sources import SourceResolver
+from kanon.commands._utils import fail
 
 def sync_kanons(all_kanons_needed: set[SourcedResource], pull: bool):
     create_synced_kanons_dir()
@@ -28,8 +29,7 @@ def sync_kanons(all_kanons_needed: set[SourcedResource], pull: bool):
     for resource in to_pull:
         source = sources.try_resolve(resource.source)
         if source is None:
-            click.echo(f"Error: source '{resource.source}' not found for kanon '{resource.as_string}'")
-            raise SystemExit(1)
+            fail(f"Error: source '{resource.source}' not found for kanon '{resource.as_string}'")
         kanon = source.hydrate_kanon(resource.path)
         write_synced_kanon(resource, kanon)
         click.echo(f"  kanon:{resource.as_string} ← upstream")

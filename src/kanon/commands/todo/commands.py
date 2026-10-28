@@ -6,23 +6,22 @@ from typing import Any
 import click
 
 from kanon.core.todo import lint_todo
-from ._helpers import load_todo_file
-from kanon.commands._utils import read_text_arg_json
+from kanon.commands.todo._helpers import load_todo_file, save_todo_file_and_emit_hashes
+from kanon.commands._utils import fail, input_json_option, json_option, read_text_arg_json
 
 
 @click.command("status")
 @click.argument("text", required=False)
 @click.option("--section", default=None)
 
-@click.option("--json", "as_json", is_flag=True)
+@json_option
 def todo_status(text: str | None, section: str | None, as_json: bool) -> None:
     """Show backlog items, optionally filtered by section or substring."""
     state, h = load_todo_file()
 
     sections = {k: v for k, v in state.sections.items() if section is None or k == section}
     if section and section not in state.sections:
-        click.echo(f"Section {section!r} not found.", err=True)
-        raise SystemExit(1)
+        fail(f"Section {section!r} not found.")
 
     if as_json:
         result: dict[str, Any] = {"hash": h, "sections": {}}
@@ -45,7 +44,7 @@ def todo_status(text: str | None, section: str | None, as_json: bool) -> None:
 @click.argument("terms", nargs=-1, required=True)
 @click.option("--section", default=None)
 
-@click.option("--json", "as_json", is_flag=True)
+@json_option
 def todo_search(terms: tuple[str, ...], section: str | None, as_json: bool) -> None:
     """Search backlog items (all terms must match, case-insensitive)."""
     state, h = load_todo_file()
@@ -78,15 +77,13 @@ def todo_search(terms: tuple[str, ...], section: str | None, as_json: bool) -> N
 @click.argument("text")
 @click.option("--section", required=True, help="Section key.")
 
-@click.option("--json", "as_json", is_flag=True)
-@click.option("--input-json", "input_json", is_flag=True, help="Parse TEXT argument as JSON string")
+@json_option
+@input_json_option
 def todo_add(text: str, section: str, as_json: bool, input_json: bool) -> None:
     """Add an item to a section."""
-    from ._helpers import save_todo_file_and_emit_hashes
     state, _ = load_todo_file()
     if section not in state.sections:
-        click.echo(f"Section {section!r} not found. Use 'kanon todo section add' to create it.", err=True)
-        raise SystemExit(1)
+        fail(f"Section {section!r} not found. Use 'kanon todo section add' to create it.")
     state.sections[section].items.append(read_text_arg_json(text, input_json).strip())
     save_todo_file_and_emit_hashes(state, as_json)
 
@@ -95,20 +92,17 @@ def todo_add(text: str, section: str, as_json: bool, input_json: bool) -> None:
 @click.argument("text")
 @click.option("--section", required=True, help="Section key.")
 
-@click.option("--json", "as_json", is_flag=True)
-@click.option("--input-json", "input_json", is_flag=True, help="Parse TEXT argument as JSON string")
+@json_option
+@input_json_option
 def todo_remove(text: str, section: str, as_json: bool, input_json: bool) -> None:
     """Remove an item from a section (exact match). Removes section if empty."""
-    from ._helpers import save_todo_file_and_emit_hashes
     state, _ = load_todo_file()
     text = read_text_arg_json(text, input_json).strip()
     if section not in state.sections:
-        click.echo(f"Section {section!r} not found.", err=True)
-        raise SystemExit(1)
+        fail(f"Section {section!r} not found.")
     sec = state.sections[section]
     if text not in sec.items:
-        click.echo(f"Item not found in section {section!r}: {text!r}", err=True)
-        raise SystemExit(1)
+        fail(f"Item not found in section {section!r}: {text!r}")
     sec.items.remove(text)
     if not sec.items:
         del state.sections[section]
@@ -117,7 +111,7 @@ def todo_remove(text: str, section: str, as_json: bool, input_json: bool) -> Non
 
 @click.command("lint")
 
-@click.option("--json", "as_json", is_flag=True)
+@json_option
 def todo_lint(as_json: bool) -> None:
     """Lint the todo file."""
     state, h = load_todo_file()

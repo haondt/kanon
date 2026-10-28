@@ -6,7 +6,7 @@ import click
 import questionary
 from questionary import Choice
 
-from kanon.commands._utils import load_config_or_exit
+from kanon.commands._utils import exit_ok, fail, json_option, kanon_command, load_config_or_exit
 from kanon.core.config import SourceReference, SourcedResource, KanonConfig
 from kanon.core.sources import SourceResolver
 
@@ -61,8 +61,7 @@ def _do_picker(run_sync: bool) -> None:
     ).ask()
 
     if result is None:
-        click.echo("No kanons selected. Aborting.")
-        raise SystemExit(1)
+        fail("No kanons selected. Aborting.")
 
     config.kanons = result
     config.save()
@@ -74,11 +73,11 @@ def _do_picker(run_sync: bool) -> None:
         from kanon.commands.sync import do_sync
         do_sync()
     else:
-        click.echo("Run 'kanon sync' to update AI tool output.")
+        click.echo(f"Run '{kanon_command('sync')}' to update AI tool output.")
 
 
 @click.command("list")
-@click.option("--json", "as_json", is_flag=True, help="Output results as JSON.")
+@json_option
 def list_cmd(as_json: bool) -> None:
     """List all available kanons with descriptions."""
     config = load_config_or_exit()
@@ -121,8 +120,7 @@ def set_cmd(kanons: tuple[str, ...], run_sync: bool) -> None:
     sources = SourceResolver.instance()
     unknown = [m.as_string for m in kanon_refs if sources.try_resolve(m.source) is None or not sources[m.source].contains_kanon(m.path)]
     if unknown:
-        click.echo(f"Unknown kanon(s): {', '.join(unknown)}")
-        raise SystemExit(1)
+        fail(f"Unknown kanon(s): {', '.join(unknown)}")
 
     config.kanons = [r.as_string for r in kanon_refs]
     config.save()
@@ -134,7 +132,7 @@ def set_cmd(kanons: tuple[str, ...], run_sync: bool) -> None:
         from kanon.commands.sync import do_sync
         do_sync()
     else:
-        click.echo("Run 'kanon sync' to update AI tool output.")
+        click.echo(f"Run '{kanon_command('sync')}' to update AI tool output.")
 
 
 @click.command("add")
@@ -148,8 +146,7 @@ def add(kanons: tuple[str, ...], run_sync: bool) -> None:
     sources = SourceResolver.instance()
     unknown = [m.as_string for m in kanon_refs if sources.try_resolve(m.source) is None or not sources[m.source].contains_kanon(m.path)]
     if unknown:
-        click.echo(f"Unknown kanon(s): {', '.join(unknown)}")
-        raise SystemExit(1)
+        fail(f"Unknown kanon(s): {', '.join(unknown)}")
 
     selected_set = set(SourcedResource.sanitize(config.kanons))
     already_active = [m for m in kanons_sanitized if m in selected_set]
@@ -167,7 +164,7 @@ def add(kanons: tuple[str, ...], run_sync: bool) -> None:
         from kanon.commands.sync import do_sync
         do_sync()
     else:
-        click.echo("Run 'kanon sync' to update AI tool output.")
+        click.echo(f"Run '{kanon_command('sync')}' to update AI tool output.")
 
 
 @click.command("remove")
@@ -182,8 +179,7 @@ def remove(kanons: tuple[str, ...], run_sync: bool) -> None:
     active_set = set(active_sanitized)
     to_deactivate = [m for m in kanons_sanitized if m in active_set]
     if not to_deactivate:
-        click.echo("All kanons already inactive")
-        raise SystemExit(0)
+        exit_ok("All kanons already inactive")
 
     config.kanons = [m for m in active_sanitized if m not in to_deactivate]
     config.save()
@@ -193,13 +189,13 @@ def remove(kanons: tuple[str, ...], run_sync: bool) -> None:
         from kanon.commands.sync import do_sync
         do_sync()
     else:
-        click.echo("Run 'kanon sync' to update AI tool output.")
+        click.echo(f"Run '{kanon_command('sync')}' to update AI tool output.")
 
 
 @click.command("search")
 @click.argument("terms", nargs=-1, required=True)
 @click.option("--source", "source_filter", default=None, help="Filter to a specific source by name.")
-@click.option("--json", "as_json", is_flag=True, help="Output results as JSON.")
+@json_option
 def search(terms: tuple[str, ...], source_filter: str | None, as_json: bool) -> None:
     """Search available kanons by name and description.
 
@@ -218,8 +214,7 @@ def search(terms: tuple[str, ...], source_filter: str | None, as_json: bool) -> 
         parsed_source_filter = SourceReference.parse(source_filter)
 
     if parsed_source_filter and sources.try_resolve(parsed_source_filter) is None:
-        click.echo(f"Unknown source: '{source_filter}'")
-        raise SystemExit(1)
+        fail(f"Unknown source: '{source_filter}'")
 
     available = _all_available()
     lower_terms = [t.lower() for t in terms]

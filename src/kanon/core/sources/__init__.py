@@ -3,7 +3,7 @@ from kanon.core.sources._filesystem import FilesystemSource
 from kanon.core.sources._local import LocalSource
 from kanon.core.sources._github import GitHubSource
 from kanon.core.sources._gitlab import GitLabSource
-from kanon.core.sources._project import ProjectSource
+from kanon.core.sources._project import GlobalSource, ProjectSource
 from kanon.core.sources._alias import AliasRef
 from kanon.core.sources._resolve import hydrate_source_reference, initialize
 
@@ -14,6 +14,7 @@ __all__ = [
     "GitHubSource",
     "GitLabSource",
     "ProjectSource",
+    "GlobalSource",
     "AliasRef",
     "hydrate_source_reference",
     "initialize",

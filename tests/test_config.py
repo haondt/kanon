@@ -39,7 +39,7 @@ def test_config_save_omits_null_profile(tmp_path: Path):
 
 def test_initialize_creates_kanon_gitignore(tmp_path: Path):
     KanonConfig.initialize(tmp_path)
-    assert (tmp_path / ".kanon" / ".gitignore").read_text() == "/kanons\n/stances\n"
+    assert (tmp_path / ".kanon" / ".gitignore").read_text() == "/kanons\n/stances\n/table.yaml\n"
 
 
 def test_initialize_preserves_existing_kanon_gitignore(tmp_path: Path):

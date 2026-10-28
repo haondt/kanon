@@ -77,6 +77,8 @@ The workflow skills enforce a structured session lifecycle. Each step is a check
 | `/kanon-stance` | Activate a behavioral stance for the session |
 | `/kanon-think` | Enter brainstorm mode — AI discusses ideas without taking action |
 | `/kanon-detour` | Make a quick out-of-scope edit without going through the full workflow |
+| `/kanon-iterate` | Build conversationally without a session: approval before each change, no records |
+| `/kanon-table` | Break the discussion into a graph of items (`.kanon/table.yaml`) to explore one at a time |
 | `/kanon-amend` | Amend the current session goal or plan in place |
 | `/kanon-todo` | Add an item to the project backlog |
 | `/kanon-onboard` | Onboard an existing project: write STRUCTURE.md, select kanons, extract TODOs |
@@ -104,6 +106,7 @@ scheme::address::path
 | `mywork::python/style` | `alias::mywork::python/style` | Registered source by alias |
 | `gh::org/repo::python/style` | *(already full)* | GitHub source, no alias needed |
 | `project::my-kanon` | `kanon::project::my-kanon` | Project-local file under `.kanon/project/` |
+| `global::my-kanon` | `kanon::global::my-kanon` | Global file under `~/.kanon/global-project/.kanon/project/` |
 | `self::python/style` | `kanon::self::python/style` | Profile-internal: same source as the profile file |
 
 **Special addresses** under the `kanon` scheme:
@@ -112,6 +115,7 @@ scheme::address::path
 |---|---|
 | `kanon::kanon` | The built-in kanon library (`kanons/` in this repo) |
 | `kanon::project` | The consuming project's own local content (`.kanon/project/`) |
+| `kanon::global` | Your user-level content (`~/.kanon/global-project/.kanon/project/`), available in every project |
 | `kanon::self` | The profile's own source — only valid inside profile YAML files; rewritten to the profile's actual source at load time |
 
 `self::` is how profiles in an external library reference their own sibling kanons without hardcoding a source name:
@@ -214,6 +218,7 @@ kanon source add --global mywork gh::org/kanons
 
 ```bash
 kanon init                        # set up a project
+kanon -g <command>                # run a command against the global project (~/.kanon/global-project)
 kanon sync                        # fetch missing kanons from sources and regenerate integrations
 kanon sync --pull                 # force-refresh all remote sources, then regenerate
 kanon profile list                # list available profiles
@@ -243,6 +248,18 @@ kanon ref read [--json] <name>                            # read a reference ent
 See `kanon --help` or `kanon <command> --help` for full options.
 
 </details>
+
+### Global mode
+
+`kanon -g <command>` operates on a user-level project at `~/.kanon/global-project` and installs kanons into your user-level integration configs (e.g. `~/.claude`). `-g` and `--project-root` are mutually exclusive.
+
+```bash
+kanon -g init
+kanon -g sync
+kanon -g destroy
+```
+
+At the global level, skills, rules and integration configuration files (e.g. `settings.json`) are merged into any existing config in a rewindable strategy. `kanon -g destroy` and `kanon -g sync` rewind the changes, preserving any existing configuration.
 
 <details>
 <summary>kanon.yaml format</summary>

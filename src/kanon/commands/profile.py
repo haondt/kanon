@@ -4,7 +4,7 @@ import json
 
 import click
 
-from kanon.commands._utils import load_config_or_exit
+from kanon.commands._utils import fail, json_option, kanon_command, load_config_or_exit
 from kanon.core.config import SourceReference, SourcedResource
 from kanon.core.sources import SourceResolver
 
@@ -51,18 +51,15 @@ def profile_apply(name: str | None, run_sync: bool, replace: bool) -> None:
     profile_ref = name or config.meta.profile
 
     if not profile_ref:
-        click.echo("No profile recorded in kanon.yaml and no NAME given.")
-        raise SystemExit(1)
+        fail("No profile recorded in kanon.yaml and no NAME given.")
 
     try:
         profile_ref = SourcedResource.parse(profile_ref)
         profile = SourceResolver.instance()[profile_ref.source].hydrate_profile(profile_ref)
     except FileNotFoundError as e:
-        click.echo(str(e))
-        raise SystemExit(1)
+        fail(str(e))
     except ValueError as e:
-        click.echo(str(e))
-        raise SystemExit(1)
+        fail(str(e))
 
     if replace:
         config.kanons = profile.kanons
@@ -87,13 +84,13 @@ def profile_apply(name: str | None, run_sync: bool, replace: bool) -> None:
         from kanon.commands.sync import do_sync
         do_sync()
     else:
-        click.echo("Run 'kanon sync' to update AI tool output.")
+        click.echo(f"Run '{kanon_command('sync')}' to update AI tool output.")
 
 
 @profile.command("search")
 @click.argument("terms", nargs=-1, required=True)
 @click.option("--source", "source_filter", default=None, help="Filter to a specific source by name.")
-@click.option("--json", "as_json", is_flag=True, help="Output results as JSON.")
+@json_option
 def profile_search(terms: tuple[str, ...], source_filter: str | None, as_json: bool) -> None:
     """Search available profiles by name and description.
 
@@ -106,8 +103,7 @@ def profile_search(terms: tuple[str, ...], source_filter: str | None, as_json: b
     if source_filter:
         parsed_source_filter = SourceReference.parse(source_filter)
         if sources.try_resolve(parsed_source_filter) is None:
-            click.echo(f"Unknown source: '{source_filter}'")
-            raise SystemExit(1)
+            fail(f"Unknown source: '{source_filter}'")
 
     profile_refs: list[SourcedResource] = []
     for source_key, source in sources.items():

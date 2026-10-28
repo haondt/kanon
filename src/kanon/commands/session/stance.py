@@ -4,7 +4,8 @@ import json
 
 import click
 
-from ._helpers import load_session_or_exit, save_session_and_emit_hashes
+from kanon.commands.session._helpers import load_session_or_exit, save_session_and_emit_hashes
+from kanon.commands._utils import json_option
 
 
 @click.group("stance")
@@ -15,7 +16,7 @@ def session_stance() -> None:
 @session_stance.command("set")
 @click.argument("name")
 
-@click.option("--json", "as_json", is_flag=True)
+@json_option
 def stance_set(name: str, as_json: bool) -> None:
     """Set the active stance."""
     state, _ = load_session_or_exit()
@@ -25,7 +26,7 @@ def stance_set(name: str, as_json: bool) -> None:
 
 @session_stance.command("clear")
 
-@click.option("--json", "as_json", is_flag=True)
+@json_option
 def stance_clear(as_json: bool) -> None:
     """Clear the active stance."""
     state, _ = load_session_or_exit()
@@ -35,7 +36,7 @@ def stance_clear(as_json: bool) -> None:
 
 @session_stance.command("status")
 
-@click.option("--json", "as_json", is_flag=True)
+@json_option
 def stance_status(as_json: bool) -> None:
     """Show the current stance."""
     state, h = load_session_or_exit()

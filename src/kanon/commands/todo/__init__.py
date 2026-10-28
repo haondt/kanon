@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import click
 
-from .commands import todo_status, todo_search, todo_add, todo_remove, todo_lint
-from .section import todo_section
+from kanon.commands.todo.commands import todo_status, todo_search, todo_add, todo_remove, todo_lint
+from kanon.commands.todo.section import todo_section
 
 
 @click.group()

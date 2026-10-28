@@ -11,14 +11,14 @@ from kanon.core.session import (
     save_session,
     SESSION_FILE,
 )
+from kanon.commands._utils import fail, kanon_command
 
 
 def load_session_or_exit() -> tuple[SessionState, str]:
     try:
         state, h = load_session()
     except FileNotFoundError:
-        click.echo(f"{SESSION_FILE} not found. Run 'kanon session start <goal>' first.", err=True)
-        raise SystemExit(1)
+        fail(f"{SESSION_FILE} not found. Run '{kanon_command('session')} start <goal>' first.")
     return state, h
 
 

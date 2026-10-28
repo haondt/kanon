@@ -6,6 +6,7 @@ import json
 from kanon.core.config import SourcedResource
 from kanon.core.references import NormalizedTerms, Reference
 from kanon.core.sources import SourceResolver
+from kanon.commands._utils import fail, json_option
 
 
 @click.group()
@@ -15,7 +16,7 @@ def ref():
 
 @ref.command("search")
 @click.argument("terms", nargs=-1, required=True)
-@click.option("--json", "as_json", is_flag=True, help="Output results as JSON.")
+@json_option
 @click.option("--match-all", "match_all", is_flag=True, help="Require all terms to match (default: any term matches).")
 @click.option("-n", "limit", type=int, default=10, help="Maximum results to return. 0 for unlimited.")
 def ref_search(terms: tuple[str, ...], as_json: bool, match_all: bool, limit: int) -> None:
@@ -53,15 +54,14 @@ def ref_search(terms: tuple[str, ...], as_json: bool, match_all: bool, limit: in
 
 @ref.command("read")
 @click.argument("name")
-@click.option("--json", "as_json", is_flag=True, help="Output result as JSON.")
+@json_option
 def ref_read(name: str, as_json: bool) -> None:
     """Read a reference entry by name."""
     sources = SourceResolver.instance()
     res = SourcedResource.parse(name)
     source = sources.try_resolve(res.source)
     if source is None:
-        click.echo(f"Could not resolve source {res.source}")
-        raise SystemExit(1)
+        fail(f"Could not resolve source {res.source}")
     reference = source.hydrate_reference(res.path)
 
     if as_json:

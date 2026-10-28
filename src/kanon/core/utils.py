@@ -1,8 +1,13 @@
 from __future__ import annotations
 
+import hashlib
 from typing import Any
 
 from pathlib import Path
+
+
+def hash_text(text: str) -> str:
+    return hashlib.sha256(text.encode()).hexdigest()[:16]
 
 
 def deep_merge(d1: dict[str, Any], d2: dict[str, Any], conflicts: str = "new", _path: str = ""):

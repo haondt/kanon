@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import override
 
-from kanon.core.config import IntegrationSpecificRule
+from kanon.core.config import Integration, IntegrationSpecificRule
 from kanon.core.render._windsurf import WindsurfKanonRenderer
 
 _RULE_OUTPUT_DIR = ".devin/rules"
@@ -21,6 +21,7 @@ _SPECIFIC_RULES = [
 
 @dataclass
 class DevinKanonRenderer(WindsurfKanonRenderer):
+    INTEGRATION: Integration = Integration.DEVIN
     @override
     @classmethod
     def _get_rule_output_dir(cls) -> str:

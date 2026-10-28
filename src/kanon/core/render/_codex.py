@@ -7,6 +7,7 @@ from typing import Any, Callable, override
 from pydantic import BaseModel
 
 from kanon.core.config import (
+    Integration,
     IntegrationSpecificRule,
     KanonConfig,
     OutputType,
@@ -38,6 +39,7 @@ class CodexSkillFrontmatter(BaseModel):
 
 @dataclass
 class CodexKanonRenderer(KanonRenderer):
+    INTEGRATION: Integration = Integration.CODEX
     @classmethod
     def _agents_path(cls) -> Path:
         return KanonConfig.project_root() / _CODEX_AGENTS_FILE
@@ -96,7 +98,12 @@ class CodexKanonRenderer(KanonRenderer):
 
     @classmethod
     @override
-    def render_kanon(cls, kanon_resource: SourcedResource, kanon: Kanon) -> Path:
+    def render_kanon(
+        cls,
+        kanon_resource: SourcedResource,
+        kanon: Kanon,
+        on_progress: Callable[[str], None] | None = None,
+    ) -> Path:
         helper = KanonRenderHelper(kanon=kanon, resource=kanon_resource).validate()
         body = helper.base_render_body()
         if helper.meta.output == OutputType.SKILL:
@@ -130,7 +137,7 @@ class CodexKanonRenderer(KanonRenderer):
     @override
     @classmethod
     def render_bespoke_rules(cls,
-        on_render_progress: Callable[[Path], None] | None = None
+        on_render_progress: Callable[[Path], None] | None = None,
     ):
         for rule in _SPECIFIC_RULES:
             resource = SourcedResource(SourceReference.KANON_SOURCE_REFERENCE, path=rule.path, args=rule.args)
@@ -143,7 +150,7 @@ class CodexKanonRenderer(KanonRenderer):
     def dry_clean(cls) -> DryCleanResult:
         return DryCleanResult(
             directories=[KanonConfig.project_root() / _SKILL_OUTPUT_DIR],
-            extra_info="remove managed kanon block from AGENTS.md",
+            extra_info="Will remove managed kanon block from AGENTS.md",
         )
 
     @override
@@ -159,5 +166,6 @@ class CodexKanonRenderer(KanonRenderer):
     def render_settings(
         cls,
         preapproved_tools: list[str],
+        on_progress: Callable[[str], None] | None = None,
     ) -> Path | None:
         return None

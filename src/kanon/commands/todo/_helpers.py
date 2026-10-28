@@ -12,6 +12,7 @@ from kanon.core.todo import (
     save_todo,
     TODO_FILE,
 )
+from kanon.commands._utils import fail
 
 
 def load_todo_file(create: bool = False) -> tuple[TodoState, str]:
@@ -21,8 +22,7 @@ def load_todo_file(create: bool = False) -> tuple[TodoState, str]:
         if create:
             state, h = create_todo()
         else:
-            click.echo(f"{TODO_FILE} not found.", err=True)
-            raise SystemExit(1)
+            fail(f"{TODO_FILE} not found.")
     return state, h
 
 def save_todo_file_and_emit_hashes(state: TodoState, as_json: bool, extra: dict[str, Any] | None = None) -> None:

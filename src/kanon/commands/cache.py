@@ -7,6 +7,7 @@ import click
 
 from kanon.core.config import SourceReference, KanonEnv
 from kanon.core.sources import SourceResolver
+from kanon.commands._utils import fail
 
 
 @click.group()
@@ -74,8 +75,7 @@ def cache_clear(name: str | None) -> None:
     try:
         src = resolved[ref]
     except ValueError:
-        click.echo(f"Unknown source: {name!r}")
-        raise SystemExit(1)
+        fail(f"Unknown source: {name!r}")
     path = src.cache_path()
     if path is None:
         click.echo(f"{ref.as_string} has no cache (not a remote source).")

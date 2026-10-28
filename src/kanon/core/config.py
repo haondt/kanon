@@ -16,16 +16,20 @@ from kanon.core.utils import resolve_path
 
 from functools import cached_property
 
+KANON_BIN = "kanon"
+
 REFERENCE_SEP = "::"
 PROJECT_KANON_DIR = ".kanon"
 CONFIG_FILE = "kanon.yaml"
 GITIGNORE_FILE = ".gitignore"
+TABLE_FILE = "table.yaml"
 
 SYNCED_KANONS_DIR = "kanons"
 SYNCED_STANCES_DIR = "stances"
 SYNCED_DIR_GITIGNORE_CONTENT = (
     f"/{SYNCED_KANONS_DIR}\n"
     f"/{SYNCED_STANCES_DIR}\n"
+    f"/{TABLE_FILE}\n"
 )
 
 PROJECT_KANONS_DIR = "project/kanons"
@@ -35,6 +39,7 @@ PROJECT_REFS_DIR = "project/references"
 
 KANON_ADDRESS = "kanon"
 PROJECT_ADDRESS = "project"
+GLOBAL_ADDRESS = "global"
 SELF_ADDRESS = "self"
 
 ALIAS_SCHEME = "alias"
@@ -46,7 +51,7 @@ VALID_SCHEMES: frozenset[str] = frozenset(
     {KANON_SCHEME, ALIAS_SCHEME, GITHUB_SCHEME, GITLAB_SCHEME, LOCAL_SCHEME}
 )
 KANON_BUILTIN_ADDRESSES: frozenset[str] = frozenset(
-    {KANON_ADDRESS, PROJECT_ADDRESS, SELF_ADDRESS}
+    {KANON_ADDRESS, PROJECT_ADDRESS, GLOBAL_ADDRESS, SELF_ADDRESS}
 )
 
 SOURCED_KANONS_DIR = "kanons"
@@ -114,6 +119,12 @@ class KanonEnv:
             return Path(val)
         return Path.home() / ".kanon" / "sources"
 
+    @cached_property
+    def global_project_path(self) -> Path:
+        if val := os.environ.get("KANON_GLOBAL_PROJECT_PATH"):
+            return Path(val)
+        return Path.home() / ".kanon" / "global-project"
+
 
 class KanonMeta(BaseModel):
     kanon_version: str
@@ -125,6 +136,7 @@ class KanonMeta(BaseModel):
 class KanonConfig(BaseModel):
     _current: ClassVar[KanonConfig | None] = None
     _root: ClassVar[Path | None] = None
+    _is_global: ClassVar[bool] = False
 
     meta: KanonMeta
     kanons: list[str] = []
@@ -140,7 +152,8 @@ class KanonConfig(BaseModel):
         return [SourcedResource.parse(r) for r in self.kanons]
 
     @classmethod
-    def initialize(cls, project_root: Path | str | None = None) -> None:
+    def initialize(cls, project_root: Path | str | None = None, *, is_global: bool = False) -> None:
+        cls._is_global = is_global
         root = resolve_path(project_root) / PROJECT_KANON_DIR
         root.mkdir(parents=True, exist_ok=True)
         gitignore_path = root / GITIGNORE_FILE
@@ -182,9 +195,15 @@ class KanonConfig(BaseModel):
         return cls._root.parent
 
     @classmethod
+    def is_global(cls) -> bool:
+        """True when running against the global project (`kanon -g`)."""
+        return cls._is_global
+
+    @classmethod
     def reset(cls) -> None:
         cls._current = None
         cls._root = None
+        cls._is_global = False
 
     @classmethod
     def load(cls, path: Path) -> KanonConfig:
@@ -206,6 +225,7 @@ class SourceReference:
 
     KANON_SOURCE_REFERENCE: ClassVar[SourceReference]
     PROJECT_SOURCE_REFERENCE: ClassVar[SourceReference]
+    GLOBAL_SOURCE_REFERENCE: ClassVar[SourceReference]
     SELF_SOURCE_REFERENCE: ClassVar[SourceReference]
 
     @classmethod
@@ -245,14 +265,14 @@ class SourceReference:
         """Validate that this SourceReference is valid as a source config dict key.
 
         Valid:  (alias, name) and (kanon, kanon)
-        Invalid: gh/gl/local schemes; kanon::project, kanon::self, any other kanon::*
+        Invalid: gh/gl/local schemes; kanon::project, kanon::global, kanon::self, any other kanon::*
         """
         if self.scheme == KANON_SCHEME:
             if self.address != KANON_ADDRESS:
                 raise ValueError(
                     f"Invalid source key {self.as_fully_qualified_string!r}: "
                     + f"only '{KANON_SCHEME}{REFERENCE_SEP}{KANON_ADDRESS}' is allowed under the '{KANON_SCHEME}' scheme; "
-                    + f"'{KANON_SCHEME}{REFERENCE_SEP}{PROJECT_ADDRESS}' and '{KANON_SCHEME}{REFERENCE_SEP}{SELF_ADDRESS}' are reserved and non-shadowable"
+                    + f"'{KANON_SCHEME}{REFERENCE_SEP}{PROJECT_ADDRESS}', '{KANON_SCHEME}{REFERENCE_SEP}{GLOBAL_ADDRESS}' and '{KANON_SCHEME}{REFERENCE_SEP}{SELF_ADDRESS}' are reserved and non-shadowable"
                 )
         elif self.scheme != ALIAS_SCHEME:
             raise ValueError(
@@ -320,6 +340,9 @@ class SourceReference:
 SourceReference.KANON_SOURCE_REFERENCE = SourceReference(KANON_SCHEME, KANON_ADDRESS)
 SourceReference.PROJECT_SOURCE_REFERENCE = SourceReference(
     KANON_SCHEME, PROJECT_ADDRESS
+)
+SourceReference.GLOBAL_SOURCE_REFERENCE = SourceReference(
+    KANON_SCHEME, GLOBAL_ADDRESS
 )
 SourceReference.SELF_SOURCE_REFERENCE = SourceReference(KANON_SCHEME, SELF_ADDRESS)
 

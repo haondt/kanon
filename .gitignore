@@ -15,3 +15,16 @@ htmlcov/
 .ruff_cache/
 AGENTS.md
 .agents
+
+# claude sandbox
+/.bash_profile
+/.bashrc
+/.gitconfig
+/.gitmodules
+/.idea
+/.mcp.json
+/.profile
+/.ripgreprc
+/.vscode
+/.zprofile
+/.zshrc

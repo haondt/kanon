@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import click
 
-from kanon.commands._utils import load_config_or_exit
+from kanon.commands._utils import fail, kanon_command, load_config_or_exit
 from kanon.core.local import create_local_kanon, create_local_stance, create_project_ref
 
 
@@ -21,8 +21,7 @@ def local_kanon(name: str, run_sync: bool) -> None:
     try:
         kanon_path = create_local_kanon(name)
     except FileExistsError as e:
-        click.echo(str(e))
-        raise SystemExit(1)
+        fail(str(e))
 
     click.echo(f"Created {kanon_path.relative_to(config.root())} and registered '{name}' in kanon.yaml.")
 
@@ -30,7 +29,7 @@ def local_kanon(name: str, run_sync: bool) -> None:
         from kanon.commands.sync import do_sync
         do_sync()
     else:
-        click.echo("Run 'kanon sync' to generate AI tool output for the new kanon.")
+        click.echo(f"Run '{kanon_command('sync')}' to generate AI tool output for the new kanon.")
 
 
 @local.command("stance")
@@ -41,11 +40,10 @@ def local_stance(name: str) -> None:
     try:
         stance_path = create_local_stance(name)
     except FileExistsError as e:
-        click.echo(str(e))
-        raise SystemExit(1)
+        fail(str(e))
 
     click.echo(f"Created {stance_path.relative_to(config.root())} and registered it in kanon.yaml.")
-    click.echo("Run 'kanon sync' so its kanon dependencies are pulled into .kanon/kanons/.")
+    click.echo(f"Run '{kanon_command('sync')}' so its kanon dependencies are pulled into .kanon/kanons/.")
 
 
 @local.command("ref")
@@ -56,7 +54,6 @@ def local_ref(name: str) -> None:
     try:
         ref_path = create_project_ref(name)
     except FileExistsError as e:
-        click.echo(str(e))
-        raise SystemExit(1)
+        fail(str(e))
 
     click.echo(f"Created {ref_path.relative_to(config.root())}.")

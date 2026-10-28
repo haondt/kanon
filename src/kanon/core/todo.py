@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-import hashlib
 
 from pydantic import BaseModel, Field, field_validator
 
 from kanon.core.config import KanonConfig
+from kanon.core.utils import hash_text
 from kanon.core.yaml_utils import dump_yaml, parse_yaml
 
 TODO_FILE = "todo.yaml"
@@ -33,16 +33,12 @@ class TodoState(BaseModel):
 
 # ── persistence ───────────────────────────────────────────────────────────────
 
-def _hash(text: str) -> str:
-    return hashlib.sha256(text.encode()).hexdigest()[:16]
-
-
 def load_todo() -> tuple[TodoState, str]:
     """Load todo.yaml; return (state, file_hash). Raises FileNotFoundError if absent."""
     path = KanonConfig.root() / TODO_FILE
     text = path.read_text()
     state = TodoState.model_validate(parse_yaml(text))
-    return state, _hash(text)
+    return state, hash_text(text)
 
 
 def save_todo(state: TodoState) -> tuple[str, str]:
@@ -50,10 +46,10 @@ def save_todo(state: TodoState) -> tuple[str, str]:
     path = KanonConfig.root() / TODO_FILE
     path.parent.mkdir(parents=True, exist_ok=True)
     before_text = path.read_text() if path.exists() else ""
-    before = _hash(before_text)
+    before = hash_text(before_text)
     text = dump_yaml(state)
     path.write_text(text)
-    after = _hash(text)
+    after = hash_text(text)
     return before, after
 
 
@@ -66,7 +62,7 @@ def create_todo() -> tuple[TodoState, str]:
     state = TodoState()
     text = dump_yaml(state)
     path.write_text(text)
-    return state, _hash(text)
+    return state, hash_text(text)
 
 
 # ── lint ──────────────────────────────────────────────────────────────────────

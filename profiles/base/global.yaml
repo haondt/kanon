@@ -1,0 +1,6 @@
+description: "Core conventions for a global install"
+extends:
+  - self::base/workflow
+  - self::base/tools
+kanons:
+  - self::systems/base

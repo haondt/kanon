@@ -10,20 +10,19 @@ from kanon.core.session import (
     delete_session,
     lint_session,
 )
-from ._helpers import load_session_or_exit
-from kanon.commands._utils import read_text_arg
+from kanon.commands.session._helpers import load_session_or_exit
+from kanon.commands._utils import fail, json_option, read_text_arg
 
 
 @click.command("start")
 @click.argument("goal")
-@click.option("--json", "as_json", is_flag=True)
+@json_option
 def session_start(goal: str, as_json: bool) -> None:
     """Create a new session with the given goal."""
     try:
         state, h = create_session(read_text_arg(goal))
     except FileExistsError as e:
-        click.echo(str(e), err=True)
-        raise SystemExit(1)
+        fail(str(e))
     if as_json:
         click.echo(json.dumps({"hash": h, "goal": state.goal}))
     else:
@@ -31,7 +30,7 @@ def session_start(goal: str, as_json: bool) -> None:
 
 
 @click.command("goal")
-@click.option("--json", "as_json", is_flag=True)
+@json_option
 def session_goal(as_json: bool) -> None:
     """Read the current session goal."""
     state, h = load_session_or_exit()
@@ -43,7 +42,7 @@ def session_goal(as_json: bool) -> None:
 
 @click.command("status")
 @click.option("--full", is_flag=True)
-@click.option("--json", "as_json", is_flag=True)
+@json_option
 def session_status(full: bool, as_json: bool) -> None:
     """Show session summary."""
     state, h = load_session_or_exit()
@@ -128,7 +127,7 @@ def session_status(full: bool, as_json: bool) -> None:
 
 
 @click.command("lint")
-@click.option("--json", "as_json", is_flag=True)
+@json_option
 def session_lint(as_json: bool) -> None:
     """Lint the session file."""
     state, h = load_session_or_exit()
@@ -144,7 +143,7 @@ def session_lint(as_json: bool) -> None:
 
 
 @click.command("clear")
-@click.option("--json", "as_json", is_flag=True)
+@json_option
 def session_clear(as_json: bool) -> None:
     """Delete the session file."""
     try:

@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-import hashlib
 from enum import Enum
 from typing import Literal
 
 from pydantic import BaseModel, field_validator
 
 from kanon.core.config import KanonConfig
+from kanon.core.utils import hash_text
 from kanon.core.yaml_utils import dump_yaml, load_yaml
 
 SESSION_FILE = "session.yaml"
@@ -97,26 +97,22 @@ class SessionState(BaseModel):
 
 # ── persistence ───────────────────────────────────────────────────────────────
 
-def _hash(text: str) -> str:
-    return hashlib.sha256(text.encode()).hexdigest()[:16]
-
-
 def load_session() -> tuple[SessionState, str]:
     """Load session.yaml; return (state, file_hash). Raises FileNotFoundError if absent."""
     path = KanonConfig.root() / SESSION_FILE
     text = path.read_text()
     state = load_yaml(path, SessionState)
-    return state, _hash(text)
+    return state, hash_text(text)
 
 def save_session(state: SessionState) -> tuple[str, str]:
     """Save session.yaml; return (before_hash, after_hash)."""
     path = KanonConfig.root() / SESSION_FILE
     path.parent.mkdir(parents=True, exist_ok=True)
     before_text = path.read_text() if path.exists() else ""
-    before = _hash(before_text)
+    before = hash_text(before_text)
     text = dump_yaml(state)
     path.write_text(text)
-    after = _hash(text)
+    after = hash_text(text)
     return before, after
 
 
@@ -129,7 +125,7 @@ def create_session(goal: str) -> tuple[SessionState, str]:
     state = SessionState(goal=goal)
     text = dump_yaml(state)
     path.write_text(text)
-    return state, _hash(text)
+    return state, hash_text(text)
 
 
 def delete_session() -> None:

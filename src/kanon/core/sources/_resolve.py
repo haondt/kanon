@@ -11,6 +11,7 @@ from kanon.core.config import (
     GITLAB_SCHEME,
     LOCAL_SCHEME,
     PROJECT_ADDRESS,
+    GLOBAL_ADDRESS,
     SELF_ADDRESS,
     KANON_SCHEME,
     KANON_ADDRESS,
@@ -23,7 +24,7 @@ from kanon.core.sources._base import ParsedSource, SourceResolver
 from kanon.core.sources._github import GitHubSource
 from kanon.core.sources._gitlab import GitLabSource
 from kanon.core.sources._local import LocalSource
-from kanon.core.sources._project import ProjectSource
+from kanon.core.sources._project import GlobalSource, ProjectSource
 from kanon.core.sources._kanon_source import KanonSource
 from kanon.core.sources._alias import AliasRef
 
@@ -74,6 +75,7 @@ def hydrate_source_reference(value: SourceReference) -> ParsedSource | AliasRef:
       - 'alias::name'         → AliasRef(name)
       - 'kanon::kanon'         → KanonSource (built-in)
       - 'kanon::project'      → ProjectSource (built-in)
+      - 'kanon::global'       → GlobalSource (built-in)
       - 'kanon::self'         → SelfSource (built-in)
       - 'gh::org/repo[@ref]'  → GitHubSource
       - 'gl::g/.../r[@ref]'   → GitLabSource
@@ -87,6 +89,8 @@ def hydrate_source_reference(value: SourceReference) -> ParsedSource | AliasRef:
             return _get_kanon_source()
         if value.address == PROJECT_ADDRESS:
             return ProjectSource()
+        if value.address == GLOBAL_ADDRESS:
+            return GlobalSource()
         if value.address == SELF_ADDRESS:
             raise ValueError("Cannot hydrate self source")
         raise ValueError(f"Unknown kanon built-in source: {value!r}")
@@ -109,7 +113,8 @@ def resolve_sources() -> dict[SourceReference, ParsedSource]:
       2. global settings.yaml sources
       3. project kanon.yaml sources (project wins on collision)
       4. kanon::project → ProjectSource (non-shadowable, injected after merge)
-      5. kanon::self → SelfSource (non-shadowable, injected after merge)
+      5. kanon::global → GlobalSource (non-shadowable, always injected)
+      6. kanon::self → SelfSource (non-shadowable, injected after merge)
 
     AliasRef values are resolved transitively after merge.
     Cycles raise ValueError.
@@ -138,6 +143,8 @@ def resolve_sources() -> dict[SourceReference, ParsedSource]:
 
     if project_config is not None:
         merged[project_key] = ProjectSource()
+
+    merged[SourceReference.GLOBAL_SOURCE_REFERENCE] = GlobalSource()
 
     merged_items = list(merged.items())
     resolved: dict[SourceReference, ParsedSource] = {}

@@ -5,7 +5,7 @@ from typing import Any
 
 import click
 
-from kanon.commands._utils import load_config_or_exit
+from kanon.commands._utils import fail, json_option, load_config_or_exit
 from kanon.core.config import SourceReference, KanonConfig, KanonEnv
 from kanon.core.settings import GlobalSettings
 from kanon.core.sources import AliasRef, LocalSource, SourceResolver, hydrate_source_reference
@@ -30,8 +30,7 @@ def source_add(source_name: str, path: str, global_scope: bool, force: bool) -> 
     try:
         source_name = SourceReference.parse(source_name, sanitize=True, validate_as_key=True).as_string
     except ValueError as e:
-        click.echo(str(e))
-        raise SystemExit(1)
+        fail(str(e))
 
     try:
         value = SourceReference.parse(path)
@@ -42,22 +41,19 @@ def source_add(source_name: str, path: str, global_scope: bool, force: bool) -> 
                 raise ValueError(f"Unknown alias: {path!r}")
             hydrated = resolved
     except ValueError as e:
-        click.echo(str(e))
-        raise SystemExit(1)
+        fail(str(e))
 
     if global_scope:
         settings = GlobalSettings.instance()
         if source_name in settings.sources and not force:
-            click.echo(f"Source '{source_name}' already exists. Use --force to overwrite.")
-            raise SystemExit(1)
+            fail(f"Source '{source_name}' already exists. Use --force to overwrite.")
         settings.sources[source_name] = value.as_string
         settings.save()
         click.echo(f"Added source '{source_name}' to ~/.kanon/settings.yaml.")
     else:
         config = load_config_or_exit()
         if source_name in config.sources and not force:
-            click.echo(f"Source '{source_name}' already exists. Use --force to overwrite.")
-            raise SystemExit(1)
+            fail(f"Source '{source_name}' already exists. Use --force to overwrite.")
         config.sources[source_name] = value.as_string
         config.save()
         click.echo(f"Added source '{source_name}' to kanon.yaml.")
@@ -86,7 +82,7 @@ def source_remove(source_name: str, global_scope: bool) -> None:
         click.echo(f"Removed source '{source_name}' from kanon.yaml.")
 
 @source.command("status")
-@click.option("--json", "as_json", is_flag=True, help="Output result as JSON.")
+@json_option
 @click.option("--global", "-g", "global_scope", is_flag=True, help="Show only global sources.")
 def source_status(as_json: bool, global_scope: bool) -> None:
     """Show configured sources and their resolution status."""
@@ -156,8 +152,7 @@ def source_pull(name: str | None) -> None:
         try:
             src = resolved[ref]
         except ValueError:
-            click.echo(f"Unknown source: {name!r}")
-            raise SystemExit(1)
+            fail(f"Unknown source: {name!r}")
         result = src.pull(force=True)
         if result != PullResult.NOOP:
             click.echo(f"{ref.as_string} ← {result.value}")

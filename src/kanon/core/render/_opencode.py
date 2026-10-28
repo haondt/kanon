@@ -2,11 +2,11 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, override
+from typing import Any, Callable, override
 
 from pydantic import BaseModel
 
-from kanon.core.config import KanonConfig, OutputType, PROJECT_KANON_DIR, SourcedResource
+from kanon.core.config import Integration, KanonConfig, OutputType, PROJECT_KANON_DIR, SourcedResource
 from kanon.core.kanons import Kanon
 from kanon.core.render._base import DryCleanResult, KanonRenderHelper, KanonRenderer
 from kanon.core.yaml_utils import dump_yaml, save_json
@@ -33,9 +33,15 @@ class OpenCodeSkillFrontmatter(BaseModel):
 
 @dataclass
 class OpenCodeKanonRenderer(KanonRenderer):
+    INTEGRATION: Integration = Integration.OPENCODE
     @classmethod
     @override
-    def render_kanon(cls, kanon_resource: SourcedResource, kanon: Kanon) -> Path:
+    def render_kanon(
+        cls,
+        kanon_resource: SourcedResource,
+        kanon: Kanon,
+        on_progress: Callable[[str], None] | None = None,
+    ) -> Path:
         helper = KanonRenderHelper(kanon=kanon, resource=kanon_resource).validate()
         body = helper.base_render_body()
         if helper.meta.output == OutputType.SKILL:
@@ -87,6 +93,7 @@ class OpenCodeKanonRenderer(KanonRenderer):
     def render_settings(
         cls,
         preapproved_tools: list[str],
+        on_progress: Callable[[str], None] | None = None,
     ) -> Path:
         settings_path = KanonConfig.project_root() / _SETTINGS_FILE
         settings_path.parent.mkdir(parents=True, exist_ok=True)

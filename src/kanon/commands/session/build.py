@@ -5,8 +5,8 @@ import json
 import click
 
 from kanon.core.session import next_build_note_key
-from ._helpers import load_session_or_exit, save_session_and_emit_hashes
-from kanon.commands._utils import read_text_arg_json
+from kanon.commands.session._helpers import load_session_or_exit, save_session_and_emit_hashes
+from kanon.commands._utils import fail, input_json_option, json_option, read_text_arg_json
 
 
 @click.group("build")
@@ -17,8 +17,8 @@ def session_build() -> None:
 @session_build.command("note")
 @click.argument("text")
 
-@click.option("--json", "as_json", is_flag=True)
-@click.option("--input-json", "input_json", is_flag=True, help="Parse TEXT argument as JSON string")
+@json_option
+@input_json_option
 def build_note(text: str, as_json: bool, input_json: bool) -> None:
     """Append a build note."""
     state, _ = load_session_or_exit()
@@ -30,20 +30,19 @@ def build_note(text: str, as_json: bool, input_json: bool) -> None:
 @session_build.command("unnote")
 @click.argument("key")
 
-@click.option("--json", "as_json", is_flag=True)
+@json_option
 def build_unnote(key: str, as_json: bool) -> None:
     """Remove a build note by key."""
     state, _ = load_session_or_exit()
     if key not in state.build.notes:
-        click.echo(f"Build note {key!r} not found.", err=True)
-        raise SystemExit(1)
+        fail(f"Build note {key!r} not found.")
     del state.build.notes[key]
     save_session_and_emit_hashes(state, as_json, {"key": key})
 
 
 @session_build.command("status")
 
-@click.option("--json", "as_json", is_flag=True)
+@json_option
 def build_status(as_json: bool) -> None:
     """Show build notes."""
     state, h = load_session_or_exit()

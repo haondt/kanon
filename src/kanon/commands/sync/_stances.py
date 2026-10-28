@@ -5,6 +5,7 @@ import click
 from kanon.core.config import KanonConfig
 from kanon.commands.sync._synced import list_synced_stances, remove_synced_stance, write_synced_stance, create_synced_stances_dir
 from kanon.core.sources import SourceResolver
+from kanon.commands._utils import fail
 
 def sync_stances(pull: bool):
     config = KanonConfig.instance()
@@ -25,8 +26,7 @@ def sync_stances(pull: bool):
     for resource in to_pull:
         source = sources.try_resolve(resource.source)
         if source is None:
-            click.echo(f"Error: source '{resource.source}' not found for stance '{resource.as_string}'")
-            raise SystemExit(1)
+            fail(f"Error: source '{resource.source}' not found for stance '{resource.as_string}'")
         stance = source.hydrate_stance(resource.path)
         write_synced_stance(resource, stance)
         click.echo(f"  stance:{resource.as_string} ← upstream")

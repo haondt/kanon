@@ -6,7 +6,7 @@ from dataclasses import dataclass, field
 from collections.abc import Callable
 from functools import cached_property
 from pathlib import Path
-from typing import Any, Self
+from typing import Any, ClassVar, Self, override
 
 import jinja2
 from pydantic import BaseModel
@@ -16,6 +16,7 @@ from kanon.core.config import (
     OutputType,
     SourcedResource,
 )
+from kanon.core.errors import KanonRuntimeError, KanonValueError
 from kanon.core.kanons import Kanon
 
 @dataclass
@@ -39,6 +40,25 @@ class DryCleanResult:
             directories=list(directories),
             extra_info='\n'.join(extra_infos) if extra_infos else None
         )
+
+class SkillDirectoryConflictError(KanonRuntimeError):
+    pass
+
+class GlobalModeUnsupportedError(KanonValueError):
+    @classmethod
+    def render_error_message(cls, renderer_class: type | None | str = None):
+        if renderer_class is None:
+            renderer_class_name = "this renderer"
+        elif isinstance(renderer_class, str):
+            renderer_class_name = renderer_class
+        else:
+            renderer_class_name = renderer_class.__name__
+        return f"Global mode is not supported for integration {renderer_class_name}"
+
+    def __init__(self, renderer_class: type | None = None, message: str | None = None):
+        if message is None:
+            message = self.render_error_message(renderer_class)
+        super().__init__(message)
 
 class _ArgsDict(dict):  # pyright: ignore[reportMissingTypeArgument]
     """Returns False for missing keys so absent template args are falsy without raising."""
@@ -90,6 +110,10 @@ class KanonRenderHelper:
 
 @dataclass
 class KanonRenderer(ABC):
+    @classmethod
+    def output_root(cls) -> Path:
+        """Directory that this integration's output paths are relative to."""
+        return KanonConfig.project_root()
 
     @classmethod
     @abstractmethod
@@ -102,7 +126,7 @@ class KanonRenderer(ABC):
 
     @classmethod
     def render_bespoke_rules(cls,
-        on_render_progress: Callable[[Path], None] | None = None
+        on_render_progress: Callable[[Path], None] | None = None,
     ):
         pass
 
@@ -110,12 +134,18 @@ class KanonRenderer(ABC):
     @abstractmethod
     def render_settings(
         cls,
-        preapproved_tools: list[str]
+        preapproved_tools: list[str],
+        on_progress: Callable[[str], None] | None = None,
     ) -> Path | None: ...
 
     @classmethod
     @abstractmethod
-    def render_kanon(cls, kanon_resource: SourcedResource, kanon: Kanon) -> Path: ...
+    def render_kanon(
+        cls,
+        kanon_resource: SourcedResource,
+        kanon: Kanon,
+        on_progress: Callable[[str], None] | None = None,
+    ) -> Path: ...
 
     @classmethod
     @abstractmethod
@@ -124,7 +154,7 @@ class KanonRenderer(ABC):
     @classmethod
     def clean(cls, on_clean_progress: Callable[[str], None] | None = None):
         """Remove all kanon-managed files from a project."""
-        config = KanonConfig.instance()
+        root = cls.output_root()
         targets = cls.dry_clean()
 
         for t in targets.directories:
@@ -132,10 +162,23 @@ class KanonRenderer(ABC):
                 continue
             shutil.rmtree(t)
             if on_clean_progress:
-                on_clean_progress(f"  removed {t.relative_to(config.project_root())}")
+                on_clean_progress(f"  removed {t.relative_to(root)}")
         for t in targets.files:
             if not t.exists():
                 continue
             t.unlink()
             if on_clean_progress:
-                on_clean_progress(f"  removed {t.relative_to(config.project_root())}")
+                on_clean_progress(f"  removed {t.relative_to(root)}")
+
+class GlobalKanonRenderer(KanonRenderer, ABC):
+    @classmethod
+    @abstractmethod
+    def global_root(cls) -> Path:
+        """Directory this integration's output is written to in global mode."""
+        ...
+
+    @classmethod
+    @override
+    def output_root(cls) -> Path:
+        """Directory that this integration's output paths are relative to."""
+        return cls.global_root() if KanonConfig.is_global() else super().output_root()

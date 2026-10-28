@@ -5,7 +5,8 @@ import json
 import click
 
 from kanon.core.todo import TodoSection
-from ._helpers import save_todo_file_and_emit_hashes, load_todo_file
+from kanon.commands.todo._helpers import save_todo_file_and_emit_hashes, load_todo_file
+from kanon.commands._utils import fail, json_option
 
 
 @click.group("section")
@@ -15,7 +16,7 @@ def todo_section() -> None:
 
 @todo_section.command("status")
 
-@click.option("--json", "as_json", is_flag=True)
+@json_option
 def section_status(as_json: bool) -> None:
     """List all sections with item counts."""
     state, h = load_todo_file()
@@ -32,7 +33,7 @@ def section_status(as_json: bool) -> None:
 @todo_section.command("search")
 @click.argument("text")
 
-@click.option("--json", "as_json", is_flag=True)
+@json_option
 def section_search(text: str, as_json: bool) -> None:
     """Search section names (case-insensitive substring)."""
     state, h = load_todo_file()
@@ -52,7 +53,7 @@ def section_search(text: str, as_json: bool) -> None:
 @click.argument("name")
 @click.option("--allow-exists", is_flag=True, help="No-op if section already exists.")
 
-@click.option("--json", "as_json", is_flag=True)
+@json_option
 def section_add(key: str, name: str, allow_exists: bool, as_json: bool) -> None:
     """Add a new section."""
     state, _ = load_todo_file(True)
@@ -63,7 +64,6 @@ def section_add(key: str, name: str, allow_exists: bool, as_json: bool) -> None:
             else:
                 click.echo(f"Section {key!r} already exists — no change.")
             return
-        click.echo(f"Section {key!r} already exists. Use --allow-exists to skip.", err=True)
-        raise SystemExit(1)
+        fail(f"Section {key!r} already exists. Use --allow-exists to skip.")
     state.sections[key] = TodoSection(name=name)
     save_todo_file_and_emit_hashes(state, as_json, {"key": key})

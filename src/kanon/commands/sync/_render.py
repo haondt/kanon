@@ -15,13 +15,13 @@ from kanon.core.render import (
     render_kanon,
     render_settings,
     clean_all,
-    render_bespoke_rules
+    render_bespoke_rules,
+    roots,
 )
 
 
 def render_all(to_render: Sequence[SourcedResource] | set[SourcedResource]) -> None:
     config = KanonConfig.instance()
-    project_root = KanonConfig.project_root()
 
     for integration in config.meta.integrations:
         clean_all(integration)
@@ -35,14 +35,16 @@ def render_all(to_render: Sequence[SourcedResource] | set[SourcedResource]) -> N
             globally_preapproved_tools = globally_preapproved_tools | set(kanon.frontmatter.kanon.preapproved_tools)
 
     for integration in config.meta.integrations:
+        root = roots(integration).output_root
         click.echo(f"Generating {integration} output:")
         for resource, kanon in kanons.items():
             out_path = render_kanon(
                 resource,
                 kanon,
-                integration
+                integration,
+                click.echo,
             )
-            click.echo(f"  {resource.as_string} → {out_path.relative_to(project_root)}")
+            click.echo(f"  {resource.as_string} → {out_path.relative_to(root)}")
 
-        render_bespoke_rules(integration, lambda tool_rule_path: click.echo(f"  bespoke-rules → {tool_rule_path.relative_to(project_root)}"))
-        render_settings(integration, globally_preapproved_tools)
+        render_bespoke_rules(integration, lambda tool_rule_path: click.echo(f"  bespoke-rules → {tool_rule_path.relative_to(root)}"))
+        render_settings(integration, globally_preapproved_tools, click.echo)

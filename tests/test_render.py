@@ -12,6 +12,7 @@ import jinja2
 from kanon.core.config import Integration, KanonConfig, SourcedResource
 from kanon.core.kanons import Kanon
 from kanon.core.render import render_kanon, render_settings
+from kanon.core.render._claude import SkillDirectoryConflictError, _claim_skill_dir
 
 
 @pytest.fixture
@@ -492,3 +493,37 @@ def test_render_kanon_jinja_with_skill_output(project):
     out = _render(content, "test/jinja-skill", Integration.CLAUDE)
     assert out == project / ".claude" / "skills" / "jinja-skill" / "SKILL.md"
     assert "python absent" in out.read_text()
+
+
+def test_claim_skill_dir_uses_plain_name_when_free(tmp_path):
+    KanonConfig.initialize(tmp_path)
+    skills = tmp_path / "skills"
+
+    assert _claim_skill_dir(skills, "plan") == skills / "plan"
+
+
+def test_claim_skill_dir_prefixes_when_foreign_dir_exists(tmp_path):
+    KanonConfig.initialize(tmp_path)
+    skills = tmp_path / "skills"
+    (skills / "plan").mkdir(parents=True)
+
+    assert _claim_skill_dir(skills, "plan") == skills / "kanon--plan"
+
+
+def test_claim_skill_dir_reuses_tracked_plain_name(tmp_path):
+    KanonConfig.initialize(tmp_path)
+    skills = tmp_path / "skills"
+    _claim_skill_dir(skills, "plan")
+    (skills / "plan").mkdir(parents=True)
+
+    assert _claim_skill_dir(skills, "plan") == skills / "plan"
+
+
+def test_claim_skill_dir_both_names_foreign_raises(tmp_path):
+    KanonConfig.initialize(tmp_path)
+    skills = tmp_path / "skills"
+    (skills / "plan").mkdir(parents=True)
+    (skills / "kanon--plan").mkdir()
+
+    with pytest.raises(SkillDirectoryConflictError):
+        _claim_skill_dir(skills, "plan")

@@ -3,5 +3,6 @@ kanons:
   - self::tools/kanon/ref
   - self::tools/kanon/kanons
   - self::tools/kanon/todo
+  - self::tools/kanon/table
   - self::tools/kanon/source
   - self::tools/kanon/session

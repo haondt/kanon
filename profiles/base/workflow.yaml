@@ -11,6 +11,8 @@ kanons:
   - self::workflow/kanon-stance
   - self::workflow/kanon-think
   - self::workflow/kanon-detour
+  - self::workflow/kanon-iterate
+  - self::workflow/kanon-table
   - self::workflow/kanon-amend
   - self::workflow/kanon-todo
   - self::workflow/kanon-onboard

@@ -4,8 +4,8 @@ import json
 
 import click
 
-from ._helpers import load_session_or_exit, save_session_and_emit_hashes
-from kanon.commands._utils import read_text_arg_json
+from kanon.commands.session._helpers import load_session_or_exit, save_session_and_emit_hashes
+from kanon.commands._utils import fail, input_json_option, json_option, read_text_arg_json
 
 
 @click.group("amend")
@@ -16,8 +16,8 @@ def session_amend() -> None:
 @session_amend.command("goal")
 @click.argument("text")
 
-@click.option("--json", "as_json", is_flag=True)
-@click.option("--input-json", "input_json", is_flag=True, help="Parse TEXT argument as JSON string")
+@json_option
+@input_json_option
 def amend_goal(text: str, as_json: bool, input_json: bool) -> None:
     """Overwrite the session goal."""
     state, _ = load_session_or_exit()
@@ -33,14 +33,13 @@ def amend_plan() -> None:
 @click.argument("key")
 @click.argument("text")
 
-@click.option("--json", "as_json", is_flag=True)
-@click.option("--input-json", "input_json", is_flag=True, help="Parse TEXT argument as JSON string")
+@json_option
+@input_json_option
 def amend_plan_step(key: str, text: str, as_json: bool, input_json: bool) -> None:
     """Overwrite a plan step's text."""
     state, _ = load_session_or_exit()
     if key not in state.plan.steps:
-        click.echo(f"Step {key!r} not found.", err=True)
-        raise SystemExit(1)
+        fail(f"Step {key!r} not found.")
     state.plan.steps[key].text = read_text_arg_json(text, input_json)
     save_session_and_emit_hashes(state, as_json, {"key": key})
 
@@ -49,14 +48,13 @@ def amend_plan_step(key: str, text: str, as_json: bool, input_json: bool) -> Non
 @click.argument("key")
 @click.argument("text")
 
-@click.option("--json", "as_json", is_flag=True)
-@click.option("--input-json", "input_json", is_flag=True, help="Parse TEXT argument as JSON string")
+@json_option
+@input_json_option
 def amend_plan_note(key: str, text: str, as_json: bool, input_json: bool) -> None:
     """Edit an existing plan note."""
     state, _ = load_session_or_exit()
     if key not in state.plan.notes:
-        click.echo(f"Plan note {key!r} not found.", err=True)
-        raise SystemExit(1)
+        fail(f"Plan note {key!r} not found.")
     state.plan.notes[key] = read_text_arg_json(text, input_json)
     save_session_and_emit_hashes(state, as_json, {"key": key})
 
@@ -64,13 +62,12 @@ def amend_plan_note(key: str, text: str, as_json: bool, input_json: bool) -> Non
 @amend_plan.command("unnote")
 @click.argument("key")
 
-@click.option("--json", "as_json", is_flag=True)
+@json_option
 def amend_plan_unnote(key: str, as_json: bool) -> None:
     """Remove a plan note by key."""
     state, _ = load_session_or_exit()
     if key not in state.plan.notes:
-        click.echo(f"Plan note {key!r} not found.", err=True)
-        raise SystemExit(1)
+        fail(f"Plan note {key!r} not found.")
     del state.plan.notes[key]
     save_session_and_emit_hashes(state, as_json, {"key": key})
 
@@ -78,8 +75,8 @@ def amend_plan_unnote(key: str, as_json: bool) -> None:
 @session_amend.command("add-note")
 @click.argument("text")
 
-@click.option("--json", "as_json", is_flag=True)
-@click.option("--input-json", "input_json", is_flag=True, help="Parse TEXT argument as JSON string")
+@json_option
+@input_json_option
 def amend_add_note(text: str, as_json: bool, input_json: bool) -> None:
     """Append an amendment note."""
     state, _ = load_session_or_exit()
@@ -89,7 +86,7 @@ def amend_add_note(text: str, as_json: bool, input_json: bool) -> None:
 
 @session_amend.command("status")
 
-@click.option("--json", "as_json", is_flag=True)
+@json_option
 def amend_status(as_json: bool) -> None:
     """Show amendments."""
     state, h = load_session_or_exit()

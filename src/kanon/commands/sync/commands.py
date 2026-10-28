@@ -8,15 +8,23 @@ from kanon.commands.sync._render import render_all
 from kanon.commands.sync._stances import sync_stances
 from kanon.commands.sync._synced import read_synced_stance
 from kanon.core.config import SourceReference, KanonConfig, SourcedResource
+from kanon.core.render import GlobalModeUnsupportedError, roots
 from kanon.core.sources import SourceResolver
 
 
 def do_sync(pull: bool = False) -> None:
     """Core sync logic — callable programmatically from other commands."""
-    load_config_or_exit()
+    config = load_config_or_exit()
+    if KanonConfig.is_global():
+        has_unsupported_integrations = False
+        for i in config.meta.integrations:
+            if not roots(i).supports_global:
+                click.echo(f"{GlobalModeUnsupportedError.render_error_message(str(i))}")
+                has_unsupported_integrations = True
+        if has_unsupported_integrations:
+            raise SystemExit(1)
 
     sync_stances(pull)
-    config = KanonConfig.instance()
     sources = SourceResolver.instance()
     explicit_kanons = {sources.dealias(r) for r in config.kanons_sr}
     all_kanons_needed = set(explicit_kanons)
